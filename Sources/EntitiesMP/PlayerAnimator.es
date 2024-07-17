@@ -18,7 +18,7 @@
 #include "Models/Weapons/MiniGun/MiniGunItem.h"
 #include "Models/Weapons/MiniGun/Body.h"
 #include "Models/Weapons/GrenadeLauncher/GrenadeLauncherItem.h"
-#include "Models/Weapons/RocketLauncher/RocketLauncherItem.h"
+#include "ModelsF/Weapons/RocketLauncher/RocketLauncherItem.h"
 #include "ModelsMP/Weapons/Sniper/SniperItem.h"
 #include "ModelsMP/Weapons/Sniper/Sniper.h"
 //#include "Models/Weapons/Pipebomb/StickItem.h"
@@ -29,9 +29,12 @@
 #include "ModelsMP/Weapons/Chainsaw/BladeForPlayer.h"
 #include "ModelsMP/Weapons/Chainsaw/Body.h"
 #include "Models/Weapons/Laser/LaserItem.h"
-//#include "Models/Weapons/GhostBuster/GhostBusterItem.h"
-//#include "Models/Weapons/GhostBuster/Effect01.h"
+#include "Models/Weapons/GhostBuster/GhostBusterItem.h"
+#include "Models/Weapons/GhostBuster/Effect01.h"
 #include "Models/Weapons/Cannon/Cannon.h"
+#include "ModelsMP/Weapons/PlasmaThrower/LaserItem.h"
+#include "ModelsF/Weapons/Devastator/DevastatorItem.h"
+#include "ModelsF/Weapons/HydroGun/LaserItem.h"
 %}
 
 uses "EntitiesMP/Player";
@@ -157,9 +160,9 @@ void CPlayerAnimator_Precache(ULONG ulAvailable)
     pdec->PrecacheModel(MODEL_ROCKETLAUNCHER   );
     pdec->PrecacheModel(MODEL_RL_BODY          );
     pdec->PrecacheModel(MODEL_RL_ROTATINGPART  );
-    pdec->PrecacheModel(MODEL_RL_ROCKET        );
+    pdec->PrecacheModel(MODEL_RL_MAGAZINE        );
     pdec->PrecacheTexture(TEXTURE_RL_BODY  );
-    pdec->PrecacheTexture(TEXTURE_RL_ROCKET);
+    pdec->PrecacheTexture(TEXTURE_RL_MAGAZINE);
     pdec->PrecacheTexture(TEXTURE_RL_ROTATINGPART);
   }                                        
 
@@ -209,7 +212,16 @@ void CPlayerAnimator_Precache(ULONG ulAvailable)
     pdec->PrecacheTexture(TEXTURE_LS_BODY  );  
     pdec->PrecacheTexture(TEXTURE_LS_BARREL);  
   }
-/*
+
+  if ( ulAvailable&(1<<(WEAPON_PLASMA-1)) ) {
+    pdec->PrecacheModel(MODEL_PLASMA     );
+    pdec->PrecacheModel(MODEL_PLASMA_BODY   );
+    pdec->PrecacheModel(MODEL_PLASMA_BARREL );
+    pdec->PrecacheModel(MODEL_PLASMA_BARREL_BIG );
+    pdec->PrecacheTexture(TEXTURE_PLASMA_BODY  );  
+    pdec->PrecacheTexture(TEXTURE_PLASMA_BARREL);  
+    pdec->PrecacheTexture(TEXTURE_PLASMA_BARREL_BIG);  
+  }
   if ( ulAvailable&(1<<(WEAPON_GHOSTBUSTER-1)) ) {
     pdec->PrecacheModel(MODEL_GHOSTBUSTER     );
     pdec->PrecacheModel(MODEL_GB_BODY         );
@@ -221,7 +233,20 @@ void CPlayerAnimator_Precache(ULONG ulAvailable)
     pdec->PrecacheTexture(TEXTURE_GB_LIGHTNING);  
     pdec->PrecacheTexture(TEXTURE_GB_FLARE    );  
   }
-*/
+  if ( ulAvailable&(1<<(WEAPON_DEVASTATOR-1)) ) {
+    pdec->PrecacheModel(MODEL_DEVASTATOR              );
+    pdec->PrecacheModel(MODEL_DEV_BODY               );
+    pdec->PrecacheModel(MODEL_DEV_MAG             );
+    pdec->PrecacheTexture(TEXTURE_DEV_BODY           );  
+    pdec->PrecacheTexture(TEXTURE_DEV_MAG           ); 
+  }
+  if ( ulAvailable&(1<<(WEAPON_HYDROGUN-1)) ) {
+    pdec->PrecacheModel(MODEL_HYDROGUN     );
+    pdec->PrecacheModel(MODEL_HG_BODY   );
+    pdec->PrecacheModel(MODEL_HG_BARREL );
+    pdec->PrecacheTexture(TEXTURE_HG_BODY  );  
+    pdec->PrecacheTexture(TEXTURE_HG_BARREL);   
+  }
   if ( ulAvailable&(1<<(WEAPON_IRONCANNON-1)) /*||
        ulAvailable&(1<<(WEAPON_NUKECANNON-1)) */) {
     pdec->PrecacheModel(MODEL_CANNON    );
@@ -333,13 +358,13 @@ components:
  99 texture TEXTURE_MG_BARRELS          "Models\\Weapons\\MiniGun\\Barrels.tex",
 
 // ************** ROCKET LAUNCHER **************
- 90 model   MODEL_ROCKETLAUNCHER        "Models\\Weapons\\RocketLauncher\\RocketLauncherItem.mdl",
- 91 model   MODEL_RL_BODY               "Models\\Weapons\\RocketLauncher\\Body.mdl",
- 92 texture TEXTURE_RL_BODY             "Models\\Weapons\\RocketLauncher\\Body.tex",
- 93 model   MODEL_RL_ROTATINGPART       "Models\\Weapons\\RocketLauncher\\RotatingPart.mdl",
+ 90 model   MODEL_ROCKETLAUNCHER        "ModelsF\\Weapons\\RocketLauncher\\RocketLauncherItem.mdl",
+ 91 model   MODEL_RL_BODY               "ModelsF\\Weapons\\RocketLauncher\\Body.mdl",
+ 92 texture TEXTURE_RL_BODY             "ModelsF\\Weapons\\RocketLauncher\\RocketLauncher.tex",
+ 93 model   MODEL_RL_ROTATINGPART       "ModelsF\\Weapons\\RocketLauncher\\RotatingPart.mdl",
  94 texture TEXTURE_RL_ROTATINGPART     "Models\\Weapons\\RocketLauncher\\RotatingPart.tex",
- 95 model   MODEL_RL_ROCKET             "Models\\Weapons\\RocketLauncher\\Projectile\\Rocket.mdl",
- 96 texture TEXTURE_RL_ROCKET           "Models\\Weapons\\RocketLauncher\\Projectile\\Rocket.tex",
+ 95 model   MODEL_RL_MAGAZINE             "ModelsF\\Weapons\\RocketLauncher\\Magazine.mdl",
+ 96 texture TEXTURE_RL_MAGAZINE           "ModelsF\\Weapons\\RocketLauncher\\Magazine.tex",
 
 // ************** GRENADE LAUNCHER **************
 100 model   MODEL_GRENADELAUNCHER       "Models\\Weapons\\GrenadeLauncher\\GrenadeLauncherItem.mdl",
@@ -391,23 +416,45 @@ components:
 156 texture TEXTURE_CS_TEETH            "ModelsMP\\Weapons\\Chainsaw\\Teeth.tex",
 
 // ************** GHOSTBUSTER **************
-/*
-150 model   MODEL_GHOSTBUSTER           "Models\\Weapons\\GhostBuster\\GhostBusterItem.mdl",
-151 model   MODEL_GB_BODY               "Models\\Weapons\\GhostBuster\\Body.mdl",
-152 model   MODEL_GB_ROTATOR            "Models\\Weapons\\GhostBuster\\Rotator.mdl",
-153 model   MODEL_GB_EFFECT1            "Models\\Weapons\\GhostBuster\\Effect01.mdl",
-154 model   MODEL_GB_EFFECT1FLARE       "Models\\Weapons\\GhostBuster\\EffectFlare01.mdl",
-155 texture TEXTURE_GB_ROTATOR          "Models\\Weapons\\GhostBuster\\Rotator.tex",
-156 texture TEXTURE_GB_BODY             "Models\\Weapons\\GhostBuster\\Body.tex",
-157 texture TEXTURE_GB_LIGHTNING        "Models\\Weapons\\GhostBuster\\Lightning.tex",
-158 texture TEXTURE_GB_FLARE            "Models\\Weapons\\GhostBuster\\EffectFlare.tex",
-*/
+310 model   MODEL_GHOSTBUSTER           "Models\\Weapons\\GhostBuster\\GhostBusterItem.mdl",
+311 model   MODEL_GB_BODY               "Models\\Weapons\\GhostBuster\\Body.mdl",
+312 model   MODEL_GB_ROTATOR            "Models\\Weapons\\GhostBuster\\Rotator.mdl",
+313 model   MODEL_GB_EFFECT1            "Models\\Weapons\\GhostBuster\\Effect01.mdl",
+314 model   MODEL_GB_EFFECT1FLARE       "Models\\Weapons\\GhostBuster\\EffectFlare01.mdl",
+315 texture TEXTURE_GB_ROTATOR          "Models\\Weapons\\GhostBuster\\Rotator.tex",
+316 texture TEXTURE_GB_BODY             "Models\\Weapons\\GhostBuster\\Body.tex",
+317 texture TEXTURE_GB_LIGHTNING        "Models\\Weapons\\GhostBuster\\Lightning.tex",
+318 texture TEXTURE_GB_FLARE            "Models\\Weapons\\GhostBuster\\EffectFlare.tex",
+
 // ************** CANNON **************
 170 model   MODEL_CANNON                "Models\\Weapons\\Cannon\\Cannon.mdl",
 171 model   MODEL_CN_BODY               "Models\\Weapons\\Cannon\\Body.mdl",
 173 texture TEXTURE_CANNON              "Models\\Weapons\\Cannon\\Body.tex",
 //174 model   MODEL_CN_NUKEBOX            "Models\\Weapons\\Cannon\\NukeBox.mdl",
 //175 model   MODEL_CN_LIGHT              "Models\\Weapons\\Cannon\\Light.mdl",
+
+// ************** PLASMA **************
+300 model   MODEL_PLASMA                    "ModelsMP\\Weapons\\PlasmaThrower\\LaserItem.mdl",
+301 model   MODEL_PLASMA_BODY               "ModelsMP\\Weapons\\PlasmaThrower\\Body.mdl",
+302 model   MODEL_PLASMA_BARREL             "ModelsMP\\Weapons\\PlasmaThrower\\Barrel.mdl",
+303 model   MODEL_PLASMA_BARREL_BIG         "ModelsMP\\Weapons\\PlasmaThrower\\Barrel_big.mdl",
+304 texture TEXTURE_PLASMA_BODY             "ModelsMP\\Weapons\\PlasmaThrower\\Body.tex",
+305 texture TEXTURE_PLASMA_BARREL           "ModelsMP\\Weapons\\PlasmaThrower\\Barrel.tex",
+306 texture TEXTURE_PLASMA_BARREL_BIG       "ModelsMP\\Weapons\\PlasmaThrower\\Barrel_big.tex",
+
+// ************** DEVASTATOR **************
+320 model   MODEL_DEVASTATOR            "ModelsF\\Weapons\\Devastator\\DevastatorItem.mdl",
+321 model   MODEL_DEV_BODY              "ModelsF\\Weapons\\Devastator\\Body.mdl",
+322 model   MODEL_DEV_MAG               "ModelsF\\Weapons\\Devastator\\Magazine.mdl",
+323 texture TEXTURE_DEV_BODY            "ModelsF\\Weapons\\Devastator\\Devastator.tex",
+324 texture TEXTURE_DEV_MAG             "ModelsF\\Weapons\\Devastator\\Magazine.tex",
+
+// ************** HYDROGUN **************
+330 model   MODEL_HYDROGUN              "ModelsF\\Weapons\\HydroGun\\LaserItem.mdl",
+331 model   MODEL_HG_BODY               "ModelsF\\Weapons\\HydroGun\\Body.mdl",
+332 model   MODEL_HG_BARREL             "ModelsF\\Weapons\\HydroGun\\Barrel.mdl",
+334 texture TEXTURE_HG_BODY             "ModelsF\\Weapons\\HydroGun\\Body.tex",
+335 texture TEXTURE_HG_BARREL           "AREP\\Models\\Waterman\\WaterManFX.tex",
 
 // ************** AMON STATUE **************
 180 model   MODEL_GOLDAMON                "Models\\Ages\\Egypt\\Gods\\Amon\\AmonGold.mdl",
@@ -654,12 +701,9 @@ functions:
       case WEAPON_ROCKETLAUNCHER:
         AddWeaponAttachment(BODY_ATTACHMENT_ROCKET_LAUNCHER, MODEL_ROCKETLAUNCHER, TEXTURE_RL_BODY, 0, 0, 0);
         SetAttachment(BODY_ATTACHMENT_ROCKET_LAUNCHER);
-        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_BODY, MODEL_RL_BODY, TEXTURE_RL_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_ROTATINGPART, MODEL_RL_ROTATINGPART, TEXTURE_RL_ROTATINGPART, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_ROCKET1, MODEL_RL_ROCKET, TEXTURE_RL_ROCKET, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_ROCKET2, MODEL_RL_ROCKET, TEXTURE_RL_ROCKET, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_ROCKET3, MODEL_RL_ROCKET, TEXTURE_RL_ROCKET, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_ROCKET4, MODEL_RL_ROCKET, TEXTURE_RL_ROCKET, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_BODY, MODEL_RL_BODY, TEXTURE_RL_BODY, 0, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_ROTATINGPART, MODEL_RL_ROTATINGPART, TEXTURE_RL_BODY, 0, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(ROCKETLAUNCHERITEM_ATTACHMENT_MAGAZINE, MODEL_RL_MAGAZINE, TEXTURE_RL_MAGAZINE, 0, TEX_SPEC_MEDIUM, 0);
         break;
 
     // *********** GRENADE LAUNCHER ***********
@@ -714,7 +758,7 @@ functions:
         AddWeaponAttachment(LASERITEM_ATTACHMENT_RIGHTDOWN, MODEL_LS_BARREL, TEXTURE_LS_BARREL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         break;
 
-/*
+
     // *********** GHOSTBUSTER ***********
       case WEAPON_GHOSTBUSTER: {
         AddWeaponAttachment(BODY_ATTACHMENT_LASER, MODEL_GHOSTBUSTER, TEXTURE_GB_BODY, 0, 0, 0);
@@ -738,7 +782,7 @@ functions:
         SetAttachment(GHOSTBUSTERITEM_ATTACHMENT_EFFECT04);
         AddWeaponAttachment(EFFECT01_ATTACHMENT_FLARE, MODEL_GB_EFFECT1FLARE, TEXTURE_GB_FLARE, 0, 0, 0);
         break; }
-*/
+
     // *********** CANNON ***********
       case WEAPON_IRONCANNON:
 //      case WEAPON_NUKECANNON:
@@ -747,6 +791,35 @@ functions:
         AddWeaponAttachment(CANNON_ATTACHMENT_BODY, MODEL_CN_BODY, TEXTURE_CANNON, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
 //        AddWeaponAttachment(CANNON_ATTACHMENT_NUKEBOX, MODEL_CN_NUKEBOX, TEXTURE_CANNON, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
 //        AddWeaponAttachment(CANNON_ATTACHMENT_LIGHT, MODEL_CN_LIGHT, TEXTURE_CANNON, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        break;
+
+    // *********** PLASMA ***********
+      case WEAPON_PLASMA:
+        AddWeaponAttachment(BODY_ATTACHMENT_LASER, MODEL_PLASMA, TEXTURE_PLASMA_BODY, 0, 0, 0);
+        SetAttachment(BODY_ATTACHMENT_LASER);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_BODY, MODEL_PLASMA_BODY, TEXTURE_PLASMA_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_LEFTUP,    MODEL_PLASMA_BARREL, TEXTURE_PLASMA_BARREL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_RIGHTUP,   MODEL_PLASMA_BARREL, TEXTURE_PLASMA_BARREL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_BARRELBIG, MODEL_PLASMA_BARREL_BIG, TEXTURE_PLASMA_BARREL_BIG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        break;
+
+    // *********** DEVASTATOR ***********
+      case WEAPON_DEVASTATOR:
+        AddWeaponAttachment(BODY_ATTACHMENT_TOMMYGUN, MODEL_DEVASTATOR, TEXTURE_DEV_BODY, 0, 0, 0);
+        SetAttachment(BODY_ATTACHMENT_TOMMYGUN);
+        AddWeaponAttachment(TOMMYGUNITEM_ATTACHMENT_BODY, MODEL_DEV_BODY, TEXTURE_DEV_BODY, 0, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(TOMMYGUNITEM_ATTACHMENT_SLIDER, MODEL_DEV_MAG, TEXTURE_DEV_MAG, 0, TEX_SPEC_MEDIUM, 0);
+        break;
+
+    // *********** HYDROGUN ***********
+      case WEAPON_HYDROGUN:
+        AddWeaponAttachment(BODY_ATTACHMENT_LASER, MODEL_HYDROGUN, TEXTURE_HG_BODY, 0, 0, 0);
+        SetAttachment(BODY_ATTACHMENT_LASER);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_BODY, MODEL_HG_BODY, TEXTURE_HG_BODY, TEX_REFL_LIGHTBLUEMETAL01, TEX_SPEC_STRONG, 0);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_LEFTUP,    MODEL_HG_BARREL, TEXTURE_HG_BARREL, TEX_REFL_LIGHTBLUEMETAL01, TEX_SPEC_STRONG, 0);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_RIGHTUP,   MODEL_HG_BARREL, TEXTURE_HG_BARREL, TEX_REFL_LIGHTBLUEMETAL01, TEX_SPEC_STRONG, 0);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_RIGHTUP,   MODEL_HG_BARREL, TEXTURE_HG_BARREL, TEX_REFL_LIGHTBLUEMETAL01, TEX_SPEC_STRONG, 0);
+        AddWeaponAttachment(LASERITEM_ATTACHMENT_RIGHTDOWN, MODEL_HG_BARREL, TEXTURE_HG_BARREL, TEX_REFL_LIGHTBLUEMETAL01, TEX_SPEC_STRONG, 0);
         break;
       default:
         ASSERTALWAYS("Unknown weapon.");
@@ -1251,7 +1324,7 @@ functions:
           iAnim += BODY_ANIM_COLT_SWIM_STAND-BODY_ANIM_COLT_STAND;
           break;
         case WEAPON_SINGLESHOTGUN: case WEAPON_DOUBLESHOTGUN: case WEAPON_TOMMYGUN:
-        case WEAPON_SNIPER: case WEAPON_LASER: case WEAPON_FLAMER: //case WEAPON_GHOSTBUSTER:
+        case WEAPON_SNIPER: case WEAPON_LASER: case WEAPON_FLAMER: case WEAPON_PLASMA: case WEAPON_GHOSTBUSTER: case WEAPON_DEVASTATOR: case WEAPON_HYDROGUN:
           iAnim += BODY_ANIM_SHOTGUN_SWIM_STAND-BODY_ANIM_SHOTGUN_STAND;
           break;
         case WEAPON_MINIGUN: case WEAPON_ROCKETLAUNCHER: case WEAPON_GRENADELAUNCHER:
@@ -1290,7 +1363,7 @@ functions:
         SetBodyAnimation(iColt, ulFlags);
         break;
       case WEAPON_SINGLESHOTGUN: case WEAPON_DOUBLESHOTGUN: case WEAPON_TOMMYGUN:
-      case WEAPON_SNIPER: case WEAPON_LASER: case WEAPON_FLAMER: //case WEAPON_GHOSTBUSTER:
+      case WEAPON_SNIPER: case WEAPON_LASER: case WEAPON_FLAMER: case WEAPON_PLASMA:  case WEAPON_GHOSTBUSTER:  case WEAPON_DEVASTATOR: case WEAPON_HYDROGUN:
         if (m_bSwim) { iShotgun += BODY_ANIM_SHOTGUN_SWIM_STAND-BODY_ANIM_SHOTGUN_STAND; }
         SetBodyAnimation(iShotgun, ulFlags);
         break;
@@ -1379,9 +1452,18 @@ functions:
       case WEAPON_LASER:
         pmoModel->RemoveAttachmentModel(BODY_ATTACHMENT_LASER);
         break;
-/*    case WEAPON_GHOSTBUSTER:
+      case WEAPON_PLASMA:
         pmoModel->RemoveAttachmentModel(BODY_ATTACHMENT_LASER);
-        break;      */
+        break;
+      case WEAPON_GHOSTBUSTER:
+        pmoModel->RemoveAttachmentModel(BODY_ATTACHMENT_LASER);
+        break;  
+      case WEAPON_DEVASTATOR:
+        pmoModel->RemoveAttachmentModel(BODY_ATTACHMENT_TOMMYGUN);
+        break; 
+      case WEAPON_HYDROGUN:
+        pmoModel->RemoveAttachmentModel(BODY_ATTACHMENT_LASER);
+        break;   
       case WEAPON_IRONCANNON:
 //      case WEAPON_NUKECANNON:
         pmoModel->RemoveAttachmentModel(BODY_ATTACHMENT_CANNON);

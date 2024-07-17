@@ -129,6 +129,13 @@ enum BulletHitType {
   8 BHT_BRUSH_GRASS         "",     // brush grass
   9 BHT_BRUSH_WOOD          "",     // brush wood
  10 BHT_BRUSH_SNOW          "",     // brush snow
+ 11 BHT_BRUSH_LAVA          "",     // brush lava
+ 12 BHT_BRUSH_ACID          "",     // brush acid
+ 13 BHT_GOO          "",     // goo
+ 14 BHT_BRUSH_GLASS          "",     // brush glass
+ 15 BHT_BRUSH_FLESH          "",     // brush flesh
+ 16 BHT_BRUSH_METAL          "",     // brush metal
+ 17 BHT_BRUSH_ENERGY          "",     // brush energy
 };
 
 enum EffectParticlesType {
@@ -141,6 +148,12 @@ enum EffectParticlesType {
   6 EPT_BULLET_GRASS          "",    // bullet particles on sand
   7 EPT_BULLET_WOOD           "",    // bullet particles on sand
   8 EPT_BULLET_SNOW           "",    // bullet particles on snow
+  9 EPT_BULLET_LAVA           "",    // bullet particles on lava
+ 10 EPT_BULLET_ACID           "",    // bullet particles on acid
+ 11 EPT_BULLET_GLASS           "",    // bullet particles on glass
+ 12 EPT_BULLET_FLESH           "",    // bullet particles on flesh
+ 13 EPT_BULLET_METAL           "",    // bullet particles on metal
+ 14 EPT_BULLET_ENERGY           "",    // bullet particles on energy
 };
 
 enum SprayParticlesType {
@@ -161,6 +174,7 @@ enum SprayParticlesType {
  14 SPT_GOO         "Goo",          // yellow bloodlike substance
  15 SPT_TREE01      "Tree 01",      // tree 01
  16 SPT_COLOREDSTONE "Colored stone", // colored stone
+ 17 SPT_PLASMA_SMALL      "Plasma small",       // plasma small  
 };
 
 // weapon bits

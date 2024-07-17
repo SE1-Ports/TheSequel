@@ -12,7 +12,7 @@ uses "EntitiesMP/Reminder";
 enum ScorpmanType {
   0 SMT_SOLDIER    "Soldier",
   1 SMT_GENERAL    "General",
-  2 SMT_MONSTER    "Obsolete",
+  2 SMT_MONSTER    "Monster",
 };
 
 
@@ -57,6 +57,8 @@ properties:
   4 FLOAT m_fFireTime = 0.0f,           // time to fire bullets
   5 CAnimObject m_aoLightAnimation,     // light animation object
   6 BOOL m_bSleeping "Sleeping" 'S' = FALSE,  // set to make scorpman sleep initally
+  7 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
+  8 INDEX   m_fgibTexture = TEXTURE_SOLDIER,
   
 {
   CEntity *penBullet;     // bullet
@@ -69,11 +71,20 @@ components:
   5 model   MODEL_SCORPMAN    "Models\\Enemies\\Scorpman\\Scorpman.mdl",
   6 texture TEXTURE_SOLDIER   "Models\\Enemies\\Scorpman\\Soldier.tex",
   7 texture TEXTURE_GENERAL   "Models\\Enemies\\Scorpman\\General.tex",
-//  8 texture TEXTURE_MONSTER   "Models\\Enemies\\Scorpman\\Monster.tex",
+  8 texture TEXTURE_MONSTER   "AREP\\Models\\ScorpMonster\\ScorpMonster.tex",
  12 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
   9 model   MODEL_GUN         "Models\\Enemies\\Scorpman\\Gun.mdl",
  10 model   MODEL_FLARE       "Models\\Enemies\\Scorpman\\Flare.mdl",
  11 texture TEXTURE_GUN       "Models\\Enemies\\Scorpman\\Gun.tex",
+ 30 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
+
+ 14 model   MODEL_SCORPMAN_TAIL1           "ModelsF\\Enemies\\Scorpman\\Debris\\Tail1.mdl",
+ 15 model   MODEL_SCORPMAN_TAIL2           "ModelsF\\Enemies\\Scorpman\\Debris\\Tail2.mdl",
+ 16 model   MODEL_SCORPMAN_BODY1         "ModelsF\\Enemies\\Scorpman\\Debris\\Body1.mdl",
+ 17 model   MODEL_SCORPMAN_BODY2         "ModelsF\\Enemies\\Scorpman\\Debris\\Body2.mdl",
+
+ 33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "Models\\Enemies\\Scorpman\\Sounds\\Idle.wav",
@@ -104,6 +115,13 @@ functions:
     PrecacheSound(SOUND_FIRE );
     PrecacheSound(SOUND_KICK );
     PrecacheSound(SOUND_DEATH);
+	PrecacheModel(MODEL_SCORPMAN_TAIL1);
+	PrecacheModel(MODEL_SCORPMAN_TAIL2);
+	PrecacheModel(MODEL_SCORPMAN_BODY1);
+	PrecacheModel(MODEL_SCORPMAN_BODY2);
+
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_RED);
   };
 
   /* Read from stream. */
@@ -127,12 +145,12 @@ functions:
   }
 
   virtual const CTFileName &GetComputerMessageName(void) const {
-    //static DECLARE_CTFILENAME(fnmMonster, "Data\\Messages\\Enemies\\ScorpmanMonster.txt");
+    static DECLARE_CTFILENAME(fnmMonster, "DataMP\\Messages\\Enemies\\AREP\\ScorpmanMonster.txt");
     static DECLARE_CTFILENAME(fnmGeneral, "Data\\Messages\\Enemies\\ScorpmanGeneral.txt");
     static DECLARE_CTFILENAME(fnmSoldier, "Data\\Messages\\Enemies\\ScorpmanSoldier.txt");
     switch(m_smtType) {
     default: ASSERT(FALSE);
-    case SMT_MONSTER: //return fnmMonster;
+    case SMT_MONSTER: return fnmMonster;
     case SMT_GENERAL: return fnmGeneral;
     case SMT_SOLDIER: return fnmSoldier;
     }
@@ -214,6 +232,13 @@ functions:
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
+    
+    // take MORE damage from heavy bullets (e.g. sniper)
+    if(dmtType==DMT_BULLET && fDamageAmmount>100.0f)
+    {
+      fDamageAmmount*=1.5f;
+    }
+
     // scorpman can't harm scorpman
     if (!IsOfClass(penInflictor, "Scorpman")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
@@ -338,7 +363,10 @@ functions:
     // init bullet
     EBulletInit eInit;
     eInit.penOwner = this;
-    eInit.fDamage = fDamage;
+	if (m_smtType == SMT_MONSTER) {
+      eInit.fDamage = 6; }
+	else {
+      eInit.fDamage = 3; }
     penBullet->Initialize(eInit);
   };
 
@@ -363,6 +391,60 @@ functions:
     // set sound default parameters
     m_soSound.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
   };
+
+ /************************************************************
+ *                 BLOW UP FUNCTIONS                        *
+ ************************************************************/
+  // spawn body parts
+  void BlowUp(void) {
+    // get your size
+    FLOATaabbox3D box;
+    GetBoundingBox(box);
+    FLOAT fEntitySize = box.Size().MaxNorm();
+	FLOAT fDebrisSize = 0.35f;
+
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+
+    vNormalizedDamage *= 0.75f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
+
+    // spawn debris
+	Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 3.0f, 1.0f);
+
+    Debris_Spawn(this, this, MODEL_SCORPMAN_BODY1, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_BODY2, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_TAIL1, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_TAIL2, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.3f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+    // hide yourself (must do this after spawning debris)
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+  };
+
 
 procedures:
 /************************************************************
@@ -533,10 +615,6 @@ procedures:
  *                       M  A  I  N                         *
  ************************************************************/
   Main(EVoid) {
-    if (m_smtType==SMT_MONSTER) {
-      m_smtType=SMT_GENERAL;
-    }
-
     // declare yourself as a model
     InitAsModel();
     SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
@@ -544,6 +622,7 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     en_tmMaxHoldBreath = 25.0f;
     en_fDensity = 3000.0f;
+    m_bBoss = m_bBeBoss;
 
     // set your appearance
     SetModel(MODEL_SCORPMAN);
@@ -552,12 +631,13 @@ procedures:
         // set your texture
         SetModelMainTexture(TEXTURE_SOLDIER);
         SetModelSpecularTexture(TEXTURE_SPECULAR);
+		m_fgibTexture = TEXTURE_SOLDIER;
         SetHealth(300.0f);
         m_fMaxHealth = 300.0f;
         // damage/explode properties
         m_fDamageWounded = 200.0f;
-        m_fBlowUpAmount = 1E10f;
-        m_fBodyParts = 30;
+        m_fBlowUpAmount = 400.0f;
+        m_fBodyParts = 6;
         // setup attack distances
         m_fAttackDistance = 200.0f;
         m_fCloseDistance = 5.0f;
@@ -572,12 +652,13 @@ procedures:
         // set your texture
         SetModelMainTexture(TEXTURE_GENERAL);
         SetModelSpecularTexture(TEXTURE_SPECULAR);
+		m_fgibTexture = TEXTURE_GENERAL;
         SetHealth(600.0f);
         m_fMaxHealth = 600.0f;
         // damage/explode properties
         m_fDamageWounded = 400.0f;
-        m_fBlowUpAmount = 1E10f;
-        m_fBodyParts = 30;
+        m_fBlowUpAmount = 750.0f;
+        m_fBodyParts = 10;
         // setup attack distances
         m_fAttackDistance = 200.0f;
         m_fCloseDistance = 5.0f;
@@ -590,8 +671,9 @@ procedures:
 
       case SMT_MONSTER:
         // set your texture
-        SetModelMainTexture(TEXTURE_GENERAL);
+        SetModelMainTexture(TEXTURE_MONSTER);
         SetModelSpecularTexture(TEXTURE_SPECULAR);
+		m_fgibTexture = TEXTURE_MONSTER;
         SetHealth(1200.0f);
         m_fMaxHealth = 1200.0f;
         // damage/explode properties

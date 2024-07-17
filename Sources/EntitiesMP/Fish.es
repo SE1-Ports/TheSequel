@@ -31,6 +31,13 @@ components:
   3 model   MODEL_GLOW        "Models\\Enemies\\Fish\\Glow.mdl",
   4 texture TEXTURE_GLOW      "Models\\Enemies\\Fish\\Glow.tex",
   5 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
+  6 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
+
+ 30 model   MODEL_DEBRIS_BODY           "ModelsF\\Enemies\\Fish\\Debris\\bod.mdl",
+ 31 model   MODEL_DEBRIS_JAW           "ModelsF\\Enemies\\Fish\\Debris\\jaw.mdl",
+
+ 33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE    "Models\\Enemies\\Fish\\Sounds\\Idle.wav",
@@ -64,6 +71,12 @@ functions:
     PrecacheSound(SOUND_WOUNDAIR);
     PrecacheSound(SOUND_DEATHAIR);
     PrecacheSound(SOUND_ATTACK);
+
+    PrecacheModel(MODEL_DEBRIS_BODY);
+    PrecacheModel(MODEL_DEBRIS_JAW);
+
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_RED);
   };
 
   /* Entity info */
@@ -83,6 +96,11 @@ functions:
     // fish can't harm fish
     if (!IsOfClass(penInflictor, "Fish")) {
       CEnemyDive::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+      // if died of chainsaw
+      if (dmtType==DMT_CHAINSAW && GetHealth()<=0) {
+        // must always blowup
+        m_fBlowUpAmount = 0;
+      }
     }
   };
 
@@ -210,6 +228,55 @@ functions:
     return CEnemyBase::AdjustShadingParameters(vLightDirection, colLight, colAmbient);
   };
 
+
+ /************************************************************
+ *                 BLOW UP FUNCTIONS                        *
+ ************************************************************/
+  // spawn body parts
+  void BlowUp(void) {
+    // get your size
+    FLOATaabbox3D box;
+    GetBoundingBox(box);
+    FLOAT fEntitySize = box.Size().MaxNorm();
+
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+
+    vNormalizedDamage *= 0.75f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
+
+    // spawn debris
+	Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+
+    Debris_Spawn(this, this, MODEL_DEBRIS_BODY, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_JAW, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+
+    // hide yourself (must do this after spawning debris)
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+  };
+
 procedures:
 /************************************************************
  *                A T T A C K   E N E M Y                   *
@@ -304,7 +371,8 @@ procedures:
     m_fDiveCloseFireTime = 0.0f;
     // damage/explode properties
     m_fBlowUpAmount = 80.0f;
-    m_fBodyParts = 2;
+    m_fBodyParts = 3;
+	m_fBlowUpSize = 2.0f;
     m_fDamageWounded = 1.0f;
     m_iScore = 500;
 

@@ -28,6 +28,10 @@ enum LensFlareType {
   10 LFT_WHITE_GLOW_STAR_RED_RING_FAR "Yellow star with red ring far",
   11 LFT_WHITE_GLOW_FAR               "White glow far",
   12 LFT_WHITE_GLOW_STAR_NG           "White glow star no glare",
+  13 LFT_PROJ_STAR_GLOW              "Projectile star glow",
+  14 LFT_PROJ_WHITE_BUBBLE           "Projectile white bubble glow",
+  15 LFT_PROJ_YELLOW_BUBBLE          "Projectile yellow bubble glow",
+  16 LFT_CATMAN_FIRE_GLOW            "Catman fire glow",
 };
 
 %{
@@ -285,6 +289,18 @@ functions:
         break;
       case LFT_WHITE_GLOW_STAR_NG:
         lsNew.ls_plftLensFlare = &_lftWhiteGlowStarNG;              
+        break;
+      case LFT_PROJ_STAR_GLOW:
+        lsNew.ls_plftLensFlare = &_lftProjectileStarGlow;
+        break;
+      case LFT_PROJ_WHITE_BUBBLE:
+        lsNew.ls_plftLensFlare = &_lftProjectileWhiteBubbleGlow;
+        break;
+      case LFT_PROJ_YELLOW_BUBBLE:
+        lsNew.ls_plftLensFlare = &_lftProjectileYellowBubbleGlow;
+        break;
+      case LFT_CATMAN_FIRE_GLOW:
+        lsNew.ls_plftLensFlare = &_lftCatmanFireGlow;              
         break;
     }
 

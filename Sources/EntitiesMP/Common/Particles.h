@@ -89,6 +89,9 @@ void DECL_DLL Particles_AfterBurner(CEntity *pen, FLOAT m_tmSpawn, FLOAT fStretc
 void DECL_DLL Particles_AfterBurner_Prepare(CEntity *pen);
 void DECL_DLL Particles_RocketMotorBurning(CEntity *pen, FLOAT tmSpawn, FLOAT3D vStretch, FLOAT fStretch, FLOAT ctCount);
 
+void DECL_DLL Particles_BloodGreenTrail(CEntity *pen);
+void DECL_DLL Particles_BloodYellowTrail(CEntity *pen);
+
 //void DECL_DLL Particles_Growth(CEntity *pen, CTextureData *ptdGrowthMap, FLOATaabbox3D &boxGrowthMap, CEntity *penEPH);
 class CGrowth {
 public:

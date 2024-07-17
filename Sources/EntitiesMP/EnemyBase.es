@@ -171,6 +171,8 @@ properties:
 
 //171 INDEX m_iTacticsRetried = 0,
 
+190 BOOL m_bCountAsKill "Count as kill" = TRUE,
+
   {
     TIME m_tmPredict;  // time to predict the entity to
   }
@@ -210,6 +212,7 @@ functions:
   void CEnemyBase(void)
   {
     m_tmPredict = 0;
+	InitParticles();
   }
 
   // called by other entities to set time prediction parameter
@@ -241,7 +244,7 @@ functions:
   // if should be counted as kill
   virtual BOOL CountAsKill(void)
   {
-    return TRUE;
+    return m_bCountAsKill;
   }
 
   virtual BOOL ForcesCannonballToExplode(void)
@@ -316,6 +319,7 @@ functions:
     PrecacheClass(CLASS_BASIC_EFFECT, BET_BLOODEXPLODE);
     PrecacheClass(CLASS_BASIC_EFFECT, BET_BOMB);
     PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
+    PrecacheClass(CLASS_BASIC_EFFECT, BET_FLESH_SPLAT_FX);
     PrecacheClass(CLASS_DEBRIS);
   }
 
@@ -1775,6 +1779,15 @@ functions:
         Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
                       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
       }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
       // leave a stain beneath
       LeaveStain(FALSE);
     }
@@ -1850,13 +1863,14 @@ functions:
   {
     FLOAT fMoveSpeed = GetSP()->sp_fEnemyMovementSpeed;
     FLOAT fAttackSpeed = GetSP()->sp_fEnemyMovementSpeed;
+    FLOAT fReaction = GetSP()->sp_fReaction;
 //    m_fWalkSpeed *= fMoveSpeed;
 //    m_aWalkRotateSpeed *= fMoveSpeed;
     m_fAttackRunSpeed *= fMoveSpeed;
     m_aAttackRotateSpeed *= fMoveSpeed;
     m_fCloseRunSpeed *= fMoveSpeed;
     m_aCloseRotateSpeed *= fMoveSpeed;
-    m_fAttackFireTime *= 1/fAttackSpeed;
+    m_fAttackFireTime *= fReaction;
     m_fCloseFireTime *= 1/fAttackSpeed;
 /*
     CSessionProperties::GameDificulty gd = GetSP()->sp_gdGameDificulty;

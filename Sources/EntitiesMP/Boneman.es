@@ -5,6 +5,7 @@
 %}
 
 uses "EntitiesMP/EnemyBase";
+uses "EntitiesMP/BasicEffects";
 
 %{
 // info structure
@@ -35,11 +36,17 @@ components:
   1 model   MODEL_BONEMAN     "Models\\Enemies\\Boneman\\Boneman.mdl",
   2 texture TEXTURE_BONEMAN   "Models\\Enemies\\Boneman\\Boneman.tex",
   3 class   CLASS_PROJECTILE  "Classes\\Projectile.ecl",
+  7 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
 
 // ************** BONEMAN PARTS **************
- 10 model     MODEL_BONEMAN_BODY   "Models\\Enemies\\Boneman\\Debris\\Body.mdl",
- 11 model     MODEL_BONEMAN_HAND   "Models\\Enemies\\Boneman\\Debris\\Hand.mdl",
- 12 model     MODEL_BONEMAN_LEGS   "Models\\Enemies\\Boneman\\Debris\\Legs.mdl",
+ 10 model     MODEL_BONEMAN_ARM   "ModelsF\\Enemies\\Boneman\\Debris\\Arm.mdl",
+ 11 model     MODEL_BONEMAN_CLAW   "ModelsF\\Enemies\\Boneman\\Debris\\Claw.mdl",
+ 12 model     MODEL_BONEMAN_HEAD   "ModelsF\\Enemies\\Boneman\\Debris\\Head.mdl",
+ 13 model     MODEL_BONEMAN_HOOF   "ModelsF\\Enemies\\Boneman\\Debris\\Hoof.mdl",
+ 14 model     MODEL_BONEMAN_JAW   "ModelsF\\Enemies\\Boneman\\Debris\\Jaw.mdl",
+ 15 model     MODEL_BONEMAN_LEG   "ModelsF\\Enemies\\Boneman\\Debris\\Leg.mdl",
+ 16 model     MODEL_BONEMAN_PELVIS   "ModelsF\\Enemies\\Boneman\\Debris\\Pelvis.mdl",
+ 17 model     MODEL_BONEMAN_RIB   "ModelsF\\Enemies\\Boneman\\Debris\\Ribs.mdl",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "Models\\Enemies\\Boneman\\Sounds\\Idle.wav",
@@ -63,9 +70,15 @@ functions:
     PrecacheSound(SOUND_DEATH);
     PrecacheSound(SOUND_RUN  );
 
-    PrecacheModel(MODEL_BONEMAN_BODY);
-    PrecacheModel(MODEL_BONEMAN_HAND);
-    PrecacheModel(MODEL_BONEMAN_LEGS);
+    PrecacheModel(MODEL_BONEMAN_ARM);
+    PrecacheModel(MODEL_BONEMAN_CLAW);
+    PrecacheModel(MODEL_BONEMAN_HEAD);
+    PrecacheModel(MODEL_BONEMAN_HOOF);
+    PrecacheModel(MODEL_BONEMAN_JAW);
+    PrecacheModel(MODEL_BONEMAN_LEG);
+    PrecacheModel(MODEL_BONEMAN_PELVIS);
+    PrecacheModel(MODEL_BONEMAN_RIB);
+    PrecacheClass(CLASS_BASIC_EFFECT, BET_BONE_SPLAT_FX);
 
     PrecacheClass(CLASS_PROJECTILE, PRT_BONEMAN_FIRE);
   };
@@ -99,6 +112,11 @@ functions:
     // boneman can't harm boneman
     if (!IsOfClass(penInflictor, "Boneman")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+      // if died of chainsaw
+      if (dmtType==DMT_CHAINSAW && GetHealth()<=0) {
+        // must always blowup
+        m_fBlowUpAmount = 0;
+      }
     }
   };
 
@@ -221,14 +239,38 @@ functions:
     // spawn debris
     Debris_Begin(EIBT_BONES, DPT_NONE, BET_NONE, fEntitySize, vNormalizedDamage, vBodySpeed, 5.0f, 2.0f);
     
-    Debris_Spawn(this, this, MODEL_BONEMAN_BODY, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+    Debris_Spawn(this, this, MODEL_BONEMAN_ARM, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_BONEMAN_HAND, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+    Debris_Spawn(this, this, MODEL_BONEMAN_ARM, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_BONEMAN_HAND, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+    Debris_Spawn(this, this, MODEL_BONEMAN_CLAW, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_BONEMAN_LEGS, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+    Debris_Spawn(this, this, MODEL_BONEMAN_CLAW, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BONEMAN_HEAD, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BONEMAN_HOOF, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BONEMAN_HOOF, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BONEMAN_JAW, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BONEMAN_LEG, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BONEMAN_LEG, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BONEMAN_PELVIS, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BONEMAN_RIB, TEXTURE_BONEMAN, 0, 0, 0, 0, 0.0f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_BONE_SPLAT_FX;
+      penSplat->Initialize(ese);
 
     // hide yourself (must do this after spawning debris)
     SwitchToEditorModel();

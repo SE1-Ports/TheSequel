@@ -11,6 +11,7 @@
 #include "Models/Items/Ammo/Cannonball/Cannonball.h"
 #include "Models/Items/Ammo/Cannonball/CannonballQuad.h"
 #include "ModelsMP/Items/Ammo/SniperBullets/SniperBullets.h"
+#include "ModelsF/Items/Ammo/DevastatorShells/DevastatorShells.h"
 %}
 
 uses "EntitiesMP/Item";
@@ -27,7 +28,9 @@ enum AmmoItemType {
   8 AIT_SERIOUSPACK     "SeriousPack - don't use",
   9 AIT_BACKPACK        "BackPack - don't use",
   10 AIT_NAPALM         "Napalm",
-  11 AIT_SNIPERBULLETS  "Sniper bullets"
+  11 AIT_SNIPERBULLETS  "Sniper bullets",
+  12 AIT_PLASMA         "Plasma pack",
+  13 AIT_DEV            "Devastator shell"
 };
 
 // event for sending through receive item
@@ -57,7 +60,7 @@ components:
 // ********* ROCKETS *********
  20 model   MODEL_ROCKETS         "Models\\Items\\Ammo\\Rockets\\Rockets.mdl",
  21 model   MODEL_RC_ROCKET       "Models\\Weapons\\RocketLauncher\\Projectile\\Rocket.mdl",
- 22 texture TEXTURE_ROCKET        "Models\\Weapons\\RocketLauncher\\Projectile\\Rocket.tex",
+ 22 texture TEXTURE_ROCKET        "ModelsF\\Weapons\\RocketLauncher\\Projectile\\Rocket.tex",
 
 // ********* GRENADES *********
  30 model   MODEL_GRENADES        "Models\\Items\\Ammo\\Grenades\\Grenades.mdl",
@@ -75,8 +78,16 @@ components:
 // ********* CANNON BALLS *********
  50 model   MODEL_CANNONBALL      "Models\\Items\\Ammo\\Cannonball\\Cannonball.mdl",
  51 model   MODEL_CANNONBALLS     "Models\\Items\\Ammo\\Cannonball\\CannonballQuad.mdl",
- 52 texture TEXTURE_IRONBALL      "Models\\Weapons\\Cannon\\Projectile\\IronBall.tex",
+ 52 texture TEXTURE_IRONBALL      "Models\\Weapons\\CannonOld\\Projectile\\IronBall.tex",
 // 53 texture TEXTURE_NUKEBALL      "Models\\Weapons\\Cannon\\Projectile\\NukeBall.tex",
+
+// ********* PLASMA *********
+ 300 model   MODEL_PLASMA         "ModelsMP\\Items\\Ammo\\PlasmaPack\\AMMO_PlasmaPack.mdl",
+ 301 texture TEXTURE_PLASMA       "ModelsMP\\Items\\Ammo\\PlasmaPack\\AMMO_PlasmaPack.tex",
+
+// ********* DEVASTATOR *********
+ 310 model   MODEL_DEV         "ModelsF\\Items\\Ammo\\DevastatorShells\\DevastatorShells.mdl",
+ 311 texture TEXTURE_DEV       "ModelsF\\Weapons\\Devastator\\Magazine.tex",
 
 // ********* BACK PACK *********
  60 model   MODEL_BACKPACK      "Models\\Items\\PowerUps\\BackPack\\BackPack.mdl",
@@ -163,6 +174,12 @@ functions:
        case AIT_SNIPERBULLETS:
         Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
         break;
+       case AIT_PLASMA:
+        Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
+        break;
+       case AIT_DEV:
+        Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
+        break;
     }
   }
 
@@ -217,6 +234,14 @@ functions:
       case AIT_SNIPERBULLETS:
         pes->es_strName = "Sniper bullets"; 
         pes->es_fValue = m_fValue*AV_SNIPERBULLETS;
+        break;
+      case AIT_PLASMA:
+        pes->es_strName = "Plasma pack"; 
+        pes->es_fValue = m_fValue*AV_PLASMA;
+        break;
+      case AIT_DEV:
+        pes->es_strName = "Devastator shells"; 
+        pes->es_fValue = m_fValue*AV_DEV;
         break;
     }
     pes->es_iScore = 0;//m_iScore;
@@ -341,6 +366,24 @@ functions:
         AddItem(MODEL_SNIPER_BULLETS, TEXTURE_SNIPER_BULLETS, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.75f,0), FLOAT3D(3,3,1.0f) );
         StretchItem(FLOAT3D(1.25f, 1.25f, 1.25f));
+        break;
+      case AIT_PLASMA:
+        m_fValue = 30.0f;
+        m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
+        m_strDescription.PrintF("Plasma pack: %d", (int) m_fValue);
+        // set appearance
+        AddItem(MODEL_PLASMA, TEXTURE_PLASMA, 0, 0, 0);
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.25f,0), FLOAT3D(1.5,1.5,0.75f) );
+        StretchItem(FLOAT3D(0.75f, 0.75f, 0.75f));
+        break;
+      case AIT_DEV:
+        m_fValue = 10.0f;
+        m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
+        m_strDescription.PrintF("Devastator shells: %d", (int) m_fValue);
+        // set appearance
+        AddItem(MODEL_DEV, TEXTURE_DEV, 0, 0, 0);
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.25f,0), FLOAT3D(1.5,1.5,0.75f) );
+        StretchItem(FLOAT3D(1.5f, 1.5f, 1.5f));
         break;
       default: ASSERTALWAYS("Uknown ammo");
     }

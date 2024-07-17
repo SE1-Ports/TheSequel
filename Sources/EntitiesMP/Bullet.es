@@ -26,6 +26,18 @@ void CBullet_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINWATERNOSOUND);
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BLOODSPILL);
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETTRAIL);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINLAVA);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINLAVANOSOUND);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINACID);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINACIDNOSOUND);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINGLASS);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINGLASSNOSOUND);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINFLESH);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINFLESHNOSOUND);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINMETAL);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINMETALNOSOUND);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINENERGY);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINENERGYNOSOUND);
 }
 %}
 
@@ -221,10 +233,36 @@ functions:
             }
 
             if(IsOfClass(penOfFlesh, "Gizmo") ||
-               IsOfClass(penOfFlesh, "Beast"))
+               IsOfClass(penOfFlesh, "Beast") ||
+               IsOfClass(penOfFlesh, "DumDum") ||
+               IsOfClass(penOfFlesh, "Fishman") ||
+               IsOfClass(penOfFlesh, "Lizard") ||
+               IsOfClass(penOfFlesh, "Lurker") ||
+               IsOfClass(penOfFlesh, "Neptune") ||
+               IsOfClass(penOfFlesh, "Mantaman") ||
+               IsOfClass(penOfFlesh, "WitchBride"))
             {
               // spawn green blood hit spill effect
               SpawnHitTypeEffect(this, BHT_ACID, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
+            }
+            else if(IsOfClass(penOfFlesh, "Ant") ||
+               IsOfClass(penOfFlesh, "Crabman") ||
+               IsOfClass(penOfFlesh, "Spider") ||
+               IsOfClass(penOfFlesh, "SpiderMech"))
+            {
+              // spawn yellow blood hit spill effect
+              SpawnHitTypeEffect(this, BHT_GOO, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
+            }
+            else if(IsOfClass(penOfFlesh, "Guardian") ||
+               IsOfClass(penOfFlesh, "Ram"))
+            {
+              // spawn hit spill effect
+              SpawnHitTypeEffect(this, BHT_BRUSH_STONE, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
+            }
+            else if(IsOfClass(penOfFlesh, "Waterman"))
+            {
+              // spawn hit spill effect
+              SpawnHitTypeEffect(this, BHT_BRUSH_WATER, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
             }
             else
             {

@@ -58,6 +58,9 @@
     <Filter Include="Source Files\Entity sources">
       <UniqueIdentifier>{6432fa98-fede-4062-b006-07d4eb9b0371}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Class Files\TheSequel">
+      <UniqueIdentifier>{618139de-81fd-499e-99f9-26f6dddd22b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\Common.cpp">
@@ -539,6 +542,144 @@
     </ClCompile>
     <ClCompile Include="StdH\StdH.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Monkey.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Albino.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Ant.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraNoView.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Centaur.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Cerberus.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Chariot.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Crabman.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomEnemyCollision.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="DevilAlpha.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="DevilStallion.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="DibDib.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="DumDum.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyLauncher.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyProjectile.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Floater.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="FlyingKleer.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Gladiator.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Guardian.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Juggernaut.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Kalopsy.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Lizard.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Lurker.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Mecha.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleTrail.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerParenter.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="PodDemon.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Primitive.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Ram.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="RangeDamager.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="RobotDog.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Runner.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Scorpion.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ScorpSoldier.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sentry.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Spawner.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Spider.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="SpiderMech.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Tank.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Waterman.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="WitchBride.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Neptune.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Panda.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleCloudsHolder.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleCloudsMarker.cpp">
+      <Filter>Source Files\Entity sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1032,6 +1173,144 @@
     </CustomBuild>
     <CustomBuild Include="Water.es">
       <Filter>Class Files\Weapons</Filter>
+    </CustomBuild>
+    <CustomBuild Include="WitchBride.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Albino.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Ant.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CameraNoView.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Centaur.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Cerberus.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Chariot.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Crabman.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CustomEnemyCollision.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DevilAlpha.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DevilStallion.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DibDib.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DumDum.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="EnemyLauncher.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="EnemyProjectile.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Floater.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FlyingKleer.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Gladiator.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Guardian.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Juggernaut.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Kalopsy.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Lizard.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Lurker.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Mecha.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Monkey.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Neptune.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Panda.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ParticleCloudsHolder.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ParticleCloudsMarker.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ParticleTrail.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="PlayerParenter.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="PodDemon.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Primitive.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Ram.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="RangeDamager.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="RobotDog.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Runner.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scorpion.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ScorpSoldier.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Sentry.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Spawner.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Spider.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="SpiderMech.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Tank.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Terrain.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Waterman.es">
+      <Filter>Class Files\TheSequel</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

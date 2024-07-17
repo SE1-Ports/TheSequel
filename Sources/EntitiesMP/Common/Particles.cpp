@@ -102,6 +102,16 @@ static CTextureObject _toSummonerStaffGradient;
 static CTextureObject _toMeteorTrail;
 static CTextureObject _toFireworks01Gradient;
 
+static CTextureObject _toBloodGreenTrail;
+static CTextureObject _toBloodYellowTrail;
+static CTextureObject _toBulletLava;
+static CTextureObject _toBulletAcid;
+static CTextureObject _toBulletGlass;
+static CTextureObject _toBulletFlesh;
+static CTextureObject _toBulletMetal;
+static CTextureObject _toBulletEnergy;
+static CTextureObject _toPlasmaProjectileSpray;
+
 struct FlameThrowerParticleRenderingData {
   INDEX ftprd_iFrameX;
   INDEX ftprd_iFrameY;
@@ -260,6 +270,16 @@ void InitParticles(void)
     _toFireworks01Gradient.SetData_t(CTFILENAME("TexturesMP\\Effects\\Particles\\Fireworks01Gradient.tex"));
     _toSEStar01.SetData_t(CTFILENAME("TexturesMP\\Effects\\Particles\\Star01.tex"));
     _toMeteorTrail.SetData_t(CTFILENAME("TexturesMP\\Effects\\Particles\\MeteorTrail.tex"));
+	
+    _toBloodGreenTrail.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BloodGreen.tex"));
+    _toBloodYellowTrail.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BloodYellow.tex"));
+    _toBulletLava.SetData_t(CTFILENAME("Textures\\Effects\\Particles\\LavaErupting.tex"));
+    _toBulletAcid.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayAcid.tex"));
+    _toBulletGlass.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayGlass.tex"));
+    _toBulletFlesh.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayFlesh.tex"));
+    _toBulletMetal.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayMetal.tex"));
+    _toBulletEnergy.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayEnergy.tex"));
+    _toPlasmaProjectileSpray.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\PlasmaProjectileSpill.tex"));
 
     
     ((CTextureData*)_toLavaTrailGradient              .GetData())->Force(TEX_STATIC|TEX_CONSTANT);
@@ -389,6 +409,16 @@ void CloseParticles(void)
   _toFireworks01Gradient.SetData(NULL);
   _toSEStar01.SetData(NULL);
   _toMeteorTrail.SetData(NULL);
+  
+  _toBloodGreenTrail.SetData(NULL);
+  _toBloodYellowTrail.SetData(NULL);
+  _toBulletLava.SetData(NULL);
+  _toBulletAcid.SetData(NULL);
+  _toBulletGlass.SetData(NULL);
+  _toBulletFlesh.SetData(NULL);
+  _toBulletMetal.SetData(NULL);
+  _toBulletEnergy.SetData(NULL);
+  _toPlasmaProjectileSpray.SetData(NULL);
 }
 
 void SetupParticleTexture(enum ParticleTexture ptTexture)
@@ -1491,6 +1521,70 @@ void Particles_BloodTrail(CEntity *pen)
          if( iBloodType==3) col = C_WHITE|ub;
     else if( iBloodType==2) col = RGBAToColor(ub,20,20,ub);
     else                    col = RGBAToColor(0,ub,0,ub);
+    Particle_RenderSquare( vPos, fSize, fAngle, col);
+  }
+  // all done
+  Particle_Flush();
+}
+
+void Particles_BloodGreenTrail(CEntity *pen)
+{
+  // get blood type
+  const INDEX iBloodType = GetSP()->sp_iBlood;
+  if( iBloodType<1) return;
+  COLOR col;
+  if( iBloodType==3) Particle_PrepareTexture( &_toFlowerSprayTexture, PBT_BLEND);
+  else               Particle_PrepareTexture( &_toBloodSprayTexture,  PBT_BLEND);
+
+  CLastPositions *plp = pen->GetLastPositions(BLOOD01_TRAIL_POSITIONS);
+  FLOAT fGA = ((CMovableEntity *)pen)->en_fGravityA;
+  FLOAT3D vGDir = ((CMovableEntity *)pen)->en_vGravityDir;
+
+  for( INDEX iPos=0; iPos<plp->lp_ctUsed; iPos++)
+  {
+    Particle_SetTexturePart( 256, 256, iPos%8, 0);
+    FLOAT3D vPos = plp->GetPosition(iPos);
+    FLOAT fRand  = rand()/FLOAT(RAND_MAX);
+    FLOAT fAngle = iPos*2.0f*PI/BLOOD01_TRAIL_POSITIONS;
+    FLOAT fSin = FLOAT(sin(fAngle));
+    FLOAT fT = iPos*_pTimer->TickQuantum;
+    vPos += vGDir*fGA*fT*fT/8.0f;
+    FLOAT fSize = 0.2f-iPos*0.15f/BLOOD01_TRAIL_POSITIONS;
+    UBYTE ub = 255-iPos*255/BLOOD01_TRAIL_POSITIONS;
+         if( iBloodType==3) col = C_WHITE|ub;
+    else if( iBloodType!=3) col = RGBAToColor(0, ub, 0, ub);
+    Particle_RenderSquare( vPos, fSize, fAngle, col);
+  }
+  // all done
+  Particle_Flush();
+}
+
+void Particles_BloodYellowTrail(CEntity *pen)
+{
+  // get blood type
+  const INDEX iBloodType = GetSP()->sp_iBlood;
+  if( iBloodType<1) return;
+  COLOR col;
+  if( iBloodType==3) Particle_PrepareTexture( &_toFlowerSprayTexture, PBT_BLEND);
+  else               Particle_PrepareTexture( &_toBloodSprayTexture,  PBT_BLEND);
+
+  CLastPositions *plp = pen->GetLastPositions(BLOOD01_TRAIL_POSITIONS);
+  FLOAT fGA = ((CMovableEntity *)pen)->en_fGravityA;
+  FLOAT3D vGDir = ((CMovableEntity *)pen)->en_vGravityDir;
+
+  for( INDEX iPos=0; iPos<plp->lp_ctUsed; iPos++)
+  {
+    Particle_SetTexturePart( 256, 256, iPos%8, 0);
+    FLOAT3D vPos = plp->GetPosition(iPos);
+    FLOAT fRand  = rand()/FLOAT(RAND_MAX);
+    FLOAT fAngle = iPos*2.0f*PI/BLOOD01_TRAIL_POSITIONS;
+    FLOAT fSin = FLOAT(sin(fAngle));
+    FLOAT fT = iPos*_pTimer->TickQuantum;
+    vPos += vGDir*fGA*fT*fT/8.0f;
+    FLOAT fSize = 0.2f-iPos*0.15f/BLOOD01_TRAIL_POSITIONS;
+    UBYTE ub = 255-iPos*255/BLOOD01_TRAIL_POSITIONS;
+         if( iBloodType==3) col = C_WHITE|ub;
+    else if( iBloodType!=3) col = RGBAToColor(ub, 128, 12, ub);
     Particle_RenderSquare( vPos, fSize, fAngle, col);
   }
   // all done
@@ -3582,6 +3676,54 @@ void Particles_BulletSpray(INDEX iRndBase, FLOAT3D vSource, FLOAT3D vGDir, enum 
       fSpeedStart = 1.25f;
       break;
     }
+    case EPT_BULLET_LAVA:
+    {
+      colSmoke = 0xFFE8C000;
+      Particle_PrepareTexture(&_toBulletLava, PBT_ADD);
+      fSizeStart = 0.15f;
+      fSpeedStart = 1.25f;
+      break;
+    }
+    case EPT_BULLET_ACID:
+    {
+      Particle_PrepareTexture(&_toBulletAcid, PBT_BLEND);
+      fSizeStart = 0.08f;
+      fSpeedStart = 1.75f;
+      fConeMultiplier = 0.125f;
+      break;
+    }
+    case EPT_BULLET_GLASS:
+    {
+      colSmoke = 0xFFE8C000;
+      Particle_PrepareTexture(&_toBulletGlass, PBT_BLEND);
+      fSizeStart = 0.15f;
+      fSpeedStart = 1.25f;
+      break;
+    }
+    case EPT_BULLET_FLESH:
+    {
+      colSmoke = 0xFFE8C000;
+      Particle_PrepareTexture(&_toBulletFlesh, PBT_BLEND);
+      fSizeStart = 0.15f;
+      fSpeedStart = 1.25f;
+      break;
+    }
+    case EPT_BULLET_METAL:
+    {
+      colSmoke = 0xFFE8C000;
+      Particle_PrepareTexture(&_toBulletLava, PBT_ADD);
+      fSizeStart = 0.025f;
+      fSpeedStart = 0.65f;
+      break;
+    }
+    case EPT_BULLET_ENERGY:
+    {
+      colSmoke = 0xFFE8C000;
+      Particle_PrepareTexture(&_toBulletEnergy, PBT_BLEND);
+      fSizeStart = 0.15f;
+      fSpeedStart = 1.5f;
+      break;
+    }
     default:
     {
       colSmoke = C_WHITE;
@@ -4312,6 +4454,12 @@ void Particles_BloodSpray(enum SprayParticlesType sptType, FLOAT3D vSource, FLOA
     {
       Particle_PrepareTexture( &_toLarvaProjectileSpray, PBT_BLEND);
       fDamagePower*=2.0f;
+      break;
+    }
+    case SPT_PLASMA_SMALL:
+    {
+      Particle_PrepareTexture( &_toPlasmaProjectileSpray, PBT_BLEND);
+      fSpeedModifier+=8;
       break;
     }
     case SPT_NONE:

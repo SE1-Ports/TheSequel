@@ -53,6 +53,7 @@ public:
   INDEX sp_iInitialMana;        // life price (mana that each player'll have upon respawning)
   FLOAT sp_fExtraEnemyStrength;            // fixed adder for extra enemy power 
   FLOAT sp_fExtraEnemyStrengthPerPlayer;   // adder for extra enemy power per each player playing
+  FLOAT sp_fReaction;           // enemy attack wait multiplier
 
   INDEX sp_ctCredits;           // number of credits for this game
   INDEX sp_ctCreditsLeft;       // number of credits left on this level

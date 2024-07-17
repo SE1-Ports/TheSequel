@@ -1,169 +1,244 @@
-327
+336
+
 %{
 #include "StdH.h"
-#include "Models/Enemies/Mamut/Mamut.h"
-#include "Models/Enemies/Mamutman/Mamutman.h"
+#include "AREP/Models/Mamut2/MAMUT.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
-uses "EntitiesMP/Mamutman";
-uses "EntitiesMP/AirWave";
-uses "EntitiesMP/Bullet";
+uses "EntitiesMP/BasicEffects";
+uses "EntitiesMP/CannonBall";
+uses "EntitiesMP/SpawnerProjectile";
 
+enum MtEnv {
+  0 MT_SUMMER   "Summer",
+  1 MT_WINTER   "Winter",
+};
 
-enum MamutChar {
-  0 MAT_SUMMER   "Summer",
-  1 MAT_WINTER   "Winter",
+enum MtType {
+  0 MT_NORMAL   "Normal",
+  1 MT_CANNON   "Cannon",
+  2 MT_SUMM     "Summoner",
 };
 
 
 %{
+#define CLOSE_ATTACK_RANGE   42.0f
+#define MAMUT_STRETCH        1.0f
+static _tmLastStandingAnim = 0.0f;   
+#define FIRING_POSITION_MUZZLE = (FLOAT3D(0.0f, 3.3f, -5.0f)*MAMUT_STRETCH);
+FLOAT3D vSummPos = (FLOAT3D(0.0f, 3.3f, -5.0f)*MAMUT_STRETCH);
+#define TEMP_PER_GROUP 3  
+
 // info structure
-static EntityInfo eiMamut = {
-  EIBT_FLESH, 2500.0f,
-  0.0f, 1.5f, 0.0f,
-  0.0f, 2.0f, 0.0f,
+static EntityInfo eiMamut2 = {
+  EIBT_FLESH, 1600.0f,
+  0.0f, 2.0f, 0.0f,     // source (eyes)
+  0.0f, 1.5f, 0.0f,     // target (body)
 };
-
-#define HIT_DISTANCE    13.0f
-#define FIRE_BULLET     FLOAT3D(0.0f*2, 4.0f*2, -4.0f*2)
-#define FIRE_AIRWAVE    FLOAT3D(0.0f*2, 0.5f*2, -4.0f*2)
-#define RIDER_FRONT     FLOAT3D( 0.25f*2, 6.5f*2, 0.5f*2)
-#define RIDER_MIDDLE    FLOAT3D(-0.25f*2, 5.6f*2, 1.5f*2)
-#define RIDER_REAR      FLOAT3D( 0.1f*2,  4.6f*2, 2.4f*2)
 %}
-
 
 class CMamut : CEnemyBase {
 name      "Mamut";
 thumbnail "Thumbnails\\Mamut.tbn";
 
 properties:
-  1 enum MamutChar m_EmcChar "Character" 'C' = MAT_SUMMER,      // character
-  2 BOOL m_bFrontRider "Rider Front" 'H' = FALSE,     // front rider
-  3 BOOL m_bMiddleRider "Rider Middle" 'J' = FALSE,   // middle rider
-  4 BOOL m_bRearRider "Rider Rear" 'K' = FALSE,       // rear rider
-  5 CEntityPointer m_penBullet,     // bullet
-  6 FLOAT m_fLastShootTime = 0.0f,
-  
+  3 FLOAT m_fSize = 1.3f,
+  5 BOOL m_bRunSoundPlaying = FALSE,
+  4 CSoundObject m_soFeet,            // for running sound
+  2 INDEX m_iCounter = 0,
+  3 CEntityPointer m_penFireFX,
+  6 enum MtEnv m_mtChar "Environment" 'E' = MT_SUMMER,
+  7 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
+  8 enum MtType m_mtType "Type" 'Y' = MT_NORMAL,
+  9 FLOAT3D m_vTarget = FLOAT3D(0.0f, 0.0f, 0.0f),
+ 10 FLOAT3D m_vFiringPos      = FLOAT3D(0.0f, 0.0f, 0.0f),
+
+ 11 INDEX m_iGroupCount = 0,
+ 12 CEntityPointer m_penSpawn1  "Template 1" 'T',
+ 13 CEntityPointer m_penSpawn2  "Template 2",
+ 14 CEntityPointer m_penSpawn3  "Template 3",
+
+ 15 INDEX   m_fgibTexture = TEXTURE_MAMUT_SUMMER,
+
 components:
-  0 class   CLASS_BASE        "Classes\\EnemyBase.ecl",
-  1 class   CLASS_BULLET      "Classes\\Bullet.ecl",
-  2 class   CLASS_MAMUTMAN    "Classes\\Mamutman.ecl",
-  3 class   CLASS_AIRWAVE     "Classes\\AirWave.ecl",
+  0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
+  2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
+  4 class   CLASS_CANNONBALL    "Classes\\CannonBall.ecl",
+  5 class   CLASS_SPAWNER_PROJECTILE "Classes\\SpawnerProjectile.ecl",
 
- 10 model   MODEL_MAMUT              "Models\\Enemies\\Mamut\\Mamut.mdl",
- 11 texture TEXTURE_MAMUT_SUMMER     "Models\\Enemies\\Mamut\\Mamut.tex",
- 12 texture TEXTURE_MAMUT_WINTER     "Models\\Enemies\\Mamut\\Mamut3.tex",
+ 10 model   MODEL_MAMUT         "AREP\\Models\\Mamut2\\Mamut.mdl",
+ 11 texture TEXTURE_MAMUT_SUMMER       "AREP\\Models\\Mamut2\\MamutSummer.tex",
+ 12 texture TEXTURE_MAMUT_WINTER       "AREP\\Models\\Mamut2\\MamutWinter.tex",
 
- 20 model   MODEL_MAMUTMAN    "Models\\Enemies\\Mamutman\\Mamutman.mdl",
- 21 texture TEXTURE_MAMUTMAN  "Models\\Enemies\\Mamutman\\Mamutman.tex",
+ 14 model   MODEL_CANNON           "ModelsMP\\Enemies\\CannonStatic\\Cannon.mdl",
+ 15 texture TEXTURE_CANNON         "ModelsMP\\Enemies\\CannonStatic\\Cannon.tex",
 
-// ************** SOUNDS **************
- 50 sound   SOUND_IDLE      "Models\\Enemies\\Mamut\\Sounds\\Idle.wav",
- 51 sound   SOUND_SIGHT     "Models\\Enemies\\Mamut\\Sounds\\Sight.wav",
- 52 sound   SOUND_WOUND     "Models\\Enemies\\Mamut\\Sounds\\Wound.wav",
- 53 sound   SOUND_FIRE      "Models\\Enemies\\Mamut\\Sounds\\Fire.wav",
- 54 sound   SOUND_KICK      "Models\\Enemies\\Mamut\\Sounds\\Kick.wav",
- 55 sound   SOUND_DEATH     "Models\\Enemies\\Mamut\\Sounds\\Death.wav",
+ 17 model   MODEL_GUN           "Models\\Enemies\\Devil\\Weapons\\ElectricityGun.mdl",
+ 18 texture TEXTURE_GUN         "Models\\Enemies\\Devil\\Weapons\\ElectricityGun.tex",
+ 
+ 60 model   MODEL_HEAD			 "AREP\\Models\\Mamut2\\Debris\\Head.mdl",
+ 61 model   MODEL_BUTT	     	 "AREP\\Models\\Mamut2\\Debris\\Butt.mdl",
+ 63 model   MODEL_LEG	     	 "AREP\\Models\\Mamut2\\Debris\\leg.mdl",
+
+ 64 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 65 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
+
+ // ************** SOUNDS **************
+ 50 sound   SOUND_IDLE      "AREP\\Models\\Mamut2\\Sounds\\Idle.wav",
+ 51 sound   SOUND_SIGHT     "AREP\\Models\\Mamut2\\Sounds\\Sight.wav",
+ 52 sound   SOUND_WOUND     "AREP\\Models\\Mamut2\\Sounds\\Wound.wav",
+ 55 sound   SOUND_DEATH     "AREP\\Models\\Mamut2\\Sounds\\Death.wav",
+ 56 sound   SOUND_MOVING     "AREP\\Models\\Mamut2\\Sounds\\Moving.wav",
+ 57 sound   SOUND_ATTACK      "AREP\\Models\\Mamut2\\Sounds\\Kick.wav",
+ 58 sound   SOUND_CANNON      "AREP\\Models\\Mamut2\\Sounds\\Cannon.wav",
+ 59 sound   SOUND_SUMMON      "AREP\\Models\\Mamut2\\Sounds\\Summon.wav",
 
 functions:
+
+  // describe how this enemy killed player
+  virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
+  {
+    CTString str;
+    str.PrintF(TRANS("An altajbeest flattened %s"), strPlayerName);
+    return str;
+  }
+  
+  virtual const CTFileName &GetComputerMessageName(void) const {
+    static DECLARE_CTFILENAME(fnmMamutNormal, "DataMP\\Messages\\Enemies\\AREP\\Mamut.txt");
+    static DECLARE_CTFILENAME(fnmMamutCannon, "DataMP\\Messages\\Enemies\\AREP\\MamutCannon.txt");
+    static DECLARE_CTFILENAME(fnmMamutSummon, "DataMP\\Messages\\Enemies\\AREP\\MamutSummon.txt");
+    switch(m_mtType) {
+    default: ASSERT(FALSE);
+    case MT_SUMM: return fnmMamutSummon;
+    case MT_CANNON: return fnmMamutCannon;
+    case MT_NORMAL : return fnmMamutNormal;
+	}
+  }
+
+  BOOL IsTargetValid(SLONG slPropertyOffset, CEntity *penTarget)
+   {
+    if (slPropertyOffset == offsetof(CMamut, m_penSpawn1) && slPropertyOffset <= offsetof(CMamut, m_penSpawn3))
+	 {
+      return ValidEnemy(penTarget);
+    } 
+    return CEntity::IsTargetValid(slPropertyOffset, penTarget);
+  }
+
+  BOOL ValidEnemy(CEntity *pen) {
+    if (pen == NULL || pen == this || !IsDerivedFromClass(pen, "Enemy Base")) {
+      return FALSE;
+    }
+    return ((CEnemyBase&)*pen).m_bTemplate;
+  };
+  
+  void Precache(void) {
+    CEnemyBase::Precache();
+    PrecacheSound(SOUND_IDLE );
+    PrecacheSound(SOUND_SIGHT);
+    PrecacheSound(SOUND_WOUND);
+    PrecacheSound(SOUND_DEATH);
+    PrecacheSound(SOUND_MOVING);
+    PrecacheSound(SOUND_ATTACK);
+    PrecacheSound(SOUND_CANNON);
+    PrecacheSound(SOUND_SUMMON);
+    PrecacheModel(MODEL_MAMUT);
+    PrecacheModel(MODEL_CANNON);
+    PrecacheTexture(TEXTURE_CANNON);
+    PrecacheModel(MODEL_GUN);
+    PrecacheTexture(TEXTURE_GUN);
+    
+    PrecacheClass(CLASS_CANNONBALL);
+
+	PrecacheModel(MODEL_HEAD);
+	PrecacheModel(MODEL_BUTT);
+	PrecacheModel(MODEL_LEG);
+
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_RED);
+  };
+
   /* Entity info */
   void *GetEntityInfo(void) {
-    return &eiMamut;
+    return &eiMamut2;
   };
+
+  // render particles
+  void RenderParticles(void)
+  {
+    Particles_RunningDust(this);
+    CEnemyBase::RenderParticles();
+  }
+
+  BOOL ForcesCannonballToExplode(void)
+  {
+    return TRUE;
+  }
+
+  /*FLOAT GetCrushHealth(void)
+  {
+    if (m_bcType == BT_BIG) {
+      return 100.0f;
+    }
+    return 0.0f;
+  }*/
 
   /* Receive damage */
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
-    // mamut can't harm mamut
+
+    // can't harm own class
     if (!IsOfClass(penInflictor, "Mamut")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
     }
   };
 
 
-  // play attachmnet anim
-  void PlayAttachmentAnim(INDEX iAttachment, INDEX iAnim, ULONG ulFlags) {
-    CAttachmentModelObject *amo = GetModelObject()->GetAttachmentModel(iAttachment);
-    if (amo!=NULL) {
-      amo->amo_moModelObject.PlayAnim(iAnim, ulFlags);
-    }
+  // damage anim
+  INDEX AnimForDamage(FLOAT fDamage) {
+    StartModelAnim(MAMUT_ANIM_WOUND02, 0);
+    return MAMUT_ANIM_WOUND02;
+    DeactivateRunningSound();
   };
-
 
   // death
   INDEX AnimForDeath(void) {
     StartModelAnim(MAMUT_ANIM_DEATH, 0);
+    DeactivateRunningSound();
     return MAMUT_ANIM_DEATH;
+  };
+
+  FLOAT WaitForDust(FLOAT3D &vStretch)
+  {
+    vStretch=FLOAT3D(2,2,3)*3.0f;
+    return 1.1f;
   };
 
   void DeathNotify(void) {
     ChangeCollisionBoxIndexWhenPossible(MAMUT_COLLISION_BOX_DEATH);
-    DropRiders(TRUE);
+    en_fDensity = 500.0f;
   };
-
-
-  // drop riders
-  void CreateRider(FLOAT3D &vPos, INDEX iRider) {
-    // mamutman start position
-    CPlacement3D pl;
-    pl.pl_OrientationAngle = ANGLE3D(0,0,0);
-    pl.pl_PositionVector = vPos;
-    pl.RelativeToAbsolute(GetPlacement());
-    // create rider
-    CEntityPointer pen = CreateEntity(pl, CLASS_MAMUTMAN);
-    ((CMamutman&)*pen).m_bSpawned = TRUE;
-    ((CMamutman&)*pen).m_bSpawnedPosition = iRider;
-    ((CMamutman&)*pen).m_penEnemy = m_penEnemy;
-    ((CMamutman&)*pen).m_ttTarget = m_ttTarget;
-    pen->Initialize(EVoid());
-  };
-
-  void DropRiders(BOOL bAlways) {
-    if (m_bFrontRider && (bAlways || (IRnd()&1))) {
-      m_bFrontRider = FALSE;
-      CreateRider(RIDER_FRONT, 0);
-      RemoveAttachmentFromModel(*GetModelObject(), MAMUT_ATTACHMENT_MAN_FRONT);
-    }
-    if (m_bMiddleRider && (bAlways || (IRnd()&1))) {
-      m_bMiddleRider = FALSE;
-      CreateRider(RIDER_MIDDLE, 1);
-      RemoveAttachmentFromModel(*GetModelObject(), MAMUT_ATTACHMENT_MAN_MIDDLE);
-    }
-    if (m_bRearRider && (bAlways || (IRnd()&1))) {
-      m_bRearRider = FALSE;
-      CreateRider(RIDER_REAR, 2);
-      RemoveAttachmentFromModel(*GetModelObject(), MAMUT_ATTACHMENT_MAN_REAR);
-    }
-  };
-
 
   // virtual anim functions
   void StandingAnim(void) {
+    //_tmLastStandingAnim = _pTimer->CurrentTick();
     StartModelAnim(MAMUT_ANIM_STAND, AOF_LOOPING|AOF_NORESTART);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_FRONT, MAMUTMAN_ANIM_STANDMOUNTEDFIRST, 0);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_MIDDLE, MAMUTMAN_ANIM_STANDMOUNTEDSECOND, 0);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_REAR, MAMUTMAN_ANIM_STANDMOUNTEDTHIRD, 0);
+    DeactivateRunningSound();
   };
+
   void WalkingAnim(void) {
     StartModelAnim(MAMUT_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_FRONT, MAMUTMAN_ANIM_MOUNTEDWALKFIRST, 0);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_MIDDLE, MAMUTMAN_ANIM_MOUNTEDWALKSECOND, 0);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_REAR, MAMUTMAN_ANIM_MOUNTEDWALKTHIRD, 0);
+    DeactivateRunningSound();
   };
+
   void RunningAnim(void) {
     StartModelAnim(MAMUT_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_FRONT, MAMUTMAN_ANIM_MOUNTEDRUNFIRST, 0);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_MIDDLE, MAMUTMAN_ANIM_MOUNTEDRUNSECOND, 0);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_REAR, MAMUTMAN_ANIM_MOUNTEDRUNTHIRD, 0);
+    ActivateRunningSound();
   };
   void RotatingAnim(void) {
-    StartModelAnim(MAMUT_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_FRONT, MAMUTMAN_ANIM_MOUNTEDWALKFIRST, 0);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_MIDDLE, MAMUTMAN_ANIM_MOUNTEDWALKSECOND, 0);
-    PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_REAR, MAMUTMAN_ANIM_MOUNTEDWALKTHIRD, 0);
+    StartModelAnim(MAMUT_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    ActivateRunningSound();
   };
 
   // virtual sound functions
@@ -181,205 +256,291 @@ functions:
   };
 
 
-/************************************************************
- *                       FIRE BULLET                        *
- ************************************************************/
-  // prepare bullet
-  void PrepareBullet(void) {
-    // bullet start position
-    CPlacement3D plBullet;
-    plBullet.pl_OrientationAngle = ANGLE3D(0,0,0);
-    plBullet.pl_PositionVector = FIRE_BULLET;
-    plBullet.RelativeToAbsolute(GetPlacement());
-    // create bullet
-    m_penBullet = CreateEntity(plBullet, CLASS_BULLET);
-    // init bullet
-    EBulletInit eInit;
-    eInit.penOwner = this;
-    eInit.fDamage = 1.0f;
-    m_penBullet->Initialize(eInit);
-    ((CBullet&)*m_penBullet).CalcTarget(m_penEnemy, 100);
-  };
+  void LaunchMonster1(void)
+  {
+    ASSERT(penTemplate!=NULL);
+    // calculate parameters for predicted angular launch curve
+    FLOAT3D vFirePos = vSummPos;
+    FLOAT3D vShooting = GetPlacement().pl_PositionVector + m_vFiringPos;
+      m_vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
+      FLOAT3D vSpeedDest = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    FLOAT fPitch = FRnd()*10.0f + 25.0f;
 
-  // fire bullet
-  void FireBullet(void) {
-    ((CBullet&)*m_penBullet).LaunchBullet(TRUE, TRUE, TRUE);
-    ((CBullet&)*m_penBullet).DestroyBullet();
-  };
+    // calculate parameters for predicted angular launch curve
+      EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+      CalculateAngularLaunchParams( vShooting, peiTarget->vTargetCenter[1]-1.5f/3.0f, m_vTarget, 
+      vSpeedDest, fPitch, fLaunchSpeed, fRelativeHdg);
 
-
-  // fire air wave
-  void FireAirWave(void) {
     // target enemy body
-    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
-    FLOAT3D vShootTarget;
-    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+      FLOAT3D vShootTarget;
+      GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
 
-    // launch
     CPlacement3D pl;
-    PrepareFreeFlyingProjectile(pl, vShootTarget, FIRE_AIRWAVE, ANGLE3D(0, 0, 0));
-    CEntityPointer penProjectile = CreateEntity(pl, CLASS_AIRWAVE);
-    EAirWave eLaunch;
-    eLaunch.penLauncher = this;
-    penProjectile->Initialize(eLaunch);
+    CalculateAngularLaunchParams( vShooting, peiTarget->vTargetCenter[1]-1.5f/3.0f, m_vTarget, 
+      vSpeedDest, fPitch, fLaunchSpeed, fRelativeHdg);
+    
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vFirePos, ANGLE3D( fRelativeHdg, fPitch, 0.0f));
+    
+    ESpawnerProjectile esp;
+    CEntityPointer penSProjectile = CreateEntity(pl, CLASS_SPAWNER_PROJECTILE);
+    esp.penOwner = this;
+    esp.penTemplate = m_penSpawn1;
+    penSProjectile->Initialize(esp);
+    
+    ((CMovableEntity &)*penSProjectile).LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -fLaunchSpeed), (CMovableEntity*)(CEntity*)this);
+  }
+
+
+  void LaunchMonster2(void)
+  {
+    ASSERT(penTemplate!=NULL);
+    // calculate parameters for predicted angular launch curve
+    FLOAT3D vFirePos = vSummPos;
+    FLOAT3D vShooting = GetPlacement().pl_PositionVector + m_vFiringPos;
+      m_vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
+      FLOAT3D vSpeedDest = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    FLOAT fPitch = FRnd()*10.0f + 25.0f;
+
+    // calculate parameters for predicted angular launch curve
+      EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+      CalculateAngularLaunchParams( vShooting, peiTarget->vTargetCenter[1]-1.5f/3.0f, m_vTarget, 
+      vSpeedDest, fPitch, fLaunchSpeed, fRelativeHdg);
+
+    // target enemy body
+      FLOAT3D vShootTarget;
+      GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    CalculateAngularLaunchParams( vShooting, peiTarget->vTargetCenter[1]-1.5f/3.0f, m_vTarget, 
+      vSpeedDest, fPitch, fLaunchSpeed, fRelativeHdg);
+    
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vFirePos, ANGLE3D( fRelativeHdg, fPitch, 0.0f));
+    
+    ESpawnerProjectile esp;
+    CEntityPointer penSProjectile = CreateEntity(pl, CLASS_SPAWNER_PROJECTILE);
+    esp.penOwner = this;
+    esp.penTemplate = m_penSpawn2;
+    penSProjectile->Initialize(esp);
+    
+    ((CMovableEntity &)*penSProjectile).LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -fLaunchSpeed), (CMovableEntity*)(CEntity*)this);
+  }
+
+
+  void LaunchMonster3(void)
+  {
+    ASSERT(penTemplate!=NULL);
+    // calculate parameters for predicted angular launch curve
+    FLOAT3D vFirePos = vSummPos;
+    FLOAT3D vShooting = GetPlacement().pl_PositionVector + m_vFiringPos;
+      m_vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
+      FLOAT3D vSpeedDest = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    FLOAT fPitch = FRnd()*10.0f + 25.0f;
+
+    // calculate parameters for predicted angular launch curve
+      EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+      CalculateAngularLaunchParams( vShooting, peiTarget->vTargetCenter[1]-1.5f/3.0f, m_vTarget, 
+      vSpeedDest, fPitch, fLaunchSpeed, fRelativeHdg);
+
+    // target enemy body
+      FLOAT3D vShootTarget;
+      GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    CalculateAngularLaunchParams( vShooting, peiTarget->vTargetCenter[1]-1.5f/3.0f, m_vTarget, 
+      vSpeedDest, fPitch, fLaunchSpeed, fRelativeHdg);
+    
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vFirePos, ANGLE3D( fRelativeHdg, fPitch, 0.0f));
+    
+    ESpawnerProjectile esp;
+    CEntityPointer penSProjectile = CreateEntity(pl, CLASS_SPAWNER_PROJECTILE);
+    esp.penOwner = this;
+    esp.penTemplate = m_penSpawn3;
+    penSProjectile->Initialize(esp);
+    
+    ((CMovableEntity &)*penSProjectile).LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -fLaunchSpeed), (CMovableEntity*)(CEntity*)this);
+  }
+
+  // running sounds
+  void ActivateRunningSound(void)
+  {
+    if (!m_bRunSoundPlaying) {
+      PlaySound(m_soFeet, SOUND_MOVING, SOF_3D|SOF_LOOP);
+      m_bRunSoundPlaying = TRUE;
+    }
+  }
+  void DeactivateRunningSound(void)
+  {
+    m_soFeet.Stop();
+    m_bRunSoundPlaying = FALSE;
+  }
+
+
+  // adjust sound and watcher parameters here if needed
+  void EnemyPostInit(void) 
+  {
+  m_soFeet.Set3DParameters(300.0f, 50.0f, 1.0f, 1.0f);
+    m_bRunSoundPlaying = FALSE;
+    m_soSound.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
   };
 
+ /************************************************************
+ *                 BLOW UP FUNCTIONS                        *
+ ************************************************************/
+  // spawn body parts
+  void BlowUp(void) {
+    // get your size
+    FLOATaabbox3D box;
+    GetBoundingBox(box);
+    FLOAT fEntitySize = box.Size().MaxNorm();
 
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+
+    vNormalizedDamage *= 0.75f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
+
+    // spawn debris
+	Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 2.0f, 2.0f);
+
+    Debris_Spawn(this, this, MODEL_HEAD, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BUTT, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 1.0f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+    // hide yourself (must do this after spawning debris)
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+  };
 
 procedures:
 /************************************************************
- *                PROCEDURES WHEN HARMED                    *
- ************************************************************/
-  // Play wound animation and falling body part
-  BeWounded(EDamage eDamage) : CEnemyBase::BeWounded
-  { 
-    StopMoving();
-    // damage anim
-    StartModelAnim(MAMUT_ANIM_WOUND02, 0);
-    autowait(0.5f);
-    // drop riders
-    if (GetHealth()<600.0f) {
-      DropRiders(GetHealth()<250.0f);
-    }
-    autowait(1.5f);
-
-    return EReturn();
-  };
-
-
-
-/************************************************************
  *                A T T A C K   E N E M Y                   *
  ************************************************************/
-/*  // initial preparation
-  InitializeAttack(EVoid) : CEnemyBase::InitializeAttack {
-    m_fLastShootTime = 0.0f;
-    jump CEnemyBase::InitializeAttack();
-  };
-
-
-  // attack shoot
-  AttackShoot() : CEnemyBase::AttackShoot {
-    // shoot at enemy if possible
-    if (CanAttackEnemy(m_penEnemy, Cos(AngleDeg(130.0f)))) {
-      // set next shoot time
-      m_fShootTime = _pTimer->CurrentTick() + m_fAttackFireTime*(1.0f + FRnd()/3.0f);
-      // fire
-      // mamut shoot
-      if (m_fLastShootTime+4.0f<_pTimer->CurrentTick() &&
-          CanAttackEnemy(m_penEnemy, Cos(AngleDeg(50.0f)))) {
-        // stop moving (rotation and translation)
-        StopMoving();
-        autocall Fire() EReturn;
-      // rider (mamutman) shoot
-      } else if (m_bFrontRider || m_bMiddleRider || m_bRearRider) {
-        // stop rotating
-        StopRotating();
-        autocall RiderFire() EReturn;
+Hit(EVoid) : CEnemyBase::Hit {
+    // close attack
+    if (CalcDist(m_penEnemy) < 42.0f) {
+      DeactivateRunningSound();
+      StartModelAnim(MAMUT_ANIM_WOUND01, 0);
+      PlaySound(m_soSound, SOUND_ATTACK, SOF_3D);
+	  autowait(0.7f);
+	  FLOAT3D vSource;
+      vSource = GetPlacement().pl_PositionVector +
+      FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+      {
+        InflictRangeDamage(this, DMT_IMPACT, 50.0f, vSource, 7.5f, m_fCloseDistance);
+        FLOAT3D mDirection;
+        GetPitchDirection(AngleDeg(10.0f), mDirection);
+        KickEntity(m_penEnemy, 0.0);
       }
+	  {
+	      // spawn particle effect
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.1f;
+	CEntityPointer penShockwave = CreateEntity(pl, CLASS_BASIC_EFFECT);
+    ESpawnEffect eSpawnEffect;
+    eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
+    eSpawnEffect.betType = BET_CANNONSHOCKWAVE;
+    eSpawnEffect.vStretch = FLOAT3D(3.0f, 3.0f, 3.0f);
+	penShockwave->Initialize(eSpawnEffect);
+	}
+	autowait(1.5f);
+      MaybeSwitchToAnotherPlayer();
     } else {
-      // safety precocious from stack overflow loop
-      m_fShootTime = _pTimer->CurrentTick() + 0.25f;
+      // run to enemy
+      m_fShootTime = _pTimer->CurrentTick() + 0.5f;
     }
-    return ETimer();
-  };
+    return EReturn();
+  }
 
-  // close shoot
-  CloseShoot() : CEnemyBase::CloseShoot {
-    // shoot at enemy if possible
-    if (CalcDist(m_penEnemy)<m_fCloseDistance && CanHitEnemy(m_penEnemy, Cos(AngleDeg(130.0f)))) {
-      // set next shoot time
-      m_fShootTime = _pTimer->CurrentTick() + m_fCloseFireTime*(1.0f + FRnd()/3.0f);
-      // hit
-      // mamut shoot
-      if (m_fLastShootTime+4.0f<_pTimer->CurrentTick() &&
-          CanHitEnemy(m_penEnemy, Cos(AngleDeg(50.0f)))) {
-        // stop moving (rotaion and translation)
-        StopMoving();
-        autocall Hit() EReturn;
-      // rider (mamutman) shoot
-      } else if (m_bFrontRider || m_bMiddleRider || m_bRearRider) {
-        // stop rotating
-        StopRotating();
-        autocall RiderFire() EReturn;
-      }
-
-    // try attack shoot
-    } else {
-      jump AttackShoot();
-    }
-    return ETimer();
-  };
-  */
-
-  Fire(EVoid) : CEnemyBase::Fire {
-    m_fLastShootTime = _pTimer->CurrentTick();
-
-    // fire projectile
+Fire(EVoid) : CEnemyBase::Fire {
+    // fire projectile 
     StartModelAnim(MAMUT_ANIM_WOUND01, 0);
-    autowait(1.1f);
-    FireAirWave();
-    PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-    autowait(FRnd()*0.2f);
+    DeactivateRunningSound();
+    if (m_mtType==MT_CANNON) {
+      PlaySound(m_soSound, SOUND_CANNON, SOF_3D);
+	  autowait(0.7f);
+   
+      m_vFiringPos FIRING_POSITION_MUZZLE;
+      m_vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
+      FLOAT3D vShooting = GetPlacement().pl_PositionVector + m_vFiringPos;
+      FLOAT3D vSpeedDest = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
+      FLOAT fLaunchSpeed;
+      FLOAT fRelativeHdg;
+      FLOAT fPitch = 20.0f;
+
+    // calculate parameters for predicted angular launch curve
+      EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+      CalculateAngularLaunchParams( vShooting, peiTarget->vTargetCenter[1]-1.5f/3.0f, m_vTarget, 
+      vSpeedDest, fPitch, fLaunchSpeed, fRelativeHdg);
+
+    // target enemy body
+      FLOAT3D vShootTarget;
+      GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+    // launch
+      CPlacement3D pl;
+      PrepareFreeFlyingProjectile(pl, vShootTarget, m_vFiringPos, ANGLE3D( fRelativeHdg, fPitch, 0));
+      CEntityPointer penBall = CreateEntity(pl, CLASS_CANNONBALL);
+      ELaunchCannonBall eLaunch;
+      eLaunch.penLauncher = this;
+      eLaunch.fLaunchPower = fLaunchSpeed;
+      eLaunch.cbtType = CBT_IRON;
+      eLaunch.fSize = 1.5f;
+      penBall->Initialize(eLaunch);
+
+	  autowait(1.5f);
+      MaybeSwitchToAnotherPlayer();
+   
+	}
+    if (m_mtType==MT_SUMM) {
+      PlaySound(m_soSound, SOUND_SUMMON, SOF_3D);
+	  autowait(0.7f);
+
+    INDEX iRnd = IRnd()%3;
+    switch(iRnd)
+    {
+    case 0: LaunchMonster1(); break;
+    case 1: LaunchMonster2(); break;
+    case 2: LaunchMonster3(); break;
+	}
+
+	  autowait(1.5f);
+      MaybeSwitchToAnotherPlayer();
+	}
+
+   if (m_mtType==MT_NORMAL) {}
 
     return EReturn();
   };
 
-  Hit(EVoid) : CEnemyBase::Hit {
-    m_fLastShootTime = _pTimer->CurrentTick();
-
-    // hit the ground
-    StartModelAnim(MAMUT_ANIM_ATTACK01, 0);
-    autowait(0.3f);
-    if (CalcDist(m_penEnemy) < HIT_DISTANCE) {
-      FLOAT3D vSource = GetPlacement().pl_PositionVector +
-        FLOAT3D(en_mRotation(1, 2), en_mRotation(2, 2), en_mRotation(3, 2));
-      PlaySound(m_soSound, SOUND_KICK, SOF_3D);
-      // damage
-      InflictRangeDamage(this, DMT_CLOSERANGE, 20.0f, vSource, 1.0f, 15.0f);
-    }
-    autowait(0.5f);
-    if (CalcDist(m_penEnemy) < HIT_DISTANCE) {
-      FLOAT3D vSource = GetPlacement().pl_PositionVector +
-        FLOAT3D(en_mRotation(1, 2), en_mRotation(2, 2), en_mRotation(3, 2));
-      PlaySound(m_soSound, SOUND_KICK, SOF_3D);
-      // damage
-      InflictRangeDamage(this, DMT_CLOSERANGE, 20.0f, vSource, 1.0f, 15.0f);
-    }
-    autowait(0.7f+FRnd()*0.1f);
-
-    return EReturn();
-  };
-
-  RiderFire() {
-    // if have any rider fire
-    if (m_bFrontRider || m_bMiddleRider || m_bRearRider) {
-      // prepare 
-      PrepareBullet();
-
-      // find valid rider
-      INDEX iRider = IRnd()%3;
-      if (iRider==0 && !m_bFrontRider) { iRider = 1; }
-      if (iRider==1 && !m_bMiddleRider) { iRider = 2; }
-      if (iRider==2 && !m_bRearRider) { iRider = 0; }
-      if (iRider==0 && !m_bFrontRider) { iRider = 1; }
-      if (iRider==1 && !m_bMiddleRider) { iRider = 2; }
-
-      // animation
-      switch (iRider) {
-        case 0: PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_FRONT, MAMUTMAN_ANIM_MOUNTEDATTACKFIRST, 0); break;
-        case 1: PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_MIDDLE, MAMUTMAN_ANIM_MOUNTEDATTACKSECOND, 0); break;
-        case 2: PlayAttachmentAnim(MAMUT_ATTACHMENT_MAN_REAR, MAMUTMAN_ANIM_MOUNTEDATTACKTHIRD, 0); break;
-      }
-
-      // fire bullet
-      autowait(0.8f);
-      PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-      FireBullet();
-    }
-
-    return EReturn();
-  };
 
 
 /************************************************************
@@ -391,61 +552,67 @@ procedures:
     SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
-    en_tmMaxHoldBreath = 35.0f;
-    en_fDensity = 4000.0f;
+    en_tmMaxHoldBreath = 60.0f;
 
+    en_fDensity = 50000.0f;
+    m_bBoss = m_bBeBoss;
     // set your appearance
-    GetModelObject()->StretchModel(FLOAT3D(2,2,2));
     SetModel(MODEL_MAMUT);
-    ModelChangeNotify();
-    if (m_EmcChar==MAT_SUMMER) {
+    m_fSize = 1.3f;
+    if (m_mtChar==MT_SUMMER) {
       SetModelMainTexture(TEXTURE_MAMUT_SUMMER);
+		m_fgibTexture = TEXTURE_MAMUT_SUMMER;
     } else {
       SetModelMainTexture(TEXTURE_MAMUT_WINTER);
+		m_fgibTexture = TEXTURE_MAMUT_WINTER;
     }
-    SetHealth(700.0f);
-    m_fMaxHealth = 700.0f;
-    // set riders
-    RemoveAttachmentFromModel(*GetModelObject(), MAMUT_ATTACHMENT_MAN_FRONT);
-    RemoveAttachmentFromModel(*GetModelObject(), MAMUT_ATTACHMENT_MAN_MIDDLE);
-    RemoveAttachmentFromModel(*GetModelObject(), MAMUT_ATTACHMENT_MAN_REAR);
-    if (m_bFrontRider) {
-      AddAttachmentToModel(this, *GetModelObject(), MAMUT_ATTACHMENT_MAN_FRONT,
-        MODEL_MAMUTMAN, TEXTURE_MAMUTMAN, 0, 0, 0);
-    }
-    if (m_bMiddleRider) {
-      AddAttachmentToModel(this, *GetModelObject(), MAMUT_ATTACHMENT_MAN_MIDDLE,
-        MODEL_MAMUTMAN, TEXTURE_MAMUTMAN, 0, 0, 0);
-    }
-    if (m_bRearRider) {
-      AddAttachmentToModel(this, *GetModelObject(), MAMUT_ATTACHMENT_MAN_REAR,
-        MODEL_MAMUTMAN, TEXTURE_MAMUTMAN, 0, 0, 0);
+    if (m_mtType==MT_CANNON) {
+    AddAttachment(MAMUT_ATTACHMENT_MAN_FRONT, MODEL_CANNON, TEXTURE_CANNON);
+    CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(MAMUT_ATTACHMENT_MAN_FRONT)->amo_moModelObject;
+    pmoRight->StretchModel(FLOAT3D(2,2,2));
+    ModelChangeNotify();
+    } else if (m_mtType==MT_SUMM) {
+    AddAttachment(MAMUT_ATTACHMENT_MAN_FRONT, MODEL_GUN, TEXTURE_GUN);
+    CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(MAMUT_ATTACHMENT_MAN_FRONT)->amo_moModelObject;
+    pmoRight->StretchModel(FLOAT3D(5,5,5));
+    ModelChangeNotify();
     }
     StandingAnim();
     // setup moving speed
-    m_fWalkSpeed = FRnd() + 1.0f;
-    m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 25.0f);
-    m_fAttackRunSpeed = FRnd() + 9.0f;
-    m_aAttackRotateSpeed = AngleDeg(FRnd()*15.0f + 250.0f);
-    m_fCloseRunSpeed = FRnd() + 10.0f;
-    m_aCloseRotateSpeed = AngleDeg(FRnd()*15.0f + 250.0f);
+    m_fWalkSpeed = FRnd()/1.0f + 4.0f;
+    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+    m_fCloseRunSpeed = FRnd()/1.0f + 13.0f;
+    m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
+    m_fAttackRunSpeed = FRnd()/1.0f + 11.0f;
+    m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
     // setup attack distances
-    m_fAttackDistance = 120.0f;
-    m_fCloseDistance = 14.0f;
-    m_fStopDistance = 12.0f;
-    INDEX iTime = 4.0f;
-    if (m_bFrontRider) { iTime--; }
-    if (m_bMiddleRider) { iTime--; }
-    if (m_bRearRider) { iTime--; }
-    m_fAttackFireTime = iTime;
-    m_fCloseFireTime = 0.5f;
-    m_fIgnoreRange = 200.0f;
-    // damage/explode properties
-    m_fBlowUpAmount = 250.0f;
-    m_fBodyParts = 5;
-    m_fDamageWounded = 200.0f;
-    m_iScore = 5000;
+    m_fAttackDistance = 200.0f;
+    m_fCloseDistance = 25.0f;
+    m_fStopDistance = 0.0f;
+    m_fAttackFireTime = 5.0f;
+    m_fCloseFireTime = 1.0f;
+    m_fIgnoreRange = 800.0f;
+    m_fStopDistance = 5.0f;
+    m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
 
+    // damage/explode properties
+    SetHealth(800.0f);
+    m_fMaxHealth = GetHealth();
+    m_fBlowUpAmount = 2000.0f;
+	m_fBlowUpSize = 2.0f;
+    m_fBodyParts = 10;
+    m_fDamageWounded = 500.0f;
+    if (m_mtType==MT_CANNON) {
+          m_iScore = 10000;
+	} else {
+          m_iScore = 6000;
+		  }
+    m_fLockOnEnemyTime = 3.0f;
+
+    // set stretch factor
+
+    Particles_RunningDust_Prepare(this);
+    
     // continue behavior in base class
     jump CEnemyBase::MainLoop();
   };

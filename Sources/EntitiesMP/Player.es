@@ -242,7 +242,7 @@ static void KillAllEnemies(CEntity *penKiller)
 
 // defines representing flags used to fill player buttoned actions
 #define PLACT_FIRE                (1L<<0)
-#define PLACT_RELOAD              (1L<<1)
+#define PLACT_FIRE_SECONDARY      (1L<<1)
 #define PLACT_WEAPON_NEXT         (1L<<2)
 #define PLACT_WEAPON_PREV         (1L<<3)
 #define PLACT_WEAPON_FLIP         (1L<<4)
@@ -302,7 +302,7 @@ struct PlayerControls {
   BOOL bWalk;
   BOOL bStrafe;
   BOOL bFire;
-  BOOL bReload;
+  BOOL bFire_Secondary;
   BOOL bUse;
   BOOL bComputer;
   BOOL bUseOrComputer;
@@ -532,13 +532,13 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
   if(pctlCurrent.bWeaponPrev) paAction.pa_ulButtons |= PLACT_WEAPON_PREV;
   if(pctlCurrent.bWeaponFlip) paAction.pa_ulButtons |= PLACT_WEAPON_FLIP;
   if(pctlCurrent.bFire)       paAction.pa_ulButtons |= PLACT_FIRE;
-  if(pctlCurrent.bReload)     paAction.pa_ulButtons |= PLACT_RELOAD;
-  if(pctlCurrent.bUse)        paAction.pa_ulButtons |= PLACT_USE|PLACT_USE_HELD|PLACT_SNIPER_USE;
+  if(pctlCurrent.bFire_Secondary)     paAction.pa_ulButtons |= PLACT_FIRE_SECONDARY;
+  if(pctlCurrent.bUse)        paAction.pa_ulButtons |= PLACT_USE|PLACT_USE_HELD|PLACT_SNIPER_USE|PLACT_FIRE_SECONDARY;
   if(pctlCurrent.bComputer)      paAction.pa_ulButtons |= PLACT_COMPUTER;
   if(pctlCurrent.b3rdPersonView) paAction.pa_ulButtons |= PLACT_3RD_PERSON_VIEW;
   if(pctlCurrent.bCenterView)    paAction.pa_ulButtons |= PLACT_CENTER_VIEW;
   // is 'use' being held?
-  if(pctlCurrent.bUseOrComputer) paAction.pa_ulButtons |= PLACT_USE_HELD|PLACT_SNIPER_USE;
+  if(pctlCurrent.bUseOrComputer) paAction.pa_ulButtons |= PLACT_USE_HELD|PLACT_SNIPER_USE|PLACT_FIRE_SECONDARY;
   if(pctlCurrent.bSniperZoomIn)  paAction.pa_ulButtons |= PLACT_SNIPER_ZOOMIN;
   if(pctlCurrent.bSniperZoomOut) paAction.pa_ulButtons |= PLACT_SNIPER_ZOOMOUT;
   if(pctlCurrent.bFireBomb)      paAction.pa_ulButtons |= PLACT_FIREBOMB;
@@ -616,6 +616,8 @@ void CPlayer_Precache(void)
   pdec->PrecacheSound(SOUND_SNIPER_QZOOM       );
   pdec->PrecacheSound(SOUND_SILENCE            );
   pdec->PrecacheSound(SOUND_POWERUP_BEEP       );
+  pdec->PrecacheSound(SOUND_WALK_METAL_L             );
+  pdec->PrecacheSound(SOUND_WALK_METAL_R             );
 
   pdec->PrecacheSound(SOUND_F_WATER_ENTER        );
   pdec->PrecacheSound(SOUND_F_WATER_LEAVE        );
@@ -700,7 +702,7 @@ void CPlayer_OnInitClass(void)
   _pShell->DeclareSymbol("user INDEX ctl_bWalk;",           &pctlCurrent.bWalk);
   _pShell->DeclareSymbol("user INDEX ctl_bStrafe;",         &pctlCurrent.bStrafe);
   _pShell->DeclareSymbol("user INDEX ctl_bFire;",           &pctlCurrent.bFire);
-  _pShell->DeclareSymbol("user INDEX ctl_bReload;",         &pctlCurrent.bReload);
+  _pShell->DeclareSymbol("user INDEX ctl_bReload;",         &pctlCurrent.bFire_Secondary);
   _pShell->DeclareSymbol("user INDEX ctl_bUse;",            &pctlCurrent.bUse);
   _pShell->DeclareSymbol("user INDEX ctl_bComputer;",       &pctlCurrent.bComputer);
   _pShell->DeclareSymbol("user INDEX ctl_bUseOrComputer;",  &pctlCurrent.bUseOrComputer);
@@ -1249,6 +1251,8 @@ components:
 189 sound SOUND_F_WALK_WOOD_R   "SoundsMP\\Player\\Female\\WalkWoodR.wav",
 190 sound SOUND_F_WALK_SNOW_L   "SoundsMP\\Player\\Female\\WalkSnowL.wav",
 191 sound SOUND_F_WALK_SNOW_R   "SoundsMP\\Player\\Female\\WalkSnowR.wav",
+192 sound SOUND_WALK_METAL_L   "SoundsF\\Player\\WalkMetalL.wav",
+193 sound SOUND_WALK_METAL_R   "SoundsF\\Player\\WalkMetalR.wav",
 
 // gender-independent sounds
 200 sound SOUND_SILENCE         "Sounds\\Misc\\Silence.wav",
@@ -4295,11 +4299,18 @@ functions:
         iSoundWalkL = SOUND_WALK_GRASS_L;
         iSoundWalkR = SOUND_WALK_GRASS_R;
       } else if (en_pbpoStandOn!=NULL && 
+        (en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_METAL ||
+         en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_METAL_SLIDING ||
+         en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_METAL_NO_IMPACT )) {
+        iSoundWalkL = SOUND_WALK_METAL_L;
+        iSoundWalkR = SOUND_WALK_METAL_R;
+      } else if (en_pbpoStandOn!=NULL && 
         en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_WOOD) {
         iSoundWalkL = SOUND_WALK_WOOD_L;
         iSoundWalkR = SOUND_WALK_WOOD_R;
       } else if (en_pbpoStandOn!=NULL && 
-        en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_SNOW) {
+        (en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_SNOW ||
+         en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_SNOW_NO_IMPACT )) {
         iSoundWalkL = SOUND_WALK_SNOW_L;
         iSoundWalkR = SOUND_WALK_SNOW_R;
       }
@@ -4399,11 +4410,6 @@ functions:
         SendEvent(EEnd());
       // if cooperative
       } else {
-        // if holding down reload button
-        if (m_ulLastButtons&PLACT_RELOAD) {
-          // forbid respawning in-place
-          m_ulFlags &= ~PLF_RESPAWNINPLACE;
-        }
         // if playing on credits
         if (GetSP()->sp_ctCredits!=0) {
           // if playing on infinite credits or some credits left
@@ -4485,9 +4491,22 @@ functions:
     if (ulReleasedButtons&PLACT_FIRE) {
       ((CPlayerWeapons&)*m_penWeapons).SendEvent(EReleaseWeapon());
     }
-    // if reload is pressed
-    if (ulReleasedButtons&PLACT_RELOAD) {
-      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EReloadWeapon());
+    // if secondary fire is pressed
+    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_PLASMA))) {
+      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EPlasmaBlast());
+    }
+    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_GRENADELAUNCHER))) {
+      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EClusterGrenade());
+    }
+    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_ROCKETLAUNCHER))) {
+      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EHomingRocket());
+    }
+    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_IRONCANNON))) {
+      ((CPlayerWeapons&)*m_penWeapons).SendEvent(ENukeBall());
+    }
+    // if secondary fire is released
+    if (ulReleasedButtons&PLACT_FIRE_SECONDARY) {
+      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EReleaseWeapon());
     }
     // if fire bomb is pressed
     if (ulNewButtons&PLACT_FIREBOMB) {

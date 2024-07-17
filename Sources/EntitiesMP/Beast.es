@@ -14,6 +14,13 @@ enum BeastType {
   0 BT_NORMAL         "Small",      // normal (fighter)
   1 BT_BIG            "Big",        // big
   2 BT_HUGE           "Huge",       // huge
+  3 BT_E              "Electric",
+};
+
+enum BeastVer {
+  0 BTV_FE            "First Encounter",
+  1 BTV_SE            "Second Encounter",
+  2 BTV_MIX           "Both",
 };
 
 %{
@@ -23,12 +30,7 @@ static _tmLastStandingAnim =0.0f;
 #define HUGE_BEAST_STRETCH 30.0f
 
 // info structure
-static EntityInfo eiBeastHuge = {
-  EIBT_FLESH, 10000.0f,
-  0.0f, 2.0f*HUGE_BEAST_STRETCH, 0.0f,     // source (eyes)
-  0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f,     // target (body)
-};
-static EntityInfo eiBeastNormal = {
+static EntityInfo eiBeastENormal = {
   EIBT_FLESH, 1500.0f,
   0.0f, 2.0f*BEAST_STRETCH, 0.0f,     // source (eyes)
   0.0f, 1.5f*BEAST_STRETCH, 0.0f,     // target (body)
@@ -37,6 +39,11 @@ static EntityInfo eiBeastBig = {
   EIBT_FLESH, 5000.0f,
   0.0f, 2.0f*BIG_BEAST_STRETCH, 0.0f,     // source (eyes)
   0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f,     // target (body)
+};
+static EntityInfo eiBeastHuge = {
+  EIBT_FLESH, 10000.0f,
+  0.0f, 2.0f*HUGE_BEAST_STRETCH, 0.0f,     // source (eyes)
+  0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f,     // target (body)
 };
 %}
 
@@ -49,6 +56,9 @@ properties:
   2 INDEX m_iCounter = 0,
   3 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
 
+  4 enum BeastVer m_bcVer     "Version" 'V' = BTV_FE,
+  6 INDEX   m_fgibTexture = TEXTURE_BEAST_NORMAL,
+
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
   1 class   CLASS_PROJECTILE    "Classes\\Projectile.ecl",
@@ -58,6 +68,16 @@ components:
  11 texture TEXTURE_BEAST_NORMAL  "Models\\Enemies\\Beast\\Beast.tex",
  12 texture TEXTURE_BEAST_BIG     "Models\\Enemies\\Beast\\BeastBig.tex",
  13 texture TEXTURE_BEAST_HUGE    "ModelsMP\\Enemies\\Beast\\BeastBiggest.tex",
+ 14 texture TEXTURE_BEAST_ELECTRIC  "AREP\\Models\\BeastElectric\\BeastElectric.tex",
+
+ 15 model   MODEL_PLASMAGUN           "ModelsMP\\Enemies\\ExotechLarva\\Weapons\\PlasmaGun.mdl",
+ 16 texture TEXTURE_PLASMAGUN         "ModelsMP\\Enemies\\ExotechLarva\\Weapons\\PlasmaGun.tex",
+
+ 20 model   MODEL_BEAST_ARM           "ModelsF\\Enemies\\Beast\\Debris\\arm.mdl",
+ 21 model   MODEL_BEAST_LEGS           "ModelsF\\Enemies\\Beast\\Debris\\legs.mdl",
+ 22 model   MODEL_BEAST_TORSO         "ModelsF\\Enemies\\Beast\\Debris\\torso.mdl",
+ 27 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 28 texture TEXTURE_FLESH_GREEN  "Models\\Effects\\Debris\\Flesh\\FleshGreen.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "Models\\Enemies\\Beast\\Sounds\\Idle.wav",
@@ -68,6 +88,8 @@ components:
  55 sound   SOUND_DEATH     "Models\\Enemies\\Beast\\Sounds\\Death.wav",
  56 sound   SOUND_DEATHBIG  "Models\\Enemies\\Beast\\Sounds\\DeathBig.wav",
  57 sound   SOUND_ANGER     "Models\\Enemies\\Beast\\Sounds\\Anger.wav",
+
+ 58 sound   SOUND_ROCKET    "Sounds\\Weapons\\RocketFly.wav",
 
 functions:
   // describe how this enemy killed player
@@ -81,11 +103,13 @@ functions:
     static DECLARE_CTFILENAME(fnmNormal, "Data\\Messages\\Enemies\\BeastNormal.txt");
     static DECLARE_CTFILENAME(fnmBig, "Data\\Messages\\Enemies\\BeastBig.txt");
     static DECLARE_CTFILENAME(fnmHuge, "DataMP\\Messages\\Enemies\\BeastBiggest.txt");
+    static DECLARE_CTFILENAME(fnmElectric, "DataMP\\Messages\\Enemies\\AREP\\BeastElectricFinal.txt");
     switch(m_bcType) {
     default: ASSERT(FALSE);
     case BT_NORMAL: return fnmNormal;
     case BT_BIG: return fnmBig;
     case BT_HUGE: return fnmHuge;
+    case BT_E: return fnmElectric;
     }
   };
   void Precache(void) {
@@ -96,25 +120,43 @@ functions:
     PrecacheSound(SOUND_ANGER);
     PrecacheSound(SOUND_FIRE);
     PrecacheSound(SOUND_KICK);
+    PrecacheSound(SOUND_DEATH);
+    PrecacheSound(SOUND_DEATHBIG);
     PrecacheModel(MODEL_BEAST);
     PrecacheTexture(TEXTURE_BEAST_NORMAL);
     PrecacheTexture(TEXTURE_BEAST_BIG);
+    PrecacheTexture(TEXTURE_BEAST_ELECTRIC);
+	  PrecacheModel(MODEL_BEAST_ARM);
+	  PrecacheModel(MODEL_BEAST_LEGS);
+	  PrecacheModel(MODEL_BEAST_TORSO);
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_GREEN);
     if (m_bcType == BT_NORMAL) {
-      PrecacheSound(SOUND_DEATH);
       PrecacheClass(CLASS_PROJECTILE, PRT_BEAST_PROJECTILE);
+    if (m_bcType == BT_E) {
+      PrecacheClass(CLASS_PROJECTILE, PRT_BEAST_E_PROJECTILE);
     } else {
-      PrecacheSound(SOUND_DEATHBIG);
       PrecacheClass(CLASS_PROJECTILE, PRT_BEAST_BIG_PROJECTILE);
+      PrecacheClass(CLASS_PROJECTILE, PRT_DEVIL_GUIDED_PROJECTILE);
     }
+    } else {
+      PrecacheClass(CLASS_PROJECTILE, PRT_BEAST_BIG_PROJECTILE);
+      PrecacheClass(CLASS_PROJECTILE, PRT_DEVIL_GUIDED_PROJECTILE);
+    }
+	PrecacheModel(MODEL_PLASMAGUN);
+	PrecacheTexture(TEXTURE_PLASMAGUN);
+	PrecacheSound(SOUND_ROCKET);
   };
 
   /* Entity info */
   void *GetEntityInfo(void) {
-    if (m_bcType == BT_NORMAL) {
-      return &eiBeastNormal;
-    } else if (m_bcType == BT_HUGE) {
+    if (m_bcType == BT_E) {
+      return &eiBeastENormal;
+    } if (m_bcType == BT_NORMAL) {
+      return &eiBeastENormal;
+    } if (m_bcType == BT_HUGE) {
       return &eiBeastHuge;
-    } else {
+    } if (m_bcType == BT_BIG) {
       return &eiBeastBig;
     }
   };
@@ -151,29 +193,42 @@ functions:
 
   BOOL ForcesCannonballToExplode(void)
   {
-    return TRUE;
+    if (m_bcVer == BTV_FE | BTV_MIX) {
+      return FALSE;
+	  }
+    if (m_bcVer == BTV_SE) {
+      return TRUE;
+	  }
   }
 
   /* Receive damage */
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
-    
-    // take less damage from heavy bullets (e.g. sniper)
-    if(dmtType==DMT_BULLET && fDamageAmmount>100.0f)
-    {
-      fDamageAmmount*=0.5f;
-    }
 
     // cannonballs inflict less damage then the default
-    if(m_bcType==BT_BIG && dmtType==DMT_CANNONBALL)
-    {
-      fDamageAmmount *= 0.3333f;
+    if (m_bcVer == BTV_FE | BTV_MIX) {
+      if(m_bcType==BT_BIG && dmtType==DMT_CANNONBALL)
+      {
+        fDamageAmmount *= 1.0f;
+		}
     }
+    if (m_bcVer == BTV_SE) {
+      if(m_bcType==BT_BIG && dmtType==DMT_CANNONBALL)
+      {
+        fDamageAmmount *= 0.3333f;
+		}
+    }
+
 
     // can't harm own class
     if (!IsOfClass(penInflictor, "Beast")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+    }
+    // if caught in range of a nuke ball
+    if (dmtType==DMT_CANNONBALL_EXPLOSION && GetHealth()<=0) {
+      // must blow up easier
+      m_fBlowUpAmount = m_fBlowUpAmount/2;
     }
   };
 
@@ -186,8 +241,8 @@ functions:
     } else {
       iAnim = BEAST_ANIM_WOUND;
     }
-    StartModelAnim(iAnim, 0);
-    return iAnim;
+    StartModelAnim(BEAST_ANIM_WOUND, 0);
+    return BEAST_ANIM_WOUND;
   };
 
   // death
@@ -257,9 +312,9 @@ functions:
     } else {
       PlaySound(m_soSound, SOUND_WOUND, SOF_3D);
     }
-  };
+   };
   void DeathSound(void) {
-    if (m_bcType == BT_NORMAL) {
+    if ((m_bcType == BT_NORMAL || m_bcType == BT_E)) {
       PlaySound(m_soSound, SOUND_DEATH, SOF_3D);
     } else {
       PlaySound(m_soSound, SOUND_DEATHBIG, SOF_3D);
@@ -273,12 +328,67 @@ functions:
     m_soSound.Set3DParameters(160.0f, 50.0f, 2.0f, 1.0f);
   };
 
+ /************************************************************
+ *                 BLOW UP FUNCTIONS                        *
+ ************************************************************/
+  // spawn body parts
+  void BlowUp(void) {
+    // get your size
+    FLOATaabbox3D box;
+    GetBoundingBox(box);
+    FLOAT fEntitySize = box.Size().MaxNorm();
+
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+
+    vNormalizedDamage *= 0.75f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+	
+      ULONG ulFleshTexture = TEXTURE_FLESH_GREEN;
+      ULONG ulFleshModel   = MODEL_FLESH;
+    // spawn debris
+	Debris_Begin(EIBT_FLESH, DPT_SLIMETRAIL, BET_GIZMOSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 2.0f, 2.0f);
+
+    Debris_Spawn(this, this, MODEL_BEAST_TORSO, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BEAST_ARM, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BEAST_ARM, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_BEAST_LEGS, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	Debris_Spawn(this, this, MODEL_BEAST_ARM, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	Debris_Spawn(this, this, MODEL_BEAST_ARM, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+    // hide yourself (must do this after spawning debris)
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+  };
+
 procedures:
 /************************************************************
  *                    D  E  A  T  H                         *
  ************************************************************/
   Death(EVoid) : CEnemyBase::Death {
-    if (m_bcType == BT_NORMAL) {
+    if ((m_bcType == BT_NORMAL || m_bcType == BT_E)) {
       jump CEnemyBase::Death();
     }
     
@@ -297,17 +407,6 @@ procedures:
     // start death anim
     AnimForDeath();
     autowait(0.9f);
-    if (m_bcType == BT_BIG) {
-      ShakeItBaby(_pTimer->CurrentTick(), 2.0f);
-    } else {
-      ShakeItBaby(_pTimer->CurrentTick(), 3.0f);
-    }
-    autowait(2.3f-0.9f);
-    if (m_bcType == BT_BIG) {
-      ShakeItBaby(_pTimer->CurrentTick(), 5.0f);
-    } else {
-      ShakeItBaby(_pTimer->CurrentTick(), 7.0f);
-    }
 
     // spawn dust effect
     CPlacement3D plFX=GetPlacement();
@@ -358,10 +457,18 @@ procedures:
 
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           autowait(0.34f);
-          ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f),
+          if (m_bcVer == BTV_FE) {
+            ShootProjectile(PRT_DEVIL_GUIDED_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f),
+			ANGLE3D(AngleDeg((FRnd()-0.5)*30.0f), AngleDeg(FRnd()*10.0f), 0));
+			}
+          if (m_bcVer == BTV_SE) {
+            ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f),
             ANGLE3D(0.0f, 0.0f, 0.0f));
-            //ANGLE3D( AngleDeg(40.0f*Cos(m_iCounter*360.0/6.0f)), AngleDeg(20.0f*Sin(m_iCounter*180.0/6.0f)), 0));
-          //autowait(0.15f);
+			}
+          if (m_bcVer == BTV_MIX) {
+            ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f),
+            ANGLE3D(0.0f, 0.0f, 0.0f));
+			}
           m_iCounter++;
         }
         m_fAttackFireTime = 7.0f;
@@ -377,11 +484,18 @@ procedures:
 
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           autowait(0.5f);
-          ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f),
+          if (m_bcVer == BTV_FE) {
+            ShootProjectile(PRT_DEVIL_GUIDED_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f),
+			ANGLE3D(AngleDeg((FRnd()-0.5)*30.0f), AngleDeg(FRnd()*10.0f), 0));
+			}
+          if (m_bcVer == BTV_SE) {
+            ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f),
             ANGLE3D(0.0f, 0.0f, 0.0f));
-            //ANGLE3D( AngleDeg(20.0f*Cos(m_iCounter*360.0/3.0f)), AngleDeg(10.0f*Sin(m_iCounter*180.0/3.0f)), 0));
-            //ANGLE3D( FRnd()*20.0f-10.0f, FRnd()*10.0f-5.0f, 0));
-          //autowait(0.25f);
+			}
+          if (m_bcVer == BTV_MIX) {
+            ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_BEAST_STRETCH, 0.0f),
+            ANGLE3D(0.0f, 0.0f, 0.0f));
+			}
           m_iCounter++;
         }
       }
@@ -399,10 +513,18 @@ procedures:
 
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           autowait(0.34f);
-          ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f),
+          if (m_bcVer == BTV_FE) {
+            ShootProjectile(PRT_DEVIL_GUIDED_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f),
+			ANGLE3D(AngleDeg((FRnd()-0.5)*30.0f), AngleDeg(FRnd()*10.0f), 0));
+			}
+          if (m_bcVer == BTV_SE) {
+            ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f),
             ANGLE3D(0.0f, 0.0f, 0.0f));
-            //ANGLE3D( AngleDeg(40.0f*Cos(m_iCounter*360.0/6.0f)), AngleDeg(20.0f*Sin(m_iCounter*180.0/6.0f)), 0));
-          //autowait(0.15f);
+			}
+          if (m_bcVer == BTV_MIX) {
+            ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f),
+            ANGLE3D(0.0f, 0.0f, 0.0f));
+			}
           m_iCounter++;
         }
         m_fAttackFireTime = 7.0f;
@@ -418,14 +540,33 @@ procedures:
 
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           autowait(0.5f);
-          ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f),
+          if (m_bcVer == BTV_FE) {
+            ShootProjectile(PRT_DEVIL_GUIDED_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f),
+			ANGLE3D(AngleDeg((FRnd()-0.5)*30.0f), AngleDeg(FRnd()*10.0f), 0));
+			}
+          if (m_bcVer == BTV_SE) {
+            ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f),
             ANGLE3D(0.0f, 0.0f, 0.0f));
-            //ANGLE3D( AngleDeg(20.0f*Cos(m_iCounter*360.0/3.0f)), AngleDeg(10.0f*Sin(m_iCounter*180.0/3.0f)), 0));
-            //ANGLE3D( FRnd()*20.0f-10.0f, FRnd()*10.0f-5.0f, 0));
-          //autowait(0.25f);
+			}
+          if (m_bcVer == BTV_MIX) {
+            ShootProjectile(PRT_BEAST_BIG_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_BEAST_STRETCH, 0.0f),
+            ANGLE3D(0.0f, 0.0f, 0.0f));
+			}
           m_iCounter++;
         }
       }
+    }
+
+    if( m_bcType == BT_E)
+    {
+      StartModelAnim(BEAST_ANIM_ATTACK, AOF_SMOOTHCHANGE);
+      autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
+      PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
+      autowait(0.51f);
+
+      ShootProjectile(PRT_BEAST_E_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BEAST_STRETCH, 0.0f),
+        ANGLE3D(AngleDeg((FRnd()-0.00)*0.0f), AngleDeg(FRnd()*0.0f), 0));
+      autowait(0.3f);
     }
 
     MaybeSwitchToAnotherPlayer();
@@ -484,16 +625,17 @@ procedures:
   Main(EVoid) {
     // declare yourself as a model
     InitAsModel();
-    SetPhysicsFlags(EPF_MODEL_WALKING);
+    SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
+    en_tmMaxHoldBreath = 60.0f;
 
     en_fDensity = 1100.0f;
     // set your appearance
     SetModel(MODEL_BEAST);
     StandingAnim();
     // setup moving speed
-    m_fWalkSpeed = FRnd()*2 + 5.0f;
+    m_fWalkSpeed = FRnd()*2 + 7.0f;
     m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
     m_fCloseRunSpeed = FRnd() + 10.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
@@ -515,8 +657,10 @@ procedures:
       m_aAttackRotateSpeed = AngleDeg(3600.0f);
       SetHealth(400.0f);
       SetModelMainTexture(TEXTURE_BEAST_NORMAL);
-      m_fBlowUpAmount = 10000.0f;
-      m_fBodyParts = 4;
+		m_fgibTexture = TEXTURE_BEAST_NORMAL;
+      m_fBlowUpAmount = 700.0f;
+	    m_fBlowUpSize = 4.0f;
+      m_fBodyParts = 6;
       m_fDamageWounded = 250.0f;
       m_iScore = 5000;//500
       // set stretch factor
@@ -525,14 +669,16 @@ procedures:
       m_sptType = SPT_SLIME;
       m_fAttackFireTime = 3.0f;
     }
-    else if (m_bcType == BT_BIG)
+     if (m_bcType == BT_BIG)
     {
       m_fAttackRunSpeed = 25.0f;//8
       m_aAttackRotateSpeed = AngleDeg(600.0f);
       SetHealth(3000.0f);//500
       SetModelMainTexture(TEXTURE_BEAST_BIG);
-      m_fBlowUpAmount = 10000.0f;//500
-      m_fBodyParts = 6;
+		m_fgibTexture = TEXTURE_BEAST_BIG;
+      m_fBlowUpAmount = 10000000.0f;//500
+	    m_fBlowUpSize = 24.0f;
+      m_fBodyParts = 10;
       m_fDamageWounded = 650.0f;//500
       m_iScore = 25000; //1000
       m_fStopDistance = 15;
@@ -543,14 +689,15 @@ procedures:
       m_sptType = SPT_BLOOD;
       m_fAttackFireTime = 5.0f;
     }
-    else // HUGE
+     if (m_bcType == BT_HUGE)
     {
       m_fAttackRunSpeed = 35.0f;//8
       m_aAttackRotateSpeed = AngleDeg(600.0f);
       SetHealth(6000.0f);//500
       SetModelMainTexture(TEXTURE_BEAST_HUGE);
-      m_fBlowUpAmount = 100000.0f;//500
-      m_fBodyParts = 6;
+		m_fgibTexture = TEXTURE_BEAST_HUGE;
+      m_fBlowUpAmount = 10000000.0f;//500
+      m_fBodyParts = 20;
       m_fDamageWounded = 1650.0f;//500
       m_iScore = 40000; //1000
       m_fStopDistance = 75;
@@ -562,6 +709,24 @@ procedures:
       ModelChangeNotify();
       m_sptType = SPT_BLOOD;
       m_fAttackFireTime = 5.0f;
+    }
+    if (m_bcType == BT_E)
+    {
+      m_fAttackRunSpeed = 6.0f;//6
+      m_aAttackRotateSpeed = AngleDeg(3600.0f);
+      SetHealth(400.0f);
+      SetModelMainTexture(TEXTURE_BEAST_ELECTRIC);
+		m_fgibTexture = TEXTURE_BEAST_ELECTRIC;
+      m_fBlowUpAmount = 700.0f;
+	    m_fBlowUpSize = 4.0f;
+      m_fBodyParts = 6;
+      m_fDamageWounded = 250.0f;
+      m_iScore = 7500;//500
+      // set stretch factor
+      GetModelObject()->StretchModel(FLOAT3D(BEAST_STRETCH, BEAST_STRETCH, BEAST_STRETCH));
+     ModelChangeNotify();
+      m_sptType = SPT_SLIME;
+      m_fAttackFireTime = 3.0f;
     }
     
     m_fMaxHealth = GetHealth();

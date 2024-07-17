@@ -1,55 +1,97 @@
-329
+320
 %{
 #include "StdH.h"
-#include "Models/Enemies/Mantaman/Mantaman.h"
+#include "AREP/Models/Mantaman2/Mantaman.h"
 %}
 
-uses "EntitiesMP/EnemyDive";
+uses "EntitiesMP/EnemyFly";
+uses "EntitiesMP/BasicEffects";
 
 %{
-static EntityInfo eiMantamanLiquid = {
-  EIBT_FLESH, 150.0f,
+// info structure
+static EntityInfo eiMantaFly = {
+  EIBT_FLESH, 160.0f,
   0.0f, 0.0f, 0.0f,
   0.0f, 0.0f, 0.0f,
-
-#define FIRE_WATER    FLOAT3D(0.0f, 0.5f, -1.25f)
 };
+
+#define FIRE_AIR      FLOAT3D(0.0f, 0.25f, -0.65f)
 %}
 
 
-class CMantaman : CEnemyDive {
+class CMantaman : CEnemyFly {
 name      "Mantaman";
 thumbnail "Thumbnails\\Mantaman.tbn";
 
 properties:
-  1 BOOL m_FixedState         "Fixed state" 'X' = FALSE,      // fixed state on beginning
+  4 BOOL m_bSleeping "Sleeping" 'S' = FALSE,  // set to make scorpman sleep initally
 
 components:
-  0 class   CLASS_BASE        "Classes\\EnemyDive.ecl",
-  1 model   MODEL_MANTAMAN    "Models\\Enemies\\Mantaman\\Mantaman.mdl",
-  2 texture TEXTURE_MANTAMAN  "Models\\Enemies\\Mantaman\\Mantaman.tex",
+  0 class   CLASS_BASE        "Classes\\EnemyFly.ecl",
+  1 model   MODEL_MANTA       "AREP\\Models\\Mantaman2\\Mantaman.mdl",
+  2 texture TEXTURE_MANTA     "AREP\\Models\\Mantaman2\\Mantaman.tex",
+  3 class   CLASS_PROJECTILE  "Classes\\Projectile.ecl",
+  9 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
+// ************** FLESH PARTS **************
+  5 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+  6 texture TEXTURE_FLESH_GREEN  "Models\\Effects\\Debris\\Flesh\\FleshGreen.tex",
+
+  7 model   MODEL_DEBRIS_BODY           "AREP\\Models\\Mantaman2\\Debris\\bod.mdl",
+  8 model   MODEL_DEBRIS_WING           "AREP\\Models\\Mantaman2\\Debris\\wing.mdl",
 
 // ************** SOUNDS **************
- 50 sound   SOUND_IDLE      "Models\\Enemies\\Mantaman\\Sounds\\Idle.wav",
- 51 sound   SOUND_SIGHT     "Models\\Enemies\\Mantaman\\Sounds\\Sight.wav",
- 52 sound   SOUND_WOUND     "Models\\Enemies\\Mantaman\\Sounds\\Wound.wav",
- 53 sound   SOUND_FIRE      "Models\\Enemies\\Mantaman\\Sounds\\Fire.wav",
- 54 sound   SOUND_KICK      "Models\\Enemies\\Mantaman\\Sounds\\Kick.wav",
- 55 sound   SOUND_DEATH     "Models\\Enemies\\Mantaman\\Sounds\\Death.wav",
+ 50 sound   SOUND_IDLE      "AREP\\Models\\Mantaman2\\Sounds\\Idle.wav",
+ 51 sound   SOUND_SIGHT     "AREP\\Models\\Mantaman2\\Sounds\\Sight.wav",
+ 52 sound   SOUND_WOUND     "AREP\\Models\\Mantaman2\\Sounds\\Wound.wav",
+ 53 sound   SOUND_FIRE      "AREP\\Models\\Mantaman2\\Sounds\\Fire.wav",
+ 54 sound   SOUND_KICK      "AREP\\Models\\Mantaman2\\Sounds\\Kick.wav",
+ 55 sound   SOUND_DEATH     "AREP\\Models\\Mantaman2\\Sounds\\Death.wav",
 
 functions:
+  // describe how this enemy killed player
+  virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
+  {
+    CTString str;
+    if (eDeath.eLastDamage.dmtType==DMT_CLOSERANGE) {
+      str.PrintF(TRANS("A Mobulon broke all the bones of %s"), strPlayerName);
+    } else {
+      str.PrintF(TRANS("A Mobulon eliminated %s"), strPlayerName);
+    }
+    return str;
+  }
+  virtual const CTFileName &GetComputerMessageName(void) const {
+    static DECLARE_CTFILENAME(fnm,  "DataMP\\Messages\\Enemies\\AREP\\Mantaman.txt");
+    return fnm;
+  }
+  void Precache(void) {
+    CEnemyBase::Precache();
+    PrecacheSound(SOUND_IDLE );
+    PrecacheSound(SOUND_SIGHT);
+    PrecacheSound(SOUND_WOUND);
+    PrecacheSound(SOUND_FIRE );
+    PrecacheSound(SOUND_KICK );
+    PrecacheSound(SOUND_DEATH);
+    PrecacheClass(CLASS_PROJECTILE, PRT_MANTAMAN_FIRE);
+
+    PrecacheModel(MODEL_DEBRIS_BODY);
+    PrecacheModel(MODEL_DEBRIS_WING);
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_GREEN);
+    PrecacheClass(CLASS_BASIC_EFFECT, BET_FLESH_SPLAT_FX);
+  };
+
   /* Entity info */
   void *GetEntityInfo(void) {
-    return &eiMantamanLiquid;
+      return &eiMantaFly;
   };
 
   /* Receive damage */
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
-    // mantaman can't harm mantaman
+    // woman can't harm woman
     if (!IsOfClass(penInflictor, "Mantaman")) {
-      CEnemyDive::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+      CEnemyFly::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
     }
   };
 
@@ -57,21 +99,29 @@ functions:
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
     INDEX iAnim;
-    switch (IRnd()%2) {
-      case 0: iAnim = MANTAMAN_ANIM_WOUND01; break;
-      case 1: iAnim = MANTAMAN_ANIM_WOUND02; break;
-      default: ASSERTALWAYS("Mantaman unknown liquid damage");
-    }
+    iAnim = MANTAMAN_ANIM_WOUND02;
     StartModelAnim(iAnim, 0);
     return iAnim;
   };
 
   // death
   INDEX AnimForDeath(void) {
-    StartModelAnim(MANTAMAN_ANIM_DEATH, 0);
-    return MANTAMAN_ANIM_DEATH;
+    INDEX iAnim;
+    if (m_bInAir) {
+      iAnim = MANTAMAN_ANIM_DEATH;
+    }
+    StartModelAnim(iAnim, 0);
+    return iAnim;
   };
 
+  FLOAT WaitForDust(FLOAT3D &vStretch) {
+    if(GetModelObject()->GetAnim()==MANTAMAN_ANIM_DEATH)
+    {
+      vStretch=FLOAT3D(1,1,2)*1.0f;
+      return 0.6f;
+    return -1.0f;
+  };
+}
   void DeathNotify(void) {
     ChangeCollisionBoxIndexWhenPossible(MANTAMAN_COLLISION_BOX_DEATH);
     en_fDensity = 500.0f;
@@ -79,26 +129,24 @@ functions:
 
   // virtual anim functions
   void StandingAnim(void) {
-    if (m_FixedState) {
-      StartModelAnim(MANTAMAN_ANIM_DEFAULT_ANIMATION02, AOF_LOOPING|AOF_NORESTART);
-    } else {
+    if (m_bInAir) {
       StartModelAnim(MANTAMAN_ANIM_STANDORANDSWIMSLOW, AOF_LOOPING|AOF_NORESTART);
     }
   };
   void WalkingAnim(void) {
-    StartModelAnim(MANTAMAN_ANIM_STANDORANDSWIMSLOW, AOF_LOOPING|AOF_NORESTART);
+    if (m_bInAir) {
+      StartModelAnim(MANTAMAN_ANIM_STANDORANDSWIMSLOW, AOF_LOOPING|AOF_NORESTART);
+    }
   };
   void RunningAnim(void) {
-    StartModelAnim(MANTAMAN_ANIM_SWIMFAST, AOF_LOOPING|AOF_NORESTART);
+    if (m_bInAir) {
+      StartModelAnim(MANTAMAN_ANIM_SWIMFAST, AOF_LOOPING|AOF_NORESTART);
+    }
   };
   void RotatingAnim(void) {
-    StartModelAnim(MANTAMAN_ANIM_STANDORANDSWIMSLOW, AOF_LOOPING|AOF_NORESTART);
-  };
-  void ChangeCollisionToLiquid() {
-    ChangeCollisionBoxIndexWhenPossible(MANTAMAN_COLLISION_BOX_DEAFULT);
-  };
-  void ChangeCollisionToGround() {
-    ChangeCollisionBoxIndexWhenPossible(MANTAMAN_COLLISION_BOX_DEAFULT);
+    if (m_bInAir) {
+      StartModelAnim(MANTAMAN_ANIM_SWIMFAST, AOF_LOOPING|AOF_NORESTART);
+    }
   };
 
   // virtual sound functions
@@ -115,36 +163,197 @@ functions:
     PlaySound(m_soSound, SOUND_DEATH, SOF_3D);
   };
 
+/************************************************************
+ *                     MOVING FUNCTIONS                     *
+ ************************************************************/
+  // check whether may move while attacking
+  BOOL MayMoveToAttack(void) 
+  {
+    if (m_bInAir) {
+      return WouldNotLeaveAttackRadius();
+    } else {
+      return CEnemyBase::MayMoveToAttack();
+    }
+  }
+
+  // must be more relaxed about hitting then usual enemies
+  BOOL CanHitEnemy(CEntity *penTarget, FLOAT fCosAngle) {
+    if (IsInPlaneFrustum(penTarget, fCosAngle)) {
+      return IsVisibleCheckAll(penTarget);
+    }
+    return FALSE;
+  };
+
+
+/************************************************************
+ *                 BLOW UP FUNCTIONS                        *
+ ************************************************************/
+  // spawn body parts
+  void BlowUp(void) {
+    // get your size
+    FLOATaabbox3D box;
+    GetBoundingBox(box);
+    FLOAT fEntitySize = box.Size().MaxNorm();
+
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+
+    vNormalizedDamage *= 0.5f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+      ULONG ulFleshTexture = TEXTURE_FLESH_GREEN;
+      ULONG ulFleshModel   = MODEL_FLESH;
+      // spawn debris
+      Debris_Begin(EIBT_FLESH, DPT_SLIMETRAIL, BET_GIZMOSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+   
+    Debris_Spawn(this, this, MODEL_DEBRIS_BODY, TEXTURE_MANTA, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_WING, TEXTURE_MANTA, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_WING, TEXTURE_MANTA, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.3f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+    // hide yourself (must do this after spawning debris)
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+  };
+  
 
 procedures:
 /************************************************************
  *                A T T A C K   E N E M Y                   *
  ************************************************************/
-  AttackEnemy(EVoid) : CEnemyBase::AttackEnemy {
-    if (m_FixedState) {
-      m_FixedState = FALSE;
-      StartModelAnim(MANTAMAN_ANIM_MORPH, 0);
-      wait(GetModelObject()->GetAnimLength(MANTAMAN_ANIM_MORPH)) {
-        on (EBegin) : { resume; }
-        on (ETimer) : { stop; }
-        on (EWatch) : { resume; }
-        on (EDamage) : { resume; }
-      }
-    }
-    jump CEnemyBase::AttackEnemy();
-  };
+  FlyFire(EVoid) : CEnemyFly::FlyFire {
 
-
-  DiveFire(EVoid) : CEnemyDive::DiveFire {
     // fire projectile
     StartModelAnim(MANTAMAN_ANIM_ATTACK01, 0);
-    autowait(0.3f);
-    ShootProjectile(PRT_MANTAMAN_FIRE, FIRE_WATER, ANGLE3D(0, 0, 0));
+    autowait(0.2f);
+    ShootProjectile(PRT_MANTAMAN_FIRE, FIRE_AIR, ANGLE3D(0, 0, 0));
     PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-    autowait(0.8f);
+    autowait(0.6f);
     StandingAnim();
     autowait(FRnd()/2 + _pTimer->TickQuantum);
 
+    return EReturn();
+  };
+  
+  FlyHit(EVoid) : CEnemyFly::FlyHit {
+
+    // if enemy near
+    if (CalcDist(m_penEnemy) <= 5.0f) {
+        jump FlyOnEnemy();{
+      }
+    }
+
+    // run to enemy
+    m_fShootTime = _pTimer->CurrentTick() + 0.25f;
+    return EReturn();
+  };
+
+  Sleep(EVoid)
+  {
+    // start sleeping anim
+    StartModelAnim(MANTAMAN_ANIM_DEFAULT_ANIMATION02, AOF_LOOPING);
+    // repeat
+    wait() {
+      // if triggered
+      on(ETrigger eTrigger) : {
+        // remember enemy
+        SetTargetSoft(eTrigger.penCaused);
+        // wake up
+        jump WakeUp();
+      }
+      // if damaged
+      on(EDamage eDamage) : {
+        // wake up
+        jump WakeUp();
+      }
+      otherwise() : {
+        resume;
+      }
+    }
+  }
+
+  WakeUp(EVoid)
+  {
+    // wakeup anim
+    SightSound();
+    StartModelAnim(MANTAMAN_ANIM_MORPH, 0);
+    autowait(GetModelObject()->GetCurrentAnimLength());
+
+    // trigger your target
+    SendToTarget(m_penDeathTarget, m_eetDeathType);
+    // proceed with normal functioning
+    return EReturn();
+  }
+
+  // overridable called before main enemy loop actually begins
+  PreMainLoop(EVoid) : CEnemyBase::PreMainLoop
+  {
+    // if sleeping
+    if (m_bSleeping) {
+      m_bSleeping = FALSE;
+      // go to sleep until waken up
+      wait() {
+        on (EBegin) : {
+          call Sleep();
+        }
+        on (EReturn) : {
+          stop;
+        };
+        // if dead
+        on(EDeath eDeath) : {
+          // die
+          jump CEnemyBase::Die(eDeath);
+        }
+      }
+    }
+    return EReturn();
+  }
+
+/************************************************************
+ *                    D  E  A  T  H                         *
+ ************************************************************/
+  Death(EVoid) : CEnemyFly::Death {
+    jump CEnemyFly::Death();
+  };
+
+  FlyOnEnemy(EVoid) {
+    StartModelAnim(MANTAMAN_ANIM_ATTACK02, 0);
+
+    // jump
+    FLOAT3D vDir = PlayerDestinationPos();
+    vDir = (vDir - GetPlacement().pl_PositionVector).Normalize();
+    vDir *= !GetRotationMatrix();
+    vDir *= m_fFlyCloseRunSpeed*1.9f;
+    SetDesiredTranslation(vDir);
+    PlaySound(m_soSound, SOUND_KICK, SOF_3D);
+
+    // animation - IGNORE DAMAGE WOUND -
+    SpawnReminder(this, 0.9f, 0);
+    m_iChargeHitAnimation = MANTAMAN_ANIM_ATTACK02;
+    m_fChargeHitDamage = 20.0f;
+    m_fChargeHitAngle = 0.0f;
+    m_fChargeHitSpeed = 10.0f;
+    autocall CEnemyBase::ChargeHitEnemy() EReturn;
+
+    StandingAnim();
+    autowait(0.3f);
     return EReturn();
   };
 
@@ -154,44 +363,63 @@ procedures:
  *                       M  A  I  N                         *
  ************************************************************/
   Main(EVoid) {
+      if (m_EeftType==EFT_FLY_GROUND_GROUND | EFT_FLY_GROUND_AIR | EFT_FLY_AIR_GROUND | EFT_FLY_AIR_AIR | EFT_GROUND_ONLY) {
+      m_EeftType=EFT_FLY_ONLY;
+    }
     // declare yourself as a model
     InitAsModel();
-    SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASGILLS);
+    SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS|EPF_HASGILLS);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
-    SetHealth(50.0f);
-    m_fMaxHealth = 50.0f;
-    en_tmMaxHoldBreath = 5.0f;
-    en_fDensity = 1000.0f;
+    SetHealth(170.0f);
+    m_fMaxHealth = 170.0f;
+    en_fDensity = 2000.0f;
+	m_EeftType=EFT_FLY_ONLY;
+    m_sptType = SPT_SLIME;
+    
 
     // set your appearance
-    SetModel(MODEL_MANTAMAN);
-    SetModelMainTexture(TEXTURE_MANTAMAN);
-    // dive moving properties
-    m_fDiveWalkSpeed = FRnd() + 2.0f;
-    m_aDiveWalkRotateSpeed = FRnd()*10.0f + 500.0f;
-    m_fDiveAttackRunSpeed = FRnd()*4.0f + 14.0f;
-    m_aDiveAttackRotateSpeed = FRnd()*25 + 250.0f;
-    m_fDiveCloseRunSpeed = FRnd()*2.0f + 6.5f;
-    m_aDiveCloseRotateSpeed = FRnd()*50 + 250.0f;
-    // attack properties
-    m_fDiveAttackDistance = 100.0f;
-    m_fDiveCloseDistance = 0.0f;
-    m_fDiveStopDistance = 5.0f;
-    m_fDiveAttackFireTime = 3.0f;
-    m_fDiveCloseFireTime = 2.0f;
-    m_fDiveIgnoreRange = 200.0f;
+    SetModel(MODEL_MANTA);
+    SetModelMainTexture(TEXTURE_MANTA);
+    // setup moving speed
+    m_fWalkSpeed = FRnd() + 1.2f;
+    m_aWalkRotateSpeed = FRnd()*10.0f + 25.0f;
+    m_fAttackRunSpeed = FRnd()*2.0f + 7.5f;
+    m_aAttackRotateSpeed = FRnd()*50 + 245.0f;
+    m_fCloseRunSpeed = FRnd()*2.0f + 8.0f;
+    m_aCloseRotateSpeed = FRnd()*50 + 245.0f;
+    // setup attack distances
+    m_fAttackDistance = 70.0f;
+    m_fCloseDistance = 5.0f;
+    m_fStopDistance = 0.0f;
+    m_fAttackFireTime = 3.0f;
+    m_fCloseFireTime = 2.0f;
+    m_fIgnoreRange = 200.0f;
+    // fly moving properties
+    m_fFlyWalkSpeed = FRnd()/2 + 0.5f;
+    m_aFlyWalkRotateSpeed = FRnd()*10.0f + 25.0f;
+    m_fFlyAttackRunSpeed = FRnd()*2.0f + 8.0f;
+    m_aFlyAttackRotateSpeed = FRnd()*25 + 150.0f;
+    m_fFlyCloseRunSpeed = FRnd()*2.0f + 12.0f;
+    m_aFlyCloseRotateSpeed = FRnd()*50 + 500.0f;
+    // attack properties - CAN BE SET
+    m_fFlyAttackDistance = 75.0f;
+    m_fFlyCloseDistance = 12.5f;
+    m_fFlyStopDistance = 0.0f;
+    m_fFlyAttackFireTime = 3.0f;
+    m_fFlyCloseFireTime = 2.0f;
+    m_fFlyIgnoreRange = 200.0f;
     // damage/explode properties
-    m_fBlowUpAmount = 140.0f;
-    m_fBodyParts = 4;
-    m_fDamageWounded = 30.0f;
+    m_fBlowUpAmount = 340.0f;
+    m_fBodyParts = 3;
+	m_fBlowUpSize = 2.0f;
+    m_fDamageWounded = 100.0f;
     m_iScore = 2000;
 
-
-    // allowed types
-    m_EedtType = EDT_DIVE_ONLY;
+    // set stretch factors for height and width
+    CEnemyBase::SizeModel();
 
     // continue behavior in base class
-    jump CEnemyDive::MainLoop();
+    jump CEnemyFly::MainLoop();
   };
 };

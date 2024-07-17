@@ -82,6 +82,12 @@ functions:
         Particles_DamageSmoke(this, m_tmStarted, m_boxSizedOwner, m_fDamagePower);
         Particles_ElectricitySparks( this, m_tmStarted, 5.0f, 0.0f, 32);
       break;
+    case SPT_PLASMA_SMALL:
+        Particles_BloodSpray(m_sptType, GetLerpedPlacement().pl_PositionVector, m_vGDir, m_fGA,
+          m_boxSizedOwner, m_vDirection, m_tmStarted, m_fDamagePower);
+        Particles_DamageSmoke(this, m_tmStarted, m_boxSizedOwner, m_fDamagePower);
+        Particles_ElectricitySparks( this, m_tmStarted, 5.0f, 0.0f, 32);
+      break;
     case SPT_ELECTRICITY_SPARKS:
       {
         Particles_MetalParts(this, m_tmStarted, m_boxSizedOwner, m_fDamagePower);
