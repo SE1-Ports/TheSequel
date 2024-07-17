@@ -147,8 +147,8 @@
     <IntDir>$(ObjDir)</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(SdkExe)</ExecutablePath>
-    <IncludePath>$(SamEngineIncludes);$(SdkIncl)</IncludePath>
-    <LibraryPath>$(SamEngineLibraries);$(SdkLibs)</LibraryPath>
+    <IncludePath>$(SdkIncl);$(SamEngineIncludes)</IncludePath>
+    <LibraryPath>$(SdkLibs);$(SamEngineLibraries)</LibraryPath>
     <TargetName>EntitiesMP</TargetName>
     <OutDir>$(BinDir)</OutDir>
   </PropertyGroup>
@@ -156,8 +156,8 @@
     <IntDir>$(ObjDir)</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(SdkExe)</ExecutablePath>
-    <IncludePath>$(SamEngineIncludes);$(SdkIncl)</IncludePath>
-    <LibraryPath>$(SamEngineLibraries);$(SdkLibs)</LibraryPath>
+    <IncludePath>$(SdkIncl);$(SamEngineIncludes)</IncludePath>
+    <LibraryPath>$(SdkLibs);$(SamEngineLibraries)</LibraryPath>
     <TargetName>EntitiesMP</TargetName>
     <OutDir>$(BinDir)</OutDir>
   </PropertyGroup>
@@ -165,8 +165,8 @@
     <IntDir>$(ObjDir)</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(SdkExe)</ExecutablePath>
-    <IncludePath>$(SamEngineIncludes);$(SdkIncl)</IncludePath>
-    <LibraryPath>$(SamEngineLibraries);$(SdkLibs)</LibraryPath>
+    <IncludePath>$(SdkIncl);$(SamEngineIncludes)</IncludePath>
+    <LibraryPath>$(SdkLibs);$(SamEngineLibraries)</LibraryPath>
     <TargetName>Entities</TargetName>
     <OutDir>$(BinDir)</OutDir>
   </PropertyGroup>
@@ -175,8 +175,8 @@
     <IntDir>$(ObjDir)</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(SdkExe)</ExecutablePath>
-    <IncludePath>$(SamEngineIncludes);$(SdkIncl)</IncludePath>
-    <LibraryPath>$(SamEngineLibraries);$(SdkLibs)</LibraryPath>
+    <IncludePath>$(SdkIncl);$(SamEngineIncludes)</IncludePath>
+    <LibraryPath>$(SdkLibs);$(SamEngineLibraries)</LibraryPath>
     <TargetName>EntitiesMP</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_TSE107|Win32'">
@@ -184,8 +184,8 @@
     <IntDir>$(ObjDir)</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(SdkExe)</ExecutablePath>
-    <IncludePath>$(SamEngineIncludes);$(SdkIncl)</IncludePath>
-    <LibraryPath>$(SamEngineLibraries);$(SdkLibs)</LibraryPath>
+    <IncludePath>$(SdkIncl);$(SamEngineIncludes)</IncludePath>
+    <LibraryPath>$(SdkLibs);$(SamEngineLibraries)</LibraryPath>
     <TargetName>EntitiesMPD</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_TSE105|Win32'">
@@ -193,8 +193,8 @@
     <IntDir>$(ObjDir)</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(SdkExe)</ExecutablePath>
-    <IncludePath>$(SamEngineIncludes);$(SdkIncl)</IncludePath>
-    <LibraryPath>$(SamEngineLibraries);$(SdkLibs)</LibraryPath>
+    <IncludePath>$(SdkIncl);$(SamEngineIncludes)</IncludePath>
+    <LibraryPath>$(SdkLibs);$(SamEngineLibraries)</LibraryPath>
     <TargetName>EntitiesMPD</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_TFE105|Win32'">
@@ -202,8 +202,8 @@
     <IntDir>$(ObjDir)</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(SdkExe)</ExecutablePath>
-    <IncludePath>$(SamEngineIncludes);$(SdkIncl)</IncludePath>
-    <LibraryPath>$(SamEngineLibraries);$(SdkLibs)</LibraryPath>
+    <IncludePath>$(SdkIncl);$(SamEngineIncludes)</IncludePath>
+    <LibraryPath>$(SdkLibs);$(SamEngineLibraries)</LibraryPath>
     <TargetName>EntitiesD</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_TSE110|Win32'">
@@ -211,8 +211,8 @@
     <IntDir>$(ObjDir)</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(SdkExe)</ExecutablePath>
-    <IncludePath>$(SamEngineIncludes);$(SdkIncl)</IncludePath>
-    <LibraryPath>$(SamEngineLibraries);$(SdkLibs)</LibraryPath>
+    <IncludePath>$(SdkIncl);$(SamEngineIncludes)</IncludePath>
+    <LibraryPath>$(SdkLibs);$(SamEngineLibraries)</LibraryPath>
     <TargetName>EntitiesMPD</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_TSE107|Win32'">
