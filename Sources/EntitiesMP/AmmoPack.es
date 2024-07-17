@@ -10,6 +10,7 @@ uses "EntitiesMP/Item";
 enum AmmoPackType {
   1 APT_CUSTOM        "Custom pack",
   2 APT_SERIOUS       "Serious pack",
+  3 APT_ALT           "Secondary pack",
 };
 
 // event for sending through receive item
@@ -21,10 +22,13 @@ event EAmmoPackItem {
   INDEX iNapalm,                
   INDEX iElectricity,                
   INDEX iIronBalls,                
-//  INDEX iNukeBalls,     
+  INDEX iNukeBalls,     
   INDEX iSniperBullets,    
   INDEX iPlasma,           
   INDEX iDev,           
+  INDEX iSGG,    
+  INDEX iCG,           
+  INDEX iHR,        
 };
 
 class CAmmoPack : CItem {
@@ -41,10 +45,13 @@ properties:
  14 INDEX m_iNapalm                "Napalm"         'P'   = MAX_NAPALM,
  15 INDEX m_iElectricity           "Electricity"    'E'   = MAX_ELECTRICITY,
  16 INDEX m_iIronBalls             "Iron balls"     'I'   = MAX_IRONBALLS,
-// 17 INDEX m_iNukeBalls             "Nuke balls"    'U'   = MAX_NUKEBALLS,
+ 23 INDEX m_iNukeBalls             "Nuke balls"    'U'   = MAX_NUKEBALLS,
  17 INDEX m_iSniperBullets         "Sniper bullets" 'N'   = MAX_SNIPERBULLETS,
  18 INDEX m_iPlasma                "Plasma" 'S'   = MAX_PLASMA,
  19 INDEX m_iDev                   "Devastator" 'D'   = MAX_DEV,
+ 20 INDEX m_iSGG         "Shotgun grenades"   = MAX_SGG,
+ 21 INDEX m_iCG                "Cluster grenades"   = MAX_CG,
+ 22 INDEX m_iHR                   "Homing rockets"   = MAX_HR,
 
 components:
   0 class   CLASS_BASE        "Classes\\Item.ecl",
@@ -56,6 +63,9 @@ components:
 // ********* SERIOUS PACK *********
  70 model   MODEL_SERIOUSPACK      "Models\\Items\\PowerUps\\SeriousPack\\SeriousPack.mdl",
  71 texture TEXTURE_SERIOUSPACK    "Models\\Items\\PowerUps\\SeriousPack\\SeriousPack.tex",
+
+// ********* ALT PACK *********
+ 81 texture TEXTURE_ALTPACK    "ModelsF\\Items\\PowerUps\\AltPack\\AltPack.tex",
 
 // ************** FLARE FOR EFFECT **************
 100 texture TEXTURE_FLARE "Models\\Items\\Flares\\Flare.tex",
@@ -92,8 +102,8 @@ functions:
 //      m_iShells, m_iBullets, m_iRockets, m_iGrenades, m_iNapalm, m_iElectricity, m_iIronBalls, m_iNukeBalls); 
 //    pes->es_strName.PrintF("Back pack: %d Shells, %d Bullets, %d Rockets, %d Grenades, %d Electricity, %d Iron balls",
 //      m_iShells, m_iBullets, m_iRockets, m_iGrenades, m_iElectricity, m_iIronBalls); 
-    pes->es_strName.PrintF("Back pack: %d Shells, %d Bullets, %d Rockets, %d Grenades, %d Napalm, %d Electricity, %d Iron balls, %d Sniper bullets",
-      m_iShells, m_iBullets, m_iRockets, m_iGrenades, m_iNapalm, m_iElectricity, m_iIronBalls, m_iSniperBullets); 
+    pes->es_strName.PrintF("Back pack: %d Shells, %d Bullets, %d Rockets, %d Grenades, %d Napalm, %d Electricity, %d Iron balls, %d Sniper bullets, %d Plasma, %d Devastator shells, %d Shotgun grenades, %d Homing rockets, %d Cluster grenades, %d Nuke balls",
+      m_iShells, m_iBullets, m_iRockets, m_iGrenades, m_iNapalm, m_iElectricity, m_iIronBalls, m_iSniperBullets, m_iPlasma, m_iDev, m_iSGG, m_iHR, m_iCG, m_iNukeBalls); 
 
     // calculate value
     pes->es_fValue = 
@@ -106,7 +116,10 @@ functions:
       m_iIronBalls*AV_IRONBALLS +
       m_iPlasma*AV_PLASMA + 
       m_iDev*AV_DEV + 
-      m_iSniperBullets*AV_SNIPERBULLETS/*+ 
+      m_iSniperBullets*AV_SNIPERBULLETS + 
+      m_iSGG*AV_SGG + 
+      m_iHR*AV_HR + 
+      m_iCG*AV_CG/*+ 
       m_iNukeBalls*AV_NUKEBALLS*/;
 
     pes->es_iScore = 0;
@@ -132,6 +145,13 @@ functions:
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.75f,0), FLOAT3D(2,2,1.3f) );
         StretchItem(FLOAT3D(0.5f, 0.5f, 0.5f));
         break;
+      case APT_ALT:
+        m_strDescription = "Secondary:";
+        // set appearance
+        AddItem(MODEL_BACKPACK, TEXTURE_ALTPACK, 0,0,0);
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.75f,0), FLOAT3D(2,2,1.3f) );
+        StretchItem(FLOAT3D(0.5f, 0.5f, 0.5f));
+        break;
       default: ASSERTALWAYS("Uknown ammo");
     }
 
@@ -144,10 +164,13 @@ functions:
     if( m_iNapalm != 0) {m_strDescription.PrintF("%s: Napalm (%d)", m_strDescription, m_iNapalm);}
     if( m_iElectricity != 0) {m_strDescription.PrintF("%s: Electricity (%d)", m_strDescription, m_iElectricity);}
     if( m_iIronBalls != 0) {m_strDescription.PrintF("%s: Iron balls (%d)", m_strDescription, m_iIronBalls);}
-//    if( m_iNukeBalls != 0) {m_strDescription.PrintF("%s: Nuke balls (%d)", m_strDescription, m_iNukeBalls);}
+    if( m_iNukeBalls != 0) {m_strDescription.PrintF("%s: Nuke balls (%d)", m_strDescription, m_iNukeBalls);}
     if( m_iSniperBullets != 0) {m_strDescription.PrintF("%s: Sniper bullets (%d)", m_strDescription, m_iSniperBullets);}
     if( m_iPlasma != 0) {m_strDescription.PrintF("%s: Plasma (%d)", m_strDescription, m_iPlasma);}
     if( m_iDev != 0) {m_strDescription.PrintF("%s: Devastator (%d)", m_strDescription, m_iDev);}
+    if( m_iSGG != 0) {m_strDescription.PrintF("%s: Shotgun grenades (%d)", m_strDescription, m_iSGG);}
+    if( m_iCG != 0) {m_strDescription.PrintF("%s: Cluster grenades (%d)", m_strDescription, m_iCG);}
+    if( m_iHR != 0) {m_strDescription.PrintF("%s: Homing rockets (%d)", m_strDescription, m_iHR);}
   }
 
   void AdjustDifficulty(void)
@@ -183,10 +206,13 @@ procedures:
     eAmmo.iNapalm = m_iNapalm;
     eAmmo.iElectricity = m_iElectricity;
     eAmmo.iIronBalls = m_iIronBalls;
-//    eAmmo.iNukeBalls = m_iNukeBalls;
+    eAmmo.iNukeBalls = m_iNukeBalls;
     eAmmo.iSniperBullets = m_iSniperBullets;
     eAmmo.iPlasma = m_iPlasma;
     eAmmo.iDev = m_iDev;
+    eAmmo.iSGG = m_iSGG;
+    eAmmo.iCG = m_iCG;
+    eAmmo.iHR = m_iHR;
     // if health is received
     if (epass.penOther->ReceiveItem(eAmmo)) {
       // play the pickup sound
@@ -208,10 +234,13 @@ procedures:
     m_iNapalm = Clamp( m_iNapalm, INDEX(0), MAX_NAPALM);
     m_iElectricity = Clamp( m_iElectricity, INDEX(0), MAX_ELECTRICITY);
     m_iIronBalls = Clamp( m_iIronBalls, INDEX(0), MAX_IRONBALLS);
-//    m_iNukeBalls = Clamp( m_iNukeBalls, INDEX(0), MAX_NUKEBALLS);
     m_iSniperBullets = Clamp( m_iSniperBullets, INDEX(0), MAX_SNIPERBULLETS);
     m_iPlasma = Clamp( m_iPlasma, INDEX(0), MAX_PLASMA);
     m_iDev = Clamp( m_iDev, INDEX(0), MAX_DEV);
+    m_iNukeBalls = Clamp( m_iNukeBalls, INDEX(0), MAX_NUKEBALLS);
+    m_iSGG = Clamp( m_iSGG, INDEX(0), MAX_SGG);
+    m_iCG = Clamp( m_iCG, INDEX(0), MAX_CG);
+    m_iHR = Clamp( m_iHR, INDEX(0), MAX_HR);
 
     Initialize();     // initialize base class
     StartModelAnim(ITEMHOLDER_ANIM_MEDIUMOSCILATION, AOF_LOOPING|AOF_NORESTART);

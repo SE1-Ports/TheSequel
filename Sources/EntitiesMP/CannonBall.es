@@ -53,8 +53,8 @@ event EForceExplode {
 #define NUKE_DAMAGE_MIN 1000.0f
 #define NUKE_DAMAGE_MAX 2000.0f
 #define NUKE_RANGE_DAMAGE (1000.0f/13)   // because we have 13 explosions
-#define NUKE_RANGE_HOTSPOT 20.0f
-#define NUKE_RANGE_FALLOFF 40.0f
+#define NUKE_RANGE_HOTSPOT 30.0f
+#define NUKE_RANGE_FALLOFF 50.0f
 
 #define WEAK_DAMAGE_MIN 30.0f
 #define WEAK_DAMAGE_MAX 60.0f
@@ -150,7 +150,7 @@ components:
 211 texture TEX_SPEC_MEDIUM       "Models\\SpecularTextures\\Medium.tex",
 
 300 model   MODEL_DEV            "ModelsF\\Weapons\\Devastator\\Projectile\\Projectile.mdl",
-301 texture TEXTURE_DEV          "ModelsF\\Weapons\\Devastator\\Projectile\\Projectile.tex",
+301 texture TEXTURE_DEV          "ModelsF\\Weapons\\Devastator\\Magazine.tex",
 
 functions:
   // premoving

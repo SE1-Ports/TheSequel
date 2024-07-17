@@ -6,6 +6,7 @@
 uses "EntitiesMP/BasicEffects";
 uses "EntitiesMP/Light";
 uses "EntitiesMP/AmmoItem";
+uses "EntitiesMP/Projectile";
 
 // input parameter for launching the projectile
 event EDropPipebomb {
@@ -27,6 +28,7 @@ void CPipebomb_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   pdec->PrecacheModel(MODEL_PIPEBOMB);
   pdec->PrecacheTexture(TEXTURE_PIPEBOMB);
   pdec->PrecacheSound(SOUND_LAUNCH);
+  pdec->PrecacheClass(CLASS_PROJECTILE, PRT_GRENADE_CLUSTERED);
 }
 %}
 
@@ -37,9 +39,11 @@ features "ImplementsOnPrecache", "CanBePredictable";
 
 properties:
   1 CEntityPointer m_penLauncher,     // who lanuched it
-  2 FLOAT m_fIgnoreTime = 0.0f,       // time when laucher will be ignored
+  2 FLOAT m_fIgnoreTime = 0.5f,       // time when laucher will be ignored
   3 FLOAT m_fSpeed = 0.0f,            // launch speed
   4 BOOL m_bCollected = FALSE,        // collect -> do not explode
+  5 FLOAT m_tmExpandBox = 0.5f,              // expand collision after a few seconds
+  6 FLOAT m_fStartTime = 0.0f,               // start time when launched
 
 {
   CLightSource m_lsLightSource;
@@ -48,13 +52,25 @@ properties:
 components:
   1 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
   2 class   CLASS_LIGHT         "Classes\\Light.ecl",
+  3 class   CLASS_PROJECTILE        "Classes\\Projectile.ecl",
 
 // ********* PIPEBOMB (GRENADE) *********
- 10 model   MODEL_PIPEBOMB      "Models\\Weapons\\Pipebomb\\Grenade\\Grenade.mdl",
- 11 texture TEXTURE_PIPEBOMB    "Models\\Weapons\\Pipebomb\\Grenade\\Grenade.tex",
- 12 sound   SOUND_LAUNCH        "Sounds\\Weapons\\RocketFired.wav",
+ 10 model   MODEL_PIPEBOMB      "Models\\Weapons\\GrenadeLauncherNE\\Grenade\\Grenade.mdl",
+ 11 texture TEXTURE_PIPEBOMB    "Models\\Weapons\\GrenadeLauncherNE\\Grenade\\Grenade.tex",
+ 12 sound   SOUND_LAUNCH        "Models\\Weapons\\GrenadeLauncherHD\\Sounds\\Cluster.wav",
 
 functions:
+  // premoving
+  void PreMoving(void) {
+    if (m_tmExpandBox>0) {
+      if (_pTimer->CurrentTick()>m_fStartTime+m_tmExpandBox) {
+        ChangeCollisionBoxIndexWhenPossible(1);
+        m_tmExpandBox = 0;
+      }
+    }
+    CMovableModelEntity::PreMoving();
+  }
+
   /* Read from stream. */
   void Read_t( CTStream *istr) // throw char *
   {
@@ -79,8 +95,8 @@ functions:
     CLightSource lsNew;
     lsNew.ls_ulFlags = LSF_NONPERSISTENT|LSF_DYNAMIC;
     lsNew.ls_colColor = C_vdRED;
-    lsNew.ls_rFallOff = 1.0f;
-    lsNew.ls_rHotSpot = 0.1f;
+    lsNew.ls_rFallOff = 2.0f;
+    lsNew.ls_rHotSpot = 0.2f;
     lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
     lsNew.ls_ubPolygonalMask = 0;
     lsNew.ls_paoLightAnimation = NULL;
@@ -115,6 +131,7 @@ void Pipebomb(void) {
   en_fCollisionSpeedLimit = 45.0f;
   en_fCollisionDamageFactor = 10.0f;
   SetHealth(20.0f);
+  m_tmExpandBox = 0.5f;
 };
 
 void PipebombExplosion(void) {
@@ -149,6 +166,112 @@ void PipebombExplosion(void) {
       ese.vNormal = FLOAT3D(vPlaneNormal);
       SpawnEffect(CPlacement3D(vPoint+ese.vNormal/50.0f, ANGLE3D(0, 0, 0)), ese);
     }
+  }
+  // spawn grenades
+  for( INDEX iDebris1=0; iDebris1<1; iDebris1++)
+  {
+    FLOAT fHeading = 0.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris2=0; iDebris2<1; iDebris2++)
+  {
+    FLOAT fHeading = 75.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris3=0; iDebris3<1; iDebris3++)
+  {
+    FLOAT fHeading = -75.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris4=0; iDebris4<1; iDebris4++)
+  {
+    FLOAT fHeading = 150.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris5=0; iDebris5<1; iDebris5++)
+  {
+    FLOAT fHeading = -150.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
   }
 };
 
@@ -194,7 +317,7 @@ procedures:
       on (ETouch etouch) : {
         // clear time limit for launcher
         if (etouch.penOther->GetRenderType() & RT_BRUSH) {
-          m_fIgnoreTime = 0.0f;
+          m_fIgnoreTime = 0.5f;
           resume;
         }
 
@@ -205,7 +328,7 @@ procedures:
         bCollect &= (en_vCurrentTranslationAbsolute.Length() < 0.25f);
         // only if can be collected
         EAmmoItem eai;
-        eai.EaitType = AIT_GRENADES;
+        eai.EaitType = AIT_CG;
         eai.iQuantity = 1;
         if (bCollect && etouch.penOther->ReceiveItem(eai)) {
           m_bCollected = TRUE;
