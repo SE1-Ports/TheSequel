@@ -4,6 +4,7 @@
 #include "StdH.h"
 #include "AREP/Models/DevilAlpha/Devil.h"
 #include "AREP/Models/DevilAlpha/Stick.h"
+#include "AREP/Models/DevilAlpha/Flare.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -440,9 +441,9 @@ procedures:
     SetModelMainTexture(TEXTURE_DEVILALPHA);
     AddAttachment(DEVIL_ATTACHMENT_MINIGUN, MODEL_GUN, TEXTURE_GUN);
     AddAttachment(DEVIL_ATTACHMENT_STICK, MODEL_STICK, TEXTURE_STICK);
-     CModelObject *pmoStick = &GetModelObject()->GetAttachmentModel(DEVIL_ATTACHMENT_STICK)->amo_moModelObject;
-     pmoStick->PlayAnim(STICK_ANIM_DEFAULT_ANIMATION, AOF_LOOPING|AOF_NORESTART);
-     AddAttachmentToModel(this, *pmoStick, STICK_ATTACHMENT_FLARE, MODEL_FLARE, TEXTURE_FLARE, 0, 0, 0);
+    CModelObject *pmoStick = &GetModelObject()->GetAttachmentModel(DEVIL_ATTACHMENT_STICK)->amo_moModelObject;
+    AddAttachmentToModel(this, *pmoStick, STICK_ATTACHMENT_FLARE, MODEL_FLARE, TEXTURE_FLARE, 0, 0, 0);
+     pmoStick->PlayAnim(FLARE_ANIM_ROTATE, AOF_LOOPING|AOF_NORESTART);
     AddAttachment(DEVIL_ATTACHMENT_SHIELD, MODEL_SHIELD, TEXTURE_SHIELD);
     StandingAnim();
 

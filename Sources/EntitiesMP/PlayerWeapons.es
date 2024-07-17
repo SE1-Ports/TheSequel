@@ -28,7 +28,7 @@
 #include "Models/Weapons/Cannon/Cannon.h"
 #include "Models/Weapons/Cannon/Body.h"
 // Mission Pack weapons
-#include "ModelsF/Weapons/Sniper/Sniper.h"
+#include "ModelsF/Weapons/Railgun/Railgun.h"
 #include "ModelsF/Weapons/Sniper/Body.h"
 #include "ModelsMP/Weapons/Flamer/Flamer.h"
 #include "ModelsMP/Weapons/Flamer/Body.h"
@@ -370,7 +370,6 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
     pdec->PrecacheModel(MODEL_SNIPER_BODY     ); 
     pdec->PrecacheTexture(TEXTURE_SNIPER_BODY );   
     pdec->PrecacheSound(SOUND_SNIPER_FIRE     ); 
-    pdec->PrecacheModel(MODEL_SNIPER_HAND     ); 
   }
 
   if ( ulAvailable&(1<<(WEAPON_MINIGUN-1)) ) {
@@ -848,9 +847,9 @@ components:
 330 sound   SOUND_GRENADELAUNCHER_ALT   "Models\\Weapons\\GrenadeLauncherHD\\Sounds\\Cluster.wav",
 
 // ************** SNIPER **************
-110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Sniper\\Sniper.mdl",
+110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Railgun\\Railgun.mdl",
 111 model   MODEL_SNIPER_BODY           "ModelsF\\Weapons\\Sniper\\Body.mdl",
-112 texture TEXTURE_SNIPER_BODY         "ModelsF\\Weapons\\Sniper\\W_Set2_Class2.tex",
+112 texture TEXTURE_SNIPER_BODY         "ModelsF\\Weapons\\Sniper\\Body.tex",
 113 sound   SOUND_SNIPER_FIRE           "ModelsMP\\Weapons\\Sniper\\Sounds\\Fire.wav",
 //114 sound   SOUND_SNIPER_RELOAD         "ModelsMP\\Weapons\\Sniper\\Sounds\\Reload.wav",
 //115 sound   SOUND_SNIPER_ZOOM           "ModelsMP\\Weapons\\Sniper\\Sounds\\Zoom.wav",
@@ -1644,7 +1643,7 @@ functions:
           ShowFlare(m_moWeapon, XM8_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 0.5f);
           break;
         case WEAPON_SNIPER:
-          ShowFlare(m_moWeapon, SNIPER_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 0.5f);
+          ShowFlare(m_moWeapon, RAILGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 0.5f);
           break;
         case WEAPON_MINIGUN:
           ShowFlare(m_moWeapon, MINIGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 1.25f);
@@ -1666,7 +1665,7 @@ functions:
           HideFlare(m_moWeapon, XM8_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;
         case WEAPON_SNIPER:
-          HideFlare(m_moWeapon, SNIPER_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
+          HideFlare(m_moWeapon, RAILGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;
         case WEAPON_MINIGUN:
           HideFlare(m_moWeapon, MINIGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
@@ -1748,11 +1747,10 @@ functions:
         AddAttachmentToModel(this, m_moWeapon, XM8_ATTACHMENT_MAGAZINE, MODEL_TG_MAG, TEXTURE_TG_MAG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         break; }
       case WEAPON_SNIPER: {
-        SetComponents(this, m_moWeapon, MODEL_SNIPER, TEXTURE_SNIPER_BODY, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, SNIPER_ATTACHMENT_BODY, MODEL_SNIPER_BODY, TEXTURE_SNIPER_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        CModelObject &mo = m_moWeapon.GetAttachmentModel(SNIPER_ATTACHMENT_BODY)->amo_moModelObject;
+        SetComponents(this, m_moWeapon, MODEL_SNIPER, TEXTURE_HAND, 0, 0, 0);
+        AddAttachmentToModel(this, m_moWeapon, RAILGUN_ATTACHMENT_BODY, MODEL_SNIPER_BODY, TEXTURE_SNIPER_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        CModelObject &mo = m_moWeapon.GetAttachmentModel(RAILGUN_ATTACHMENT_BODY)->amo_moModelObject;
         AddAttachmentToModel(this, mo, BODY_ATTACHMENT_FLARE, MODEL_FLARE01, TEXTURE_FLARE01, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, SNIPER_ATTACHMENT_HAND, MODEL_SNIPER_HAND, TEXTURE_HAND, 0, 0, 0);
         break; }
       case WEAPON_MINIGUN: {
         SetComponents(this, m_moWeapon, MODEL_MINIGUN, TEXTURE_HAND, 0, 0, 0);
@@ -2105,6 +2103,7 @@ functions:
                 IsOfClass(crRay.cr_penHit, "Lurker") ||
                 IsOfClass(crRay.cr_penHit, "Neptune") ||
                 IsOfClass(crRay.cr_penHit, "Mantaman") ||
+                IsOfClass(crRay.cr_penHit, "HiveBrain") ||
                 IsOfClass(crRay.cr_penHit, "WitchBride"))     {sptType=SPT_SLIME; fPower=4.0f;}
             if( IsOfClass(crRay.cr_penHit, "Ant") ||
                 IsOfClass(crRay.cr_penHit, "Crabman") ||
@@ -2255,6 +2254,7 @@ functions:
                 IsOfClass(crRay.cr_penHit, "Lurker") ||
                 IsOfClass(crRay.cr_penHit, "Neptune") ||
                 IsOfClass(crRay.cr_penHit, "Mantaman") ||
+                IsOfClass(crRay.cr_penHit, "HiveBrain") ||
                 IsOfClass(crRay.cr_penHit, "WitchBride"))     {sptType=SPT_SLIME; fPower=4.0f;}
             if( IsOfClass(crRay.cr_penHit, "Ant") ||
                 IsOfClass(crRay.cr_penHit, "Crabman") ||
@@ -2338,9 +2338,9 @@ functions:
   };
 
   // prepare Sniper Bullet
-  void PrepareSniperBullet(FLOAT fX, FLOAT fY, FLOAT fDamage, FLOAT fImprecission) {
+  void PrepareSniperBullet(FLOAT fX, FLOAT fY, FLOAT fDamage) {
     // bullet start position
-    CalcWeaponPositionImprecise(FLOAT3D(fX, fY, 0), plBullet, TRUE, fImprecission);
+    CalcWeaponPosition(FLOAT3D(fX, fY, 0), plBullet, TRUE);
     // create bullet
     penBullet = CreateEntity(plBullet, CLASS_BULLET_PIERCING);
     m_vBulletSource = plBullet.pl_PositionVector;
@@ -2365,8 +2365,8 @@ functions:
   };
 
   // fire Sniper bullet
-  void FireSniperBullet(FLOAT fX, FLOAT fY, FLOAT fRange, FLOAT fDamage, FLOAT fImprecission) {
-    PrepareSniperBullet(fX, fY, fDamage, fImprecission);
+  void FireSniperBullet(FLOAT fX, FLOAT fY, FLOAT fRange, FLOAT fDamage) {
+    PrepareSniperBullet(fX, fY, fDamage);
     ((CBulletPiercing&)*penBullet).CalcTarget(fRange);
     ((CBulletPiercing&)*penBullet).m_fBulletSize = 0.1f;
     // launch bullet
@@ -2769,13 +2769,12 @@ functions:
       FLOAT3D(wpn_fFX[WEAPON_IRONCANNON],wpn_fFY[WEAPON_IRONCANNON], 0), 
       plBall, TRUE);
     // create cannon ball
-    CEntityPointer penBall = CreateEntity(plBall, CLASS_CANNONBALL);
+    CEntityPointer penBall = CreateEntity(plBall, CLASS_PROJECTILE);
     // init and launch cannon ball
-    ELaunchCannonBall eLaunch;
+    ELaunchProjectile eLaunch;
     eLaunch.penLauncher = m_penPlayer;
-    eLaunch.fLaunchPower = 60.0f+iPower*4.0f; // ranges from 60-140 (since iPower can be max 20)
-    eLaunch.fSize = 3.0f;
-    eLaunch.cbtType = CBT_NUKE;
+    eLaunch.prtType = PRT_NUKE;
+    eLaunch.fSpeed = 20.0f+iPower*5.0f;
     penBall->Initialize(eLaunch);
   };
 
@@ -3244,7 +3243,7 @@ functions:
         fnmMsg = CTFILENAME("Data\\Messages\\Weapons\\tommygun.txt"); 
         break;
       case WIT_SNIPER:        
-        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("RAPTOR Hypervelocity Sniper"), 0);
+        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("RAPTOR EMS-200 Railgun"), 0);
         fnmMsg = CTFILENAME("DataMP\\Messages\\Weapons\\sniper.txt"); 
         break;
       case WIT_MINIGUN:         
@@ -3436,6 +3435,7 @@ functions:
         m_iDev+= Eai.iQuantity;
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Devastator shells"), Eai.iQuantity);
         AddManaToPlayer(Eai.iQuantity*AV_DEV*MANA_AMMO);
+        break;
       case AIT_SGG:
         if (m_iSGG>=m_iMaxSGG) { m_iSGG = m_iMaxSGG; return FALSE; }
         m_iSGG+= Eai.iQuantity;
@@ -3733,7 +3733,7 @@ functions:
       case WEAPON_TOMMYGUN:
         m_moWeapon.PlayAnim(XM8_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_SNIPER:
-        m_moWeapon.PlayAnim(SNIPER_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
+        m_moWeapon.PlayAnim(RAILGUN_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_MINIGUN:
         m_moWeapon.PlayAnim(MINIGUN_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_ROCKETLAUNCHER:
@@ -3848,7 +3848,7 @@ functions:
   FLOAT SniperBoring(void) {
     // play boring anim
     INDEX iAnim;
-    iAnim = SNIPER_ANIM_WAIT01;
+    iAnim = RAILGUN_ANIM_WAIT02;
     m_moWeapon.PlayAnim(iAnim, AOF_SMOOTHCHANGE);
     return m_moWeapon.GetAnimLength(iAnim);
   };
@@ -4335,7 +4335,7 @@ procedures:
         m_iAnim = XM8_ANIM_DEACTIVATE;
         break;
       case WEAPON_SNIPER:
-        m_iAnim = SNIPER_ANIM_DEACTIVATE;
+        m_iAnim = RAILGUN_ANIM_DEACTIVATE;
         break;
       case WEAPON_MINIGUN:
         m_iAnim = MINIGUN_ANIM_DEACTIVATE;
@@ -4454,7 +4454,7 @@ procedures:
         SetFlare(0, FLARE_REMOVE);
         break;
       case WEAPON_SNIPER:
-        m_iAnim = SNIPER_ANIM_ACTIVATE;
+        m_iAnim = RAILGUN_ANIM_ACTIVATE;
         SetFlare(0, FLARE_REMOVE);
         break;
       case WEAPON_MINIGUN: {
@@ -5492,11 +5492,11 @@ procedures:
       // fire one bullet
       if (m_bSniping) {
         FireSniperBullet(0.0f, 0.0f, 1500.0f, 
-                         (GetSP()->sp_bCooperative) ? 200.0f : 90.0f, 0.0f);
+                         (GetSP()->sp_bCooperative) ? 200.0f : 90.0f);
       }
       else {
         FireSniperBullet(wpn_fFX[WEAPON_SNIPER], wpn_fFY[WEAPON_SNIPER], 1000.0f,
-                         (GetSP()->sp_bCooperative) ? 200.0f : 30.0f, 5.0f);
+                         (GetSP()->sp_bCooperative) ? 200.0f : 30.0f);
       }
       m_tmLastSniperFire = _pTimer->CurrentTick();
 
@@ -5518,7 +5518,7 @@ procedures:
       if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("SniperFire");}
       
       // animation
-      m_moWeapon.PlayAnim(SNIPER_ANIM_FIRE, 0);
+      m_moWeapon.PlayAnim(RAILGUN_ANIM_FIRE, 0);
       
       autowait(1.0f);
 

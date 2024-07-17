@@ -183,6 +183,9 @@ functions:
     if (m_EwcChar==WLC_SERGEANT) {
       return TRUE;
     }
+    if (m_EwcChar==WLC_CANNON) {
+      return TRUE;
+    }
     return CEnemyBase::ForcesCannonballToExplode();
   }
 
@@ -288,11 +291,6 @@ functions:
     if (!IsOfClass(penInflictor, "Walker") ||
       ((CWalker*)penInflictor)->m_EwcChar!=m_EwcChar) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
-    }
-    // if caught in range of a nuke ball
-    if (dmtType==DMT_CANNONBALL_EXPLOSION && GetHealth()<=0 && m_EwcChar!=WLC_SERGEANT) {
-      // must blow up easier
-      m_fBlowUpAmount = m_fBlowUpAmount*0.75f;
     }
   };
 

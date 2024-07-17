@@ -197,11 +197,6 @@ functions:
       ((CGuffy*)penInflictor)->m_GufChar!=m_GufChar) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
     }
-    // if caught in range of a nuke ball
-    if (dmtType==DMT_CANNONBALL_EXPLOSION && GetHealth()<=0) {
-      // must blow up easier
-      m_fBlowUpAmount = m_fBlowUpAmount*0.75f;
-    }
   };
 
   // grunting sounds

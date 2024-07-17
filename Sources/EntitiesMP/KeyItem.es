@@ -65,6 +65,12 @@ enum KeyItemType {
  49 KIT_CPSHIELD          "CaptainPelmen_Shield (stackable)",
  50 KIT_CPSWORD           "CaptainPelmen_Sword (stackable)",
  51 KIT_CPHELMET1         "CaptainPelmen_Helmet1 (stackable)",
+ 
+ 53 KIT_HOLOCARD          "Holocard",
+ 54 KIT_KEYCARD1          "Keycard black",
+ 55 KIT_KEYCARD2          "Keycard orange",
+ 56 KIT_KEYCARD4          "Keycard blue",
+ 57 KIT_KEYCARD5          "Keycard red",
 };
 
 // event for sending through receive item
@@ -134,6 +140,12 @@ const char *GetKeyName(enum KeyItemType kit)
  case KIT_CPSHIELD           :  return TRANS("Sarpedon Aspis"); break;
  case KIT_CPSWORD            :  return TRANS("Aegean sword"); break;
  case KIT_CPHELMET1          :  return TRANS("Chalcidian helmet"); break;
+ 
+ case KIT_HOLOCARD           :  return TRANS("Holocard"); break;
+ case KIT_KEYCARD1           :  return TRANS("Black keycard"); break;
+ case KIT_KEYCARD2           :  return TRANS("Orange keycard"); break;
+ case KIT_KEYCARD4           :  return TRANS("Blue keycard"); break;
+ case KIT_KEYCARD5           :  return TRANS("Red keycard"); break;
 
   default: return TRANS("unknown item"); break;
   };
@@ -288,6 +300,21 @@ components:
 126 model   MODEL_CPHELMET1              "ModelsF\\Items\\Keys\\CaptainPelmen_Helmet1\\ShlemT01.mdl",
 127 texture TEXTURE_CPHELMET1            "ModelsF\\Items\\Keys\\CaptainPelmen_Helmet1\\T01.tex",
 
+128 model   MODEL_HOLOCARD              "ModelsF\\Items\\Keys\\Holocard\\Holocard.mdl",
+129 texture TEXTURE_HOLOCARD            "TexturesMP\\Detail\\White.tex",
+
+130 model   MODEL_KEYCARD1              "ModelsF\\Items\\Keys\\Keycard1\\Keycard1.mdl",
+131 texture TEXTURE_KEYCARD1            "ModelsF\\Items\\Keys\\Keycard1\\KeycardBlack.tex",
+
+132 model   MODEL_KEYCARD2              "ModelsF\\Items\\Keys\\Keycard2\\Keycard2.mdl",
+133 texture TEXTURE_KEYCARD2            "ModelsF\\Items\\Keys\\Keycard2\\KeycardOrange.tex",
+
+134 model   MODEL_KEYCARD4              "ModelsF\\Items\\Keys\\Keycard4\\Keycard4.mdl",
+135 texture TEXTURE_KEYCARD4            "ModelsF\\Items\\Keys\\Keycard4\\KeycardBlue.tex",
+
+136 model   MODEL_KEYCARD5              "ModelsF\\Items\\Keys\\Keycard5\\Keycard5.mdl",
+137 texture TEXTURE_KEYCARD5            "ModelsF\\Items\\Keys\\Keycard5\\KeycardRed.tex",
+
  // ********* MISC *********
 250 texture TEXTURE_FLARE       "ModelsMP\\Items\\Flares\\Flare.tex",
 251 model   MODEL_FLARE         "ModelsMP\\Items\\Flares\\Flare.mdl",
@@ -382,6 +409,12 @@ functions:
     case KIT_CPSHIELD           :
     case KIT_CPSWORD            :
     case KIT_CPHELMET1          :
+	
+    case KIT_HOLOCARD          :
+    case KIT_KEYCARD1          :
+    case KIT_KEYCARD2          :
+    case KIT_KEYCARD4          :
+    case KIT_KEYCARD5          :
 
     default:
       Particles_Stardust(this, 1.5f, 1.1f, PT_STAR08, 64);
@@ -819,6 +852,46 @@ functions:
       case KIT_CPHELMET1:
         // set appearance
         AddItem(MODEL_CPHELMET1, TEXTURE_CPHELMET1, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_HOLOCARD:
+        // set appearance
+        AddItem(MODEL_HOLOCARD, TEXTURE_HOLOCARD, TEX_REFL_METAL01, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_KEYCARD1:
+        // set appearance
+        AddItem(MODEL_KEYCARD1, TEXTURE_KEYCARD1, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_KEYCARD2:
+        // set appearance
+        AddItem(MODEL_KEYCARD2, TEXTURE_KEYCARD2, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_KEYCARD4:
+        // set appearance
+        AddItem(MODEL_KEYCARD4, TEXTURE_KEYCARD4, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_KEYCARD5:
+        // set appearance
+        AddItem(MODEL_KEYCARD5, TEXTURE_KEYCARD5, 0, TEX_SPEC_MEDIUM, 0);
         // add flare
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
         StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));

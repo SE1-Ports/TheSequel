@@ -154,7 +154,7 @@ functions:
     }
     
     // cannonballs inflict less damage then the default
-    if((dmtType==DMT_CANNONBALL || dmtType==DMT_CANNONBALL_EXPLOSION) && (fDamageAmmount>750.0f))
+    if((dmtType==DMT_CANNONBALL || dmtType==DMT_CANNONBALL_EXPLOSION) && (fDamageAmmount>800.0f))
     {
       fDamageAmmount *= 0.25f;
     }
@@ -177,14 +177,8 @@ functions:
 
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
-    INDEX iAnim;
-    if(GetHealth() <= m_fMaxHealth/2) {
-      iAnim = PANDA_ANIM_ANGER;
-    } else {
-      iAnim = PANDA_ANIM_WOUND3;
-    }
-    StartModelAnim(iAnim, 0);
-    return iAnim;
+    StartModelAnim(PANDA_ANIM_WOUND3, 0);
+    return PANDA_ANIM_WOUND3;
   };
 
   // death
@@ -234,11 +228,7 @@ functions:
     PlaySound(m_soSound, SOUND_ANGER, SOF_3D);
   };
   void WoundSound(void) {
-    if(GetHealth() <= m_fMaxHealth/2) {
-      PlaySound(m_soSound, SOUND_ANGER, SOF_3D);
-    } else {
-      PlaySound(m_soSound, SOUND_WOUND, SOF_3D);
-    }
+    PlaySound(m_soSound, SOUND_WOUND, SOF_3D);
    };
   void DeathSound(void) {
       PlaySound(m_soSound, SOUND_DEATH, SOF_3D);
@@ -310,22 +300,22 @@ procedures:
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           StartModelAnim(PANDA_ANIM_ATTACKTHROW, 0); 
           autowait(0.43f); 
-            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(25, 0, 0));
-            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(-25, 0, 0));
+            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(15, 0, 0));
+            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(-15, 0, 0));
           autowait(0.57f);
           MaybeSwitchToAnotherPlayer();
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           StartModelAnim(PANDA_ANIM_ATTACKTHROW, 0); 
           autowait(0.43f); 
-            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(25, 0, 0));
-            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(-25, 0, 0));
+            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(30, 0, 0));
+            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(-30, 0, 0));
           autowait(0.57f);
           MaybeSwitchToAnotherPlayer();
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           StartModelAnim(PANDA_ANIM_ATTACKTHROW, 0); 
           autowait(0.43f); 
-            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(25, 0, 0));
-            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(-25, 0, 0));
+            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(45, 0, 0));
+            ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(-45, 0, 0));
       }
     MaybeSwitchToAnotherPlayer();
     autowait(0.57f);
@@ -333,22 +323,6 @@ procedures:
   };
 
   Hit(EVoid) : CEnemyBase::Hit {
-    // hit
-    if (CalcDist(m_penEnemy) < 20.0f) {
-      jump Slap();
-
-    // jump
-    } else if ((CalcDist(m_penEnemy) < 35.0f) & (GetHealth() <= m_fMaxHealth/2)) {
-      jump JumpOnEnemy();
-    }
-
-    // run to enemy
-    m_fShootTime = _pTimer->CurrentTick() + 0.5f;
-    return EReturn();
-  };
-
-  // hit enemy
-  Slap(EVoid) {
     // close attack
     StartModelAnim(PANDA_ANIM_ATTACKMELEE, 0);
     autowait(0.43f);
@@ -360,30 +334,6 @@ procedures:
     }
     autowait(0.6f);
     MaybeSwitchToAnotherPlayer();
-    return EReturn();
-  };
-
-  // jump on enemy
-  JumpOnEnemy(EVoid) {
-    StartModelAnim(PANDA_ANIM_ATTACKLEAP, 0);
-
-    // jump
-    FLOAT3D vDir = (m_penEnemy->GetPlacement().pl_PositionVector -
-                    GetPlacement().pl_PositionVector).Normalize();
-    vDir *= !GetRotationMatrix();
-    vDir *= m_fCloseRunSpeed*2.0f;
-    vDir(2) = 2.5f;
-    SetDesiredTranslation(vDir);
-    PlaySound(m_soSound, SOUND_LEAP, SOF_3D);
-
-    // animation - IGNORE DAMAGE WOUND -
-    SpawnReminder(this, 0.5f, 0);
-    m_iChargeHitAnimation = PANDA_ANIM_ATTACKLEAP;
-    m_fChargeHitDamage = 50.0f;
-    m_fChargeHitAngle = 0.0f;
-    m_fChargeHitSpeed = 15.0f;
-    autocall CEnemyBase::ChargeHitEnemy() EReturn;
-    autowait(0.3f);
     return EReturn();
   };
 
@@ -412,7 +362,7 @@ procedures:
     m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
     m_fWalkSpeed = FRnd()*2 + 7.0f;
     m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
-    m_fCloseRunSpeed = FRnd() + 25.0f;
+    m_fCloseRunSpeed = FRnd() + 14.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     // setup attack distances
     m_fAttackDistance = 1000.0f;
@@ -420,7 +370,7 @@ procedures:
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
     m_fStopDistance = 20.0f;
-    m_fCloseDistance = 35.0f;
+    m_fCloseDistance = 20.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
     m_fDamageWounded = 3000.0f;
     m_fBlowUpAmount = 100000000.0f;//500

@@ -174,6 +174,7 @@ properties:
 //171 INDEX m_iTacticsRetried = 0,
 
 190 BOOL m_bCountAsKill "Count as kill" = TRUE,
+191 BOOL m_bIgnoreNav   "Ignore NavMarkers" = FALSE,
 
   {
     TIME m_tmPredict;  // time to predict the entity to
@@ -1249,7 +1250,7 @@ functions:
   virtual void FindNextPathMarker(void)
   {
     // if invalid situation
-    if (m_penPathMarker==NULL) {
+    if (m_penPathMarker==NULL || m_bIgnoreNav==TRUE) {
       // this should not happen
       ASSERT(FALSE);
       // no path finding
@@ -1282,7 +1283,7 @@ functions:
   BOOL CheckTouchForPathFinding(const ETouch &eTouch)
   {
     // if no enemy
-    if (m_penEnemy==NULL) {
+    if (m_penEnemy==NULL || m_bIgnoreNav==TRUE) {
       // do nothing
       return FALSE;
     }
@@ -1304,6 +1305,7 @@ functions:
         m_dtDestination = DT_PATHTEMPORARY;
       }
       StartPathFinding();
+      return m_bIgnoreNav==FALSE;
       return m_penPathMarker!=NULL;
     } else {
       return FALSE;
@@ -1314,7 +1316,7 @@ functions:
   BOOL CheckFallForPathFinding(const EWouldFall &eWouldFall)
   {
     // if no enemy
-    if (m_penEnemy==NULL) {
+    if (m_penEnemy==NULL || m_bIgnoreNav==TRUE) {
       // do nothing
       return FALSE;
     }
@@ -1332,6 +1334,7 @@ functions:
     }
     StartPathFinding();
 
+    return m_bIgnoreNav==FALSE;
     return m_penPathMarker!=NULL;
   }
 

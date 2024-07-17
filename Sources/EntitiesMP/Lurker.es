@@ -270,6 +270,15 @@ functions:
     SetCollisionFlags(ECF_IMMATERIAL);
   };
 
+/************************************************************
+ *                     MOVING FUNCTIONS                     *
+ ************************************************************/
+  // check whether may move while attacking
+  BOOL MayMoveToAttack(void) 
+  {
+      return CEnemyBase::WouldNotLeaveAttackRadius();
+  }
+
 
 procedures:
 

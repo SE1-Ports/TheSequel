@@ -88,7 +88,9 @@ enum BasicEffectType {
  78 BET_BULLETSTAINENERGYNOSOUND  "Bullet stain energynosound",  // bullet stain on water surface with no sound
  79 BET_HYDROGUN                  "Hydro explosion",     // cannon explosion with lo sound volume
  80 BET_TELEPORT_REVERSE          "Teleport reverse",     // teleportation in reverse
- 81 BET_GASCLOUD                  "Gas cloud",     // teleportation in reverse
+ 81 BET_GASCLOUD                  "Gas cloud",            // gas cloud
+ 82 BET_T3DGMX                    "T3DGM Explosion",     // space explosion
+ 83 BET_HIVEBRAIN                 "HiveBrain Explosion",     // HiveBrain explosion
 };
 
 
@@ -286,9 +288,14 @@ void CBasicEffect_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   case BET_ARROWHIT:
     pdec->PrecacheSound(SOUND_ARROWHIT);
   case BET_GASCLOUD:
+  case BET_HIVEBRAIN:
     pdec->PrecacheSound(SOUND_GASCLOUD);
     pdec->PrecacheModel(MDL_T3DGM_EXPLOSION);
     pdec->PrecacheTexture(TEXTURE_GASCLOUD);
+  case BET_T3DGMX:
+    pdec->PrecacheSound(SOUND_HUGEX);
+    pdec->PrecacheModel(MDL_T3DGM_EXPLOSION);
+    pdec->PrecacheTexture(TEXTURE_T3DGMX);
     break;
   default:
     ASSERT(FALSE);
@@ -446,6 +453,10 @@ components:
  260 model   MDL_T3DGM_EXPLOSION        "ModelsF\\t3dgm\\Explosion\\Explosion.mdl",
  261 texture TEXTURE_GASCLOUD           "ModelsF\\t3dgm\\Explosion\\GasCloud.tex",
  262 sound   SOUND_GASCLOUD               "SoundsF\\Hazards\\GasCloud.wav",
+ 266 sound   SOUND_HIVEBRAIN               "ModelsF\\t3dgm\\HiveBrain\\Sounds\\Death.wav",
+// ********** T3DGMX **********
+ 264 texture TEXTURE_T3DGMX           "ModelsF\\t3dgm\\Explosion\\SpaceExplosion.tex",
+ 265 sound   SOUND_HUGEX               "SoundsF\\Destruction\\ExplosionHuge01.wav",
 
 functions:
 
@@ -532,6 +543,12 @@ functions:
       case BET_HYDROGUN:
         lsNew.ls_colColor = RGBToColor(50, 100, 200);
         lsNew.ls_rFallOff = 3.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case BET_T3DGMX:
+        lsNew.ls_colColor = RGBToColor(150, 150, 250);
+        lsNew.ls_rHotSpot = 30.0f;
+        lsNew.ls_rFallOff = 45.0f;
         lsNew.ls_plftLensFlare = NULL;
         break;
       default:
@@ -1135,6 +1152,38 @@ functions:
     m_soEffect.Set3DParameters(100.0f, 3.0f, 1.0f, 1.0f);
     PlaySound(m_soEffect, SOUND_GASCLOUD, SOF_3D);
     m_fSoundTime = GetSoundLength(SOUND_GASCLOUD);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
+    m_iLightAnimation = 0;
+  };
+
+  void T3DGMX(void)
+  {
+    SetPredictable(TRUE);
+    Stretch();
+    SetModel(MDL_T3DGM_EXPLOSION);
+    SetModelMainTexture(TEXTURE_T3DGMX);
+    RandomBanking();
+    SetNonLoopingTexAnims();
+    m_soEffect.Set3DParameters(100.0f, 3.0f, 1.0f, 1.0f);
+    PlaySound(m_soEffect, SOUND_HUGEX, SOF_3D);
+    m_fSoundTime = GetSoundLength(SOUND_HUGEX);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = TRUE;
+    m_iLightAnimation = 0;
+  };
+
+  void HiveBrain(void)
+  {
+    SetPredictable(TRUE);
+    Stretch();
+    SetModel(MDL_T3DGM_EXPLOSION);
+    SetModelMainTexture(TEXTURE_GASCLOUD);
+    RandomBanking();
+    SetNonLoopingTexAnims();
+    m_soEffect.Set3DParameters(200.0f, 30.0f, 2.0f, 1.0f);
+    PlaySound(m_soEffect, SOUND_HIVEBRAIN, SOF_3D);
+    m_fSoundTime = GetSoundLength(SOUND_HIVEBRAIN);
     m_fWaitTime = 0.95f;
     m_bLightSource = FALSE;
     m_iLightAnimation = 0;
@@ -1910,6 +1959,8 @@ procedures:
       case BET_BULLETSTAINENERGYNOSOUND: BulletStainEnergy(FALSE); break;
       case BET_TELEPORT_REVERSE: TeleportReverseEffect(); break;
       case BET_GASCLOUD: GasCloud(); break;
+      case BET_T3DGMX: T3DGMX(); break;
+      case BET_HIVEBRAIN: HiveBrain(); break;
       default:
         ASSERTALWAYS("Unknown effect type");
     }

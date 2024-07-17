@@ -119,11 +119,6 @@ functions:
     if (!IsOfClass(penInflictor, "Cyclops")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
     }
-    // if caught in range of a nuke ball
-    if (dmtType==DMT_CANNONBALL_EXPLOSION && GetHealth()<=0) {
-      // must blow up easier
-      m_fBlowUpAmount = m_fBlowUpAmount/2;
-    }
   };
 
   // death
@@ -234,6 +229,13 @@ functions:
     // set moving
     ((CCyclopsProjectile&)*pen).LaunchAsFreeProjectile(FLOAT3D(0, 20, 0.0f), this);
     ((CCyclopsProjectile&)*pen).SetDesiredRotation(ANGLE3D(0, 0, FRnd()*360-180));
+  };
+
+
+  // adjust sound and watcher parameters here if needed
+  void EnemyPostInit(void) 
+  {
+    m_soSound.Set3DParameters(120.0f, 20.0f, 1.0f, 1.0f);
   };
 
  /************************************************************

@@ -134,7 +134,7 @@ components:
 // ************** SNIPER **************
 110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Sniper\\SniperItem.mdl",
 111 model   MODEL_SNIPER_BODY           "ModelsF\\Weapons\\Sniper\\Body.mdl",
-112 texture TEXTURE_SNIPER_BODY         "ModelsF\\Weapons\\Sniper\\W_Set2_Class2.tex",
+112 texture TEXTURE_SNIPER_BODY         "ModelsF\\Weapons\\Sniper\\Body.tex",
 
 // ************** FLAMER **************
 130 model   MODEL_FLAMER                "ModelsMP\\Weapons\\Flamer\\FlamerItem.mdl",
