@@ -6,7 +6,7 @@
 #include "EntitiesMP/Bullet.h"
 #include "EntitiesMP/BackgroundViewer.h"
 #include "EntitiesMP/SoundHolder.h"
-#include "Game/PlayerSettings.h"
+#include "GameMP/PlayerSettings.h"
 #include "ModelsMP/Player/SeriousSam/Player.h"
 #include "ModelsMP/Player/SeriousSam/Body.h"
 #include "ModelsMP/Player/SeriousSam/Head.h"

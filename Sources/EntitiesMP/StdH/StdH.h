@@ -1,6 +1,6 @@
 #include <Engine\Engine.h>
-#include <Game/SessionProperties.h>
-#include <Game/PlayerSettings.h>
+#include <GameMP/SessionProperties.h>
+#include <GameMP/PlayerSettings.h>
 
 /* rcg10042001 protect against Visual C-isms. */
 #ifdef _MSC_VER
