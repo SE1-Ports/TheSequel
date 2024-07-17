@@ -8,14 +8,14 @@ uses "EntitiesMP/EnemyBase";
 uses "EntitiesMP/BasicEffects";
 
 enum EnemyLauncherType {
-  0 EST_SIMPLE          "Simple",           // spawns on trigger
-  1 EST_RESPAWNER       "Respawner",        // respawn after death
-  2 EST_DESTROYABLE     "Destroyable",      // spawns untill killed
-  3 EST_TRIGGERED       "Triggered",        // spawn one group on each trigger
-  4 EST_TELEPORTER      "Teleporter",       // teleport the target instead copying it - usable only once
-  5 EST_RESPAWNERBYONE  "OBSOLETE - Don't use!",  // respawn only one (not entire group) after death
-  6 EST_MAINTAINGROUP   "MaintainGroup",    // respawn by need to maintain the number of active enemies
-  7 EST_RESPAWNGROUP    "RespawnerByGroup", // respawn the whole group when it's destroyed
+  0 ELT_SIMPLE          "Simple",           // spawns on trigger
+  1 ELT_RESPAWNER       "Respawner",        // respawn after death
+  2 ELT_DESTROYABLE     "Destroyable",      // spawns untill killed
+  3 ELT_TRIGGERED       "Triggered",        // spawn one group on each trigger
+  4 ELT_TELEPORTER      "Teleporter",       // teleport the target instead copying it - usable only once
+  5 ELT_RESPAWNERBYONE  "OBSOLETE - Don't use!",  // respawn only one (not entire group) after death
+  6 ELT_MAINTAINGROUP   "MaintainGroup",    // respawn by need to maintain the number of active enemies
+  7 ELT_RESPAWNGROUP    "RespawnerByGroup", // respawn the whole group when it's destroyed
 };
 
 
@@ -38,7 +38,7 @@ properties:
  17 INDEX m_ctGroupSize         "Count group"  = 1,
   8 INDEX m_ctTotal             "Count total" 'C' = 1,        // max. number of spawned enemies
  13 CEntityPointer m_penPatrol  "Patrol target" 'P'  COLOR(C_lGREEN|0xFF),          // for spawning patrolling 
- 15 enum EnemyLauncherType m_estType "Type"  'Y' = EST_SIMPLE,      // type of spawner
+ 15 enum EnemyLauncherType m_estType "Type"  'Y' = ELT_SIMPLE,      // type of spawner
  18 BOOL m_bTelefrag "Telefrag" 'F' = FALSE,                  // telefrag when spawning
  19 BOOL m_bSpawnEffect "SpawnEffect" 'S' = TRUE, // show effect and play sound
  20 BOOL m_bDoubleInSerious "Double in serious mode" = FALSE,
@@ -103,7 +103,7 @@ functions:
     if (pen==NULL || !IsDerivedFromClass(pen, "Enemy Base")) {
       return FALSE;
     }
-    if (m_estType==EST_TELEPORTER) {
+    if (m_estType==ELT_TELEPORTER) {
       return !(((CEnemyBase&)*pen).m_bTemplate);
     } else {
       return ((CEnemyBase&)*pen).m_bTemplate;
@@ -175,8 +175,8 @@ functions:
         pen->End();
         CEnemyBase *peb = ((CEnemyBase*)pen);
         peb->m_bTemplate = FALSE;
-        if (m_estType==EST_RESPAWNER /*|| m_estType==EST_RESPAWNERBYONE*/
-         || m_estType==EST_MAINTAINGROUP || m_estType==EST_RESPAWNGROUP) {
+        if (m_estType==ELT_RESPAWNER /*|| m_estType==ELT_RESPAWNERBYONE*/
+         || m_estType==ELT_MAINTAINGROUP || m_estType==ELT_RESPAWNGROUP) {
           peb->m_penSpawnerTarget = this;
         }
        // set moving
@@ -242,7 +242,7 @@ functions:
     {
       ETrigger eTrigger = ((ETrigger &) ee);
       if(IsDerivedFromClass(eTrigger.penCaused, "Enemy Base")
-        && (m_estType==EST_MAINTAINGROUP || m_estType==EST_RESPAWNGROUP)) {
+        && (m_estType==ELT_MAINTAINGROUP || m_estType==ELT_RESPAWNGROUP)) {
         m_iEnemiesTriggered++;
       }
     }
@@ -286,7 +286,7 @@ procedures:
       // count enemies in group
       m_iInGroup++;
       // decrease the needed count
-      if (m_iEnemiesTriggered>0 && m_estType==EST_RESPAWNGROUP) {
+      if (m_iEnemiesTriggered>0 && m_estType==ELT_RESPAWNGROUP) {
         if (!m_bFirstPass) {
           m_iEnemiesTriggered--;
         }
@@ -296,7 +296,7 @@ procedures:
 
       // if entire group spawned
       if (m_iInGroup>=m_ctGroupSize) {
-        if (!(m_estType==EST_MAINTAINGROUP && m_iEnemiesTriggered>0)) {
+        if (!(m_estType==ELT_MAINTAINGROUP && m_iEnemiesTriggered>0)) {
           // finish
           return EReturn();
         }
@@ -385,7 +385,7 @@ procedures:
         autowait(m_tmDelay);
       }
 
-      if (m_estType==EST_RESPAWNGROUP) {
+      if (m_estType==ELT_RESPAWNGROUP) {
         if (m_bFirstPass) {
           autocall SpawnGroup() EReturn;
         } else if (m_iEnemiesTriggered>=m_ctGroupSize) {
@@ -399,14 +399,14 @@ procedures:
       }
 
       // if should continue respawning by one
-      /*if (m_estType==EST_RESPAWNERBYONE) {
+      /*if (m_estType==ELT_RESPAWNERBYONE) {
         // set group size to 1
         if (m_tmGroupWait>0 && !m_bFirstPass) { autowait(m_tmGroupWait); }
         m_ctGroupSize = 1;
       }*/
 
       // if should continue maintaining group
-      if (m_estType==EST_MAINTAINGROUP) {
+      if (m_estType==ELT_MAINTAINGROUP) {
         // set group size to 1
         m_ctGroupSize = 1;
       }
@@ -468,8 +468,8 @@ procedures:
       m_fInnerCircle = m_fOuterCircle;
     }
 
-    if (m_estType==EST_RESPAWNERBYONE) {
-      m_estType=EST_MAINTAINGROUP;
+    if (m_estType==ELT_RESPAWNERBYONE) {
+      m_estType=ELT_MAINTAINGROUP;
     }
 
     // check target
@@ -525,7 +525,7 @@ procedures:
       m_penTarget = m_penHardTarget;
     }
 
-    if (m_estType==EST_MAINTAINGROUP) {
+    if (m_estType==ELT_MAINTAINGROUP) {
       m_iEnemiesTriggered = m_ctGroupSize;
     }
 
@@ -533,18 +533,18 @@ procedures:
 
     wait() {
       on(EBegin) : {
-        if(m_estType==EST_SIMPLE) {
+        if(m_estType==ELT_SIMPLE) {
           call Simple();
-        } else if(m_estType==EST_TELEPORTER) {
+        } else if(m_estType==ELT_TELEPORTER) {
           call Teleporter();
-        } else if(m_estType==EST_RESPAWNER /*|| m_estType==EST_RESPAWNERBYONE*/
-               || m_estType==EST_TRIGGERED || m_estType==EST_RESPAWNGROUP) {
+        } else if(m_estType==ELT_RESPAWNER /*|| m_estType==ELT_RESPAWNERBYONE*/
+               || m_estType==ELT_TRIGGERED || m_estType==ELT_RESPAWNGROUP) {
           call Respawner();
-        } else if(m_estType==EST_MAINTAINGROUP) {
+        } else if(m_estType==ELT_MAINTAINGROUP) {
           m_ctGroupSize = 1;
           call Respawner();
         }
-        else if(m_estType==EST_DESTROYABLE) {
+        else if(m_estType==ELT_DESTROYABLE) {
           call Destroyable();
         }
       }

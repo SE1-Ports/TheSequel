@@ -31,10 +31,14 @@
 #define MAX_NAPALM INDEX(500)
 #define MAX_ELECTRICITY INDEX(400)
 #define MAX_IRONBALLS INDEX(30)
-//#define MAX_NUKEBALLS INDEX(3)
 #define MAX_SNIPERBULLETS INDEX(50)
 #define MAX_PLASMA INDEX(300)
 #define MAX_DEV INDEX(100)
+
+#define MAX_SGG INDEX(50)
+#define MAX_CG INDEX(20)
+#define MAX_HR INDEX(20)
+#define MAX_NUKEBALLS INDEX(10)
 
 // Bit shifters for ammo
 #define AMMO_BULLETS       0
@@ -43,11 +47,16 @@
 #define AMMO_GRENADES      3
 #define AMMO_NAPALM        4
 #define AMMO_ELECTRICITY   5
-//#define AMMO_NUKEBALLS   6
+//#define AMMO_NUKEBALLS     6
 #define AMMO_IRONBALLS     7
 #define AMMO_SNIPERBULLETS 8
 #define AMMO_PLASMA        9 
 #define AMMO_DEV          10 
+
+#define AMMO_SGG          11
+#define AMMO_CG           12
+#define AMMO_HR           13 
+#define AMMO_NUKEBALLS    14
 
 #define BLOOD_SPILL_RED RGBAToColor(250,20,20,255)
 #define BLOOD_SPILL_GREEN RGBAToColor(0,250,0,255)
@@ -60,11 +69,15 @@
 #define AV_GRENADES       INDEX(150)
 #define AV_ELECTRICITY    INDEX(250)
 #define AV_IRONBALLS      INDEX(700)
-//#define AV_NUKEBALLS      INDEX(1800)
+#define AV_NUKEBALLS      INDEX(1800)
 #define AV_NAPALM         INDEX(200)
 #define AV_SNIPERBULLETS  INDEX(200)
-#define AV_PLASMA         INDEX(200)
-#define AV_DEV            INDEX(300)
+#define AV_PLASMA         INDEX(50)
+#define AV_DEV            INDEX(100)
+
+#define AV_SGG          INDEX(500)
+#define AV_CG           INDEX(500)
+#define AV_HR           INDEX(500)
 
 // used for invisibility powerup
 #define INVISIBILITY_ALPHA_LOCAL  0x55

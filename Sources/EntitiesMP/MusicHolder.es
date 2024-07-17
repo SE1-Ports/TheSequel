@@ -5,6 +5,8 @@
 #include "EntitiesMP/EnemySpawner.h"
 #include "EntitiesMP/Trigger.h"
 #include "EntitiesMP/Woman.h"
+#include "EntitiesMP/EnemyLauncher.h"
+#include "EntitiesMP/EnemyProjectile.h"
 %}
 
 
@@ -142,6 +144,34 @@ functions:
           if (penSpawner->m_penTarget) {
             if (IsOfClass(penSpawner->m_penTarget, "Woman")) {
               if (((CWoman *)&*penSpawner->m_penTarget)->m_bEnemyAttached) { m_ctEnemiesInWorld+=penSpawner->m_ctTotal; }
+            }
+          }
+        }
+      // if launcher
+      } else if (IsDerivedFromClass(pen, "Enemy Launcher")) {
+        CEnemyLauncher *penLauncher = (CEnemyLauncher *)pen;
+        // if not teleporting
+        if (penLauncher->m_estType!=ELT_TELEPORTER) {
+          // add total count
+          m_ctEnemiesInWorld+=penLauncher->m_ctTotal;
+          // if this spawner points to a woman kamikaze carrier template, increase count once more
+          if (penLauncher->m_penTarget) {
+            if (IsOfClass(penLauncher->m_penTarget, "Woman")) {
+              if (((CWoman *)&*penLauncher->m_penTarget)->m_bEnemyAttached) { m_ctEnemiesInWorld+=penLauncher->m_ctTotal; }
+            }
+          }
+        }
+      // if the other type of launcher
+      } else if (IsDerivedFromClass(pen, "Enemy Projectile")) {
+        CEnemyProjectile *penProjer = (CEnemyProjectile *)pen;
+        // if not teleporting
+        if (penProjer->m_estType!=EPT_TELEPORTER) {
+          // add total count
+          m_ctEnemiesInWorld+=penProjer->m_ctTotal;
+          // if this spawner points to a woman kamikaze carrier template, increase count once more
+          if (penProjer->m_penTarget) {
+            if (IsOfClass(penProjer->m_penTarget, "Woman")) {
+              if (((CWoman *)&*penProjer->m_penTarget)->m_bEnemyAttached) { m_ctEnemiesInWorld+=penProjer->m_ctTotal; }
             }
           }
         }

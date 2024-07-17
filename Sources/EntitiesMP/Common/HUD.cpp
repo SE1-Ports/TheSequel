@@ -102,6 +102,10 @@ static CTextureObject _toASniperBullets;
 static CTextureObject _toAPlasmaPack;
 static CTextureObject _toADevastator;
 static CTextureObject _toASeriousBomb;
+static CTextureObject _toASGG;
+static CTextureObject _toAHR;
+static CTextureObject _toACG;
+static CTextureObject _toANukeBall;
 // weapon textures
 static CTextureObject _toWKnife;
 static CTextureObject _toWColt;
@@ -179,8 +183,12 @@ static struct AmmoInfo _aaiAmmo[20] = {
   { &_toASniperBullets, &_awiWeapons[13], NULL,             0, 0, 0, -9, FALSE }, //  7
   { &_toAPlasmaPack,    &_awiWeapons[15], NULL,             0, 0, 0, -9, FALSE }, //  8
   { &_toADevastator,    &_awiWeapons[16], NULL,             0, 0, 0, -9, FALSE }, //  9
+  { &_toANukeBall,      &_awiWeapons[14], NULL,             0, 0, 0, -9, FALSE }, //  10
+  { &_toASGG,           &_awiWeapons[5], NULL,             0, 0, 0, -9, FALSE }, //  11
+  { &_toAHR,            &_awiWeapons[8], NULL,             0, 0, 0, -9, FALSE }, //  12
+  { &_toACG,            &_awiWeapons[9], NULL,             0, 0, 0, -9, FALSE }, //  13
 };
-static const INDEX aiAmmoRemap[10] = { 0, 1, 2, 3, 4, 7, 5, 9, 6, 8 };
+static const INDEX aiAmmoRemap[14] = { 0, 1, 2, 3, 4, 7, 5, 9, 6, 8, 10, 11, 12, 13 };
 
 struct WeaponInfo _awiWeapons[20] = {
   { WEAPON_NONE,            NULL,                 NULL,         FALSE },   //  0
@@ -739,6 +747,14 @@ static void FillWeaponAmmoTables(void)
   _aaiAmmo[8].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxPlasma;
   _aaiAmmo[9].ai_iAmmoAmmount    = _penWeapons->m_iDev;
   _aaiAmmo[9].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxDev;
+  _aaiAmmo[10].ai_iAmmoAmmount    = _penWeapons->m_iNukeBalls;
+  _aaiAmmo[10].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxNukeBalls;
+  _aaiAmmo[11].ai_iAmmoAmmount    = _penWeapons->m_iSGG;
+  _aaiAmmo[11].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxSGG;
+  _aaiAmmo[12].ai_iAmmoAmmount    = _penWeapons->m_iHR;
+  _aaiAmmo[12].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxHR;
+  _aaiAmmo[13].ai_iAmmoAmmount    = _penWeapons->m_iCG;
+  _aaiAmmo[13].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxCG;
 
   // prepare ammo table for weapon possesion
   INDEX i, iAvailableWeapons = _penWeapons->m_iAvailableWeapons;
@@ -1011,7 +1027,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
 
   // loop thru all ammo types
   if (!GetSP()->sp_bInfiniteAmmo) {
-    for( INDEX ii=9; ii>=0; ii--) {
+    for( INDEX ii=13; ii>=0; ii--) {
       i = aiAmmoRemap[ii];
       // if no ammo and hasn't got that weapon - just skip this ammo
       AmmoInfo &ai = _aaiAmmo[i];
@@ -1448,6 +1464,10 @@ extern void InitHUD(void)
     _toASniperBullets.SetData_t( CTFILENAME("TexturesMP\\Interface\\AmSniperBullets.tex"));
     _toAPlasmaPack.SetData_t(    CTFILENAME("TexturesMP\\Interface\\AmPlasma.tex"));
     _toADevastator.SetData_t(    CTFILENAME("TexturesF\\Interface\\AmDevastator.tex"));
+    _toASGG.SetData_t(           CTFILENAME("TexturesF\\Interface\\AmSGG.tex"));
+    _toAHR.SetData_t(            CTFILENAME("TexturesF\\Interface\\AmHR.tex"));
+    _toACG.SetData_t(            CTFILENAME("TexturesF\\Interface\\AmCG.tex"));
+    _toANukeBall.SetData_t(      CTFILENAME("TexturesF\\Interface\\AmNB.tex"));
     _toASeriousBomb.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmSeriousBomb.tex"));
     // initialize weapon textures
     _toWKnife.SetData_t(           CTFILENAME("TexturesMP\\Interface\\WKnife.tex"));

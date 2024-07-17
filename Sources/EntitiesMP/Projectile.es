@@ -201,10 +201,13 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_SHOCKWAVE);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_ROCKET_PLANE);
     break;
+  case PRT_ROCKET_HOMING          :
+    pdec->PrecacheModel(MODEL_HR  );
+    pdec->PrecacheTexture(TEXTURE_HR);
+    break;
   case PRT_GRENADE:
   case PRT_GRENADE_CLUSTERED:
   case PRT_GRENADE_WEAK:
-  case PRT_GRENADE_SHOTGUN:
     pdec->PrecacheModel(MODEL_GRENADE);
     pdec->PrecacheTexture(TEXTURE_GRENADE);
     pdec->PrecacheSound(SOUND_GRENADE_BOUNCE);
@@ -231,6 +234,10 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_SHOCKWAVE);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE_PLANE);
+    break;
+  case PRT_GRENADE_SHOTGUN:
+    pdec->PrecacheModel(MODEL_SGG);
+    pdec->PrecacheTexture(TEXTURE_SGG);
     break;
   
   case PRT_FLAME:
@@ -653,6 +660,9 @@ components:
   7 texture TEXTURE_ROCKET_NU      "ModelsF\\Weapons\\RocketLauncher\\Projectile\\Rocket.tex",
   8 sound   SOUND_FLYING        "Sounds\\Weapons\\RocketFly.wav",
   9 sound   SOUND_BEAST_FLYING  "Sounds\\Weapons\\ProjectileFly.wav",
+  
+ 390 model   MODEL_HR        "ModelsF\\Weapons\\HR\\HR.mdl",
+ 391 texture TEXTURE_HR      "ModelsF\\Weapons\\HR\\HR.tex",
 
 // ********* PLAYER GRENADE *********
  10 model   MODEL_GRENADE         "Models\\Weapons\\GrenadeLauncher\\Grenade\\Grenade.mdl",
@@ -831,6 +841,10 @@ components:
 // ********** HYDROGUN **********
 360 model   MODEL_HYDROGUN   "ModelsF\\Weapons\\Hydrogun\\Projectile\\Projectile.mdl",
 361 sound   SOUND_HYDROGUN                   "SoundsF\\Weapons\\Acid.wav",
+
+// ********* SHOTGUN GRENADE *********
+380 model   MODEL_SGG         "ModelsF\\Weapons\\SGG\\SGG.mdl",
+381 texture TEXTURE_SGG       "ModelsF\\Weapons\\SGG\\SGG.tex",
 
 // ************** REFLECTIONS **************
 200 texture TEX_REFL_BWRIPLES01         "Models\\ReflectionTextures\\BWRiples01.tex",
@@ -1422,8 +1436,8 @@ void PlayerRocket(void) {
   m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
   PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
   m_fFlyTime = 30.0f;
-  m_fDamageAmount = 50.0f;
-  m_fRangeDamageAmount = 100.0f;
+  m_fDamageAmount = 100.0f;
+  m_fRangeDamageAmount = 50.0f;
   m_fDamageHotSpotRange = 4.0f;
   m_fDamageFallOffRange = 8.0f;
   m_fSoundRange = 50.0f;
@@ -1443,8 +1457,8 @@ void PlayerHomingRocket(void) {
   InitAsModel();
   SetPhysicsFlags(EPF_MODEL_FREE_FLYING);
   SetCollisionFlags(ECF_PROJECTILE_SOLID);
-  SetModel(MODEL_ROCKET);
-  SetModelMainTexture(TEXTURE_ROCKET_NU);
+  SetModel(MODEL_HR);
+  SetModelMainTexture(TEXTURE_HR);
 
   // add player's forward velocity
   CMovableEntity *penPlayer = (CMovableEntity*)(CEntity*)m_penLauncher;
@@ -1459,10 +1473,10 @@ void PlayerHomingRocket(void) {
     fSpeedAdj = 1.0f;
   }
 
-	m_fGuidedMaxSpeedFactor = 50.0f*fSpeedAdj;
+	m_fGuidedMaxSpeedFactor = 80.0f*fSpeedAdj;
 
   // start moving
-  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -((75.0f*fSpeedAdj)+fSpeedFwd)), (CMovableEntity*)(CEntity*)m_penLauncher);
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -((100.0f*fSpeedAdj)+fSpeedFwd)), (CMovableEntity*)(CEntity*)m_penLauncher);
 
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   // play the flying sound
@@ -1470,14 +1484,14 @@ void PlayerHomingRocket(void) {
   PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
   m_fFlyTime = 16.0f;
   m_fDamageAmount = 200.0f;
-  m_fRangeDamageAmount = 50.0f;
-  m_fDamageHotSpotRange = 3.0f;
-  m_fDamageFallOffRange = 6.0f;
+  m_fRangeDamageAmount = 100.0f;
+  m_fDamageHotSpotRange = 2.0f;
+  m_fDamageFallOffRange = 4.0f;
   m_fSoundRange = 150.0f;
   m_bExplode = TRUE;
-  m_bLightSource = FALSE; 
+  m_bLightSource = TRUE; 
   m_bCanHitHimself = TRUE;
-  m_bCanBeDestroyed = TRUE;
+  m_bCanBeDestroyed = FALSE;
   m_fWaitAfterDeath = 1.125f;
   m_tmExpandBox = 0.000001f;
   m_tmInvisibility = 0.05f;
@@ -1656,7 +1670,7 @@ void ClusteredGrenade(void) {
   en_fJumpControlMultiplier = 0.0f;
   m_fFlyTime = 6.0f;
   m_fDamageAmount = 0.0f;
-  m_fRangeDamageAmount = 125.0f;
+  m_fRangeDamageAmount = 150.0f;
   m_fDamageHotSpotRange = 6.0f;
   m_fDamageFallOffRange = 10.0f;
   m_fSoundRange = 50.0f;
@@ -1926,8 +1940,8 @@ void ShotgunGrenade(void) {
   InitAsModel();
   SetPhysicsFlags(EPF_MODEL_BOUNCING);
   SetCollisionFlags(ECF_PROJECTILE_SOLID);
-  SetModel(MODEL_GRENADE);
-  SetModelMainTexture(TEXTURE_GRENADE);
+  SetModel(MODEL_SGG);
+  SetModelMainTexture(TEXTURE_SGG);
   GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
   // start moving
 

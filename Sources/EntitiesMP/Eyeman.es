@@ -25,12 +25,12 @@ enum EyemanEnv {
 // info structure
 static EntityInfo eiEyemanBig = {
   EIBT_FLESH, 140.0f,
-  0.0f, 1.4f, 0.0f,
+  0.0f, 1.0f, 0.0f,
   0.0f, 1.0f, 0.0f,
 };
 static EntityInfo eiEyemanSmall = {
   EIBT_FLESH, 120.0f,
-  0.0f, 1.4f, 0.0f,
+  0.0f, 1.0f, 0.0f,
   0.0f, 1.0f, 0.0f,
 };
 static EntityInfo eiEyemanBrute = {
@@ -40,12 +40,12 @@ static EntityInfo eiEyemanBrute = {
 };
 static EntityInfo eiEyemanBoom = {
   EIBT_FLESH, 120.0f,
-  0.0f, 1.4f, 0.0f,
+  0.0f, 1.0f, 0.0f,
   0.0f, 1.0f, 0.0f,
 };
 static EntityInfo eiEyemanPuke = {
   EIBT_FLESH, 140.0f,
-  0.0f, 1.4f, 0.0f,
+  0.0f, 1.0f, 0.0f,
   0.0f, 1.0f, 0.0f,
 };
 
@@ -149,6 +149,18 @@ functions:
   }
   void Precache(void) {
     CEnemyBase::Precache();
+
+    PrecacheModel(MODEL_EYEMAN);
+    PrecacheModel(MODEL_BUFF);
+    PrecacheTexture(TEXTURE_EYEMAN_BRUTE);
+    PrecacheTexture(TEXTURE_EYEMAN_BOOM);
+    PrecacheTexture(TEXTURE_EYEMAN_LAVA);
+    PrecacheTexture(TEXTURE_EYEMAN_PUKE);
+    PrecacheTexture(TEXTURE_EYEMAN_SNOWF);
+    PrecacheTexture(TEXTURE_EYEMAN_SNOWM);
+    PrecacheTexture(TEXTURE_EYEMAN_SOLDIER);
+    PrecacheTexture(TEXTURE_EYEMAN_SERGEANT);
+
     PrecacheSound(SOUND_IDLE );
     PrecacheSound(SOUND_SIGHT);
     PrecacheSound(SOUND_WOUND);

@@ -23,14 +23,17 @@ enum AmmoItemType {
   3 AIT_ROCKETS         "Rockets",
   4 AIT_GRENADES        "Grenades",
   5 AIT_ELECTRICITY     "Electricity",
-  6 AIT_NUKEBALL        "obsolete",
+  6 AIT_NUKEBALL        "Nuke ball",
   7 AIT_IRONBALLS       "IronBalls",
   8 AIT_SERIOUSPACK     "SeriousPack - don't use",
   9 AIT_BACKPACK        "BackPack - don't use",
   10 AIT_NAPALM         "Napalm",
   11 AIT_SNIPERBULLETS  "Sniper bullets",
   12 AIT_PLASMA         "Plasma pack",
-  13 AIT_DEV            "Devastator shell"
+  13 AIT_DEV            "Devastator shell",
+  14 AIT_SGG            "Shotgun grenades",
+  15 AIT_CG            "Cluster grenades",
+  16 AIT_HR            "Homing rockets"
 };
 
 // event for sending through receive item
@@ -52,6 +55,9 @@ components:
 // ********* SHELLS *********
   1 model   MODEL_SHELLS          "Models\\Items\\Ammo\\Shells\\Shells.mdl",
   2 texture TEXTURE_SHELLS        "Models\\Items\\Ammo\\Shells\\Shells.tex",
+  
+ 340 model   MODEL_SGG          "ModelsF\\Items\\Ammo\\SGG\\SGGAmmo.mdl",
+ 341 texture TEXTURE_SGG        "ModelsF\\Weapons\\SGG\\SGG.tex",
 
 // ********* BULLETS *********
  10 model   MODEL_BULLETS         "Models\\Items\\Ammo\\Bullets\\Bullets.mdl",
@@ -61,12 +67,18 @@ components:
  20 model   MODEL_ROCKETS         "Models\\Items\\Ammo\\Rockets\\Rockets.mdl",
  21 model   MODEL_RC_ROCKET       "Models\\Weapons\\RocketLauncher\\Projectile\\Rocket.mdl",
  22 texture TEXTURE_ROCKET        "ModelsF\\Weapons\\RocketLauncher\\Projectile\\Rocket.tex",
+ 
+ 320 model   MODEL_HR         "ModelsF\\Items\\Ammo\\HR\\HR.mdl",
+ 322 texture TEXTURE_HR        "ModelsF\\Weapons\\HR\\HR.tex",
 
 // ********* GRENADES *********
  30 model   MODEL_GRENADES        "Models\\Items\\Ammo\\Grenades\\Grenades.mdl",
  31 model   MODEL_GR_GRENADE      "Models\\Items\\Ammo\\Grenades\\Grenade.mdl",
  32 texture TEXTURE_GRENADES      "Models\\Items\\Ammo\\Grenades\\Grenades.tex",
  33 texture TEXTURE_GR_GRENADE    "Models\\Weapons\\GrenadeLauncher\\Grenade\\Grenade.tex",
+ 
+ 331 model   MODEL_CG      "ModelsF\\Items\\Ammo\\CG\\CG.mdl",
+ 332 texture TEXTURE_CG      "Models\\Weapons\\GrenadeLauncherNE\\Grenade\\Grenade.tex",
 
 // ********* ELECTRICITY *********
  40 model   MODEL_ELECTRICITY     "Models\\Items\\Ammo\\Electricity\\Electricity.mdl",
@@ -79,7 +91,7 @@ components:
  50 model   MODEL_CANNONBALL      "Models\\Items\\Ammo\\Cannonball\\Cannonball.mdl",
  51 model   MODEL_CANNONBALLS     "Models\\Items\\Ammo\\Cannonball\\CannonballQuad.mdl",
  52 texture TEXTURE_IRONBALL      "Models\\Weapons\\CannonOld\\Projectile\\IronBall.tex",
-// 53 texture TEXTURE_NUKEBALL      "Models\\Weapons\\Cannon\\Projectile\\NukeBall.tex",
+ 53 texture TEXTURE_NUKEBALL      "ModelsF\\Items\\Ammo\\NukeBall\\NukeBall.tex",
 
 // ********* PLASMA *********
  300 model   MODEL_PLASMA         "ModelsMP\\Items\\Ammo\\PlasmaPack\\AMMO_PlasmaPack.mdl",
@@ -180,6 +192,15 @@ functions:
        case AIT_DEV:
         Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
         break;
+       case AIT_SGG:
+        Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
+        break;
+       case AIT_CG:
+        Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
+        break;
+       case AIT_HR:
+        Particles_Spiral(this, 1.5f*0.75, 1.25f*0.75, PT_STAR04, 6);
+        break;
     }
   }
 
@@ -209,12 +230,10 @@ functions:
         pes->es_strName = "Electricity"; 
         pes->es_fValue = m_fValue*AV_ELECTRICITY;
         break;
-/*
       case AIT_NUKEBALL:  
-        pes->es_strName = "Nukeballs"; 
+        pes->es_strName = "Nukeball"; 
         pes->es_fValue = m_fValue*AV_NUKEBALLS;
         break;
-        */
       case AIT_IRONBALLS: 
         pes->es_strName = "Ironballs"; 
         pes->es_fValue = m_fValue*AV_IRONBALLS;
@@ -242,6 +261,18 @@ functions:
       case AIT_DEV:
         pes->es_strName = "Devastator shells"; 
         pes->es_fValue = m_fValue*AV_DEV;
+        break;
+      case AIT_SGG:
+        pes->es_strName = "Shotgun grenades"; 
+        pes->es_fValue = m_fValue*AV_SGG;
+        break;
+      case AIT_CG:
+        pes->es_strName = "Cluster grenades"; 
+        pes->es_fValue = m_fValue*AV_CG;
+        break;
+      case AIT_HR:
+        pes->es_strName = "Homing rockets"; 
+        pes->es_fValue = m_fValue*AV_HR;
         break;
     }
     pes->es_iScore = 0;//m_iScore;
@@ -311,7 +342,6 @@ functions:
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.6f,0), FLOAT3D(3,3,0.8f) );
         StretchItem(FLOAT3D(0.75f, 0.75f, 0.75f));
         break;
-/*
       case AIT_NUKEBALL:
         m_fValue = 1.0f;
         m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
@@ -321,7 +351,6 @@ functions:
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.5f,0), FLOAT3D(2,2,0.5f) );
         StretchItem(FLOAT3D(0.75f, 0.75f, 0.75f));
         break;
-        */
       case AIT_IRONBALLS:
         m_fValue = 4.0f;
         m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
@@ -385,6 +414,33 @@ functions:
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.25f,0), FLOAT3D(1.5,1.5,0.75f) );
         StretchItem(FLOAT3D(1.5f, 1.5f, 1.5f));
         break;
+      case AIT_CG:
+        m_fValue = 2.0f;
+        m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
+        m_strDescription.PrintF("Cluster grenades: %d", (int) m_fValue);
+        // set appearance
+        AddItem(MODEL_CG, TEXTURE_CG, 0, 0, 0);
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.6f,0), FLOAT3D(4,4,1.0f) );
+        StretchItem(FLOAT3D(0.75f, 0.75f, 0.75f));
+        break;
+      case AIT_SGG:
+        m_fValue = 5.0f;
+        m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
+        m_strDescription.PrintF("Shotgun grenades: %d", (int) m_fValue);
+        // set appearance
+        AddItem(MODEL_SGG, TEXTURE_SGG, 0, 0, 0);
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.6f,0), FLOAT3D(4,4,1.0f) );
+        StretchItem(FLOAT3D(0.75f, 0.75f, 0.75f));
+        break;
+      case AIT_HR:
+        m_fValue = 2.0f;
+        m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
+        m_strDescription.PrintF("Homing rockets: %d", (int) m_fValue);
+        // set appearance
+        AddItem(MODEL_HR, TEXTURE_HR, 0, 0, 0);
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.6f,0), FLOAT3D(4,4,1.0f) );
+        StretchItem(FLOAT3D(0.75f, 0.75f, 0.75f));
+        break;
       default: ASSERTALWAYS("Uknown ammo");
     }
   };
@@ -439,9 +495,6 @@ procedures:
   };
 
   Main() {
-    if (m_EaitType==AIT_NUKEBALL /*|| m_EaitType==AIT_NAPALM*/) {
-      m_EaitType=AIT_SHELLS;
-    }
     Initialize();     // initialize base class
     StartModelAnim(ITEMHOLDER_ANIM_MEDIUMOSCILATION, AOF_LOOPING|AOF_NORESTART);
     ForceCollisionBoxIndexChange(ITEMHOLDER_COLLISION_BOX_MEDIUM);

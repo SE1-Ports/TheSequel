@@ -87,7 +87,7 @@ uses "EntitiesMP/WeaponItem";
 uses "EntitiesMP/AmmoItem";
 uses "EntitiesMP/AmmoPack";
 uses "EntitiesMP/ModelHolder2";
-//uses "EntitiesMP/Pipebomb";
+uses "EntitiesMP/Pipebomb";
 uses "EntitiesMP/GhostBusterRay";
 uses "EntitiesMP/CannonBall";
 
@@ -396,7 +396,8 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
     pdec->PrecacheTexture(TEXTURE_RL_MAGAZINE    );     
     pdec->PrecacheSound(SOUND_ROCKETLAUNCHER_FIRE);   
     pdec->PrecacheSound(SOUND_ROCKETLAUNCHER_TARGET);   
-    pdec->PrecacheClass(CLASS_PROJECTILE, PRT_ROCKET);
+    pdec->PrecacheClass(CLASS_PROJECTILE, PRT_ROCKET); 
+    pdec->PrecacheClass(CLASS_PROJECTILE, PRT_ROCKET_HOMING);
     pdec->PrecacheModel(MODEL_RL_HAND     ); 
   }                                        
 
@@ -673,8 +674,8 @@ properties:
  51 INDEX m_iMaxElectricity = MAX_ELECTRICITY,
  52 INDEX m_iIronBalls      = 0,
  53 INDEX m_iMaxIronBalls   = MAX_IRONBALLS,
-// 54 INDEX m_iNukeBalls      = 0,
-// 55 INDEX m_iMaxNukeBalls   = MAX_NUKEBALLS,
+ 60 INDEX m_iNukeBalls      = 0,
+ 61 INDEX m_iMaxNukeBalls   = MAX_NUKEBALLS,
  54 INDEX m_iSniperBullets    = 0,
  55 INDEX m_iMaxSniperBullets = MAX_SNIPERBULLETS,
 
@@ -682,6 +683,13 @@ properties:
  57 INDEX m_iMaxPlasma = MAX_PLASMA,
  58 INDEX m_iDev    = 0,
  59 INDEX m_iMaxDev = MAX_DEV,
+
+ 62 INDEX m_iSGG    = 0,
+ 63 INDEX m_iMaxSGG = MAX_SGG,
+ 64 INDEX m_iCG    = 0,
+ 65 INDEX m_iMaxCG = MAX_CG,
+ 66 INDEX m_iHR    = 0,
+ 67 INDEX m_iMaxHR = MAX_HR,
 
 // weapons specific
 // knife
@@ -704,8 +712,8 @@ properties:
 237 FLOAT m_fMinimumZoomFOV  = 53.1f,
 238 FLOAT m_tmLastSniperFire = 0.0f,
 // pipebomb
-//235 CEntityPointer m_penPipebomb,
-//236 INDEX m_bPipeBombDropped = FALSE,
+280 CEntityPointer m_penPipebomb,
+281 INDEX m_bPipeBombDropped = FALSE,
 // flamer
 240 CEntityPointer m_penFlame,
 // laser
@@ -985,7 +993,7 @@ functions:
   void AddDependentsToPrediction(void)
   {
     m_penPlayer->AddToPrediction();
-  //m_penPipebomb->AddToPrediction();
+    m_penPipebomb->AddToPrediction();
     m_penGhostBusterRay->AddToPrediction();
     m_penFlame->AddToPrediction();
   }
@@ -2494,19 +2502,19 @@ functions:
 
   // fire cluster grenade
   void FireClusterGrenade(INDEX iPower) {
-    // grenade start position
-    CPlacement3D plGrenade;
+    // pipebomb start position
+    CPlacement3D plPipebomb;
     CalcWeaponPosition(
       FLOAT3D(wpn_fFX[WEAPON_GRENADELAUNCHER],wpn_fFY[WEAPON_GRENADELAUNCHER], 0), 
-      plGrenade, TRUE);
-    // create grenade
-    CEntityPointer penGrenade = CreateEntity(plGrenade, CLASS_PROJECTILE);
-    // init and launch grenade
-    ELaunchProjectile eLaunch;
-    eLaunch.penLauncher = m_penPlayer;
-    eLaunch.prtType = PRT_GRENADE_CLUSTER;
-    eLaunch.fSpeed = 20.0f+iPower*5.0f;
-    penGrenade->Initialize(eLaunch);
+      plPipebomb, TRUE);
+    // create pipebomb
+    CEntityPointer penPipebomb = CreateEntity(plPipebomb, CLASS_PIPEBOMB);
+    // init and drop pipebomb
+    EDropPipebomb eDrop;
+    eDrop.penLauncher = m_penPlayer;
+    eDrop.fSpeed = 20.0f+iPower*5.0f;
+    penPipebomb->Initialize(eDrop);
+    m_penPipebomb = penPipebomb;
   };
 
   // fire devastator
@@ -2767,7 +2775,7 @@ functions:
     eLaunch.penLauncher = m_penPlayer;
     eLaunch.fLaunchPower = 60.0f+iPower*4.0f; // ranges from 60-140 (since iPower can be max 20)
     eLaunch.fSize = 3.0f;
-    eLaunch.cbtType = CBT_NUKE2;
+    eLaunch.cbtType = CBT_NUKE;
     penBall->Initialize(eLaunch);
   };
 
@@ -2796,10 +2804,13 @@ functions:
     m_iNapalm = 0;
     m_iElectricity = 0;
     m_iIronBalls = 0;
-//    m_iNukeBalls = 0;
+    m_iNukeBalls = 0;
     m_iSniperBullets = 0;
     m_iPlasma = 0;
     m_iDev = 0;
+    m_iSGG = 0;
+    m_iCG = 0;
+    m_iHR = 0;
   };
 
   void ResetWeaponMovingOffset(void)
@@ -2837,11 +2848,15 @@ functions:
     m_iMaxGrenades       = ClampUp((INDEX) ceil(MAX_GRENADES*fModifier),      INDEX(999));
     m_iMaxNapalm         = ClampUp((INDEX) ceil(MAX_NAPALM*fModifier),        INDEX(999));
     m_iMaxElectricity    = ClampUp((INDEX) ceil(MAX_ELECTRICITY*fModifier),   INDEX(999));
-//    m_iMaxNukeBalls    = ClampUp((INDEX) ceil(MAX_NUKEBALLS*fModifier),    INDEX(999));
+    m_iMaxNukeBalls    = ClampUp((INDEX) ceil(MAX_NUKEBALLS*fModifier),    INDEX(999));
     m_iMaxIronBalls      = ClampUp((INDEX) ceil(MAX_IRONBALLS*fModifier),     INDEX(999));
     m_iMaxSniperBullets  = ClampUp((INDEX) ceil(MAX_SNIPERBULLETS*fModifier), INDEX(999));
     m_iMaxPlasma         = ClampUp((INDEX) ceil(MAX_PLASMA*fModifier), INDEX(999));
     m_iMaxDev            = ClampUp((INDEX) ceil(MAX_DEV*fModifier), INDEX(999));
+	
+    m_iMaxSGG        = ClampUp((INDEX) ceil(MAX_SGG*fModifier), INDEX(999));
+    m_iMaxCG         = ClampUp((INDEX) ceil(MAX_CG*fModifier), INDEX(999));
+    m_iMaxHR         = ClampUp((INDEX) ceil(MAX_HR*fModifier), INDEX(999));
 
     // take away ammo
     if( iTakeAmmo & (1<<AMMO_BULLETS))       {m_iBullets    = 0;}
@@ -2850,11 +2865,15 @@ functions:
     if( iTakeAmmo & (1<<AMMO_GRENADES))      {m_iGrenades   = 0;}
     if( iTakeAmmo & (1<<AMMO_NAPALM))        {m_iNapalm     = 0;}
     if( iTakeAmmo & (1<<AMMO_ELECTRICITY))   {m_iElectricity= 0;}
-//    if( iTakeAmmo & (1<<AMMO_NUKEBALLS))     {m_iNukeBalls  = 0;}
+    if( iTakeAmmo & (1<<AMMO_NUKEBALLS))     {m_iNukeBalls  = 0;}
     if( iTakeAmmo & (1<<AMMO_IRONBALLS))     {m_iIronBalls  = 0;}
     if( iTakeAmmo & (1<<AMMO_SNIPERBULLETS)) {m_iSniperBullets = 0;}
     if( iTakeAmmo & (1<<AMMO_PLASMA))        {m_iPlasma = 0;}
     if( iTakeAmmo & (1<<AMMO_DEV))           {m_iDev = 0;}
+	
+    if( iTakeAmmo & (1<<AMMO_SGG))       {m_iSGG = 0;}
+    if( iTakeAmmo & (1<<AMMO_CG))        {m_iCG = 0;}
+    if( iTakeAmmo & (1<<AMMO_HR))        {m_iHR = 0;}
 
     // precache eventual new weapons
     Precache();
@@ -2886,17 +2905,17 @@ functions:
       case WEAPON_COLT:            return m_iColtBullets;
       case WEAPON_DOUBLECOLT:      return m_iColtBullets;
       case WEAPON_SINGLESHOTGUN:   return m_iShells;
-      case WEAPON_DOUBLESHOTGUN:   return m_iShells;
+      case WEAPON_DOUBLESHOTGUN:   return m_iSGG, m_iShells;
       case WEAPON_TOMMYGUN:        return m_iBullets;
       case WEAPON_MINIGUN:         return m_iBullets;
-      case WEAPON_ROCKETLAUNCHER:  return m_iRockets;
-      case WEAPON_GRENADELAUNCHER: return m_iGrenades;
+      case WEAPON_ROCKETLAUNCHER:  return m_iHR, m_iRockets;
+      case WEAPON_GRENADELAUNCHER: return m_iCG, m_iGrenades;
       case WEAPON_SNIPER:          return m_iSniperBullets;
       case WEAPON_FLAMER:          return m_iNapalm;
       case WEAPON_CHAINSAW:        return 0;
       case WEAPON_LASER:           return m_iElectricity;
       case WEAPON_GHOSTBUSTER:     return m_iElectricity;
-      case WEAPON_IRONCANNON:      return m_iIronBalls;
+      case WEAPON_IRONCANNON:      return m_iNukeBalls, m_iIronBalls;
       case WEAPON_PLASMA:          return m_iPlasma;
       case WEAPON_DEVASTATOR:      return m_iDev;
       case WEAPON_HYDROGUN:        return m_iPlasma;
@@ -2912,17 +2931,17 @@ functions:
       case WEAPON_COLT:            return 6;
       case WEAPON_DOUBLECOLT:      return 6;
       case WEAPON_SINGLESHOTGUN:   return m_iMaxShells;
-      case WEAPON_DOUBLESHOTGUN:   return m_iMaxShells;
+      case WEAPON_DOUBLESHOTGUN:   return m_iMaxSGG, m_iMaxShells;
       case WEAPON_TOMMYGUN:        return m_iMaxBullets;
       case WEAPON_MINIGUN:         return m_iMaxBullets;
-      case WEAPON_ROCKETLAUNCHER:  return m_iMaxRockets;
-      case WEAPON_GRENADELAUNCHER: return m_iMaxGrenades;
+      case WEAPON_ROCKETLAUNCHER:  return m_iMaxHR, m_iMaxRockets;
+      case WEAPON_GRENADELAUNCHER: return m_iMaxCG, m_iMaxGrenades;
       case WEAPON_SNIPER:          return m_iMaxSniperBullets;
       case WEAPON_FLAMER:          return m_iMaxNapalm;
       case WEAPON_CHAINSAW:        return m_iMaxNapalm;
       case WEAPON_LASER:           return m_iMaxElectricity;
       case WEAPON_GHOSTBUSTER:     return m_iMaxElectricity;
-      case WEAPON_IRONCANNON:      return m_iMaxIronBalls;
+      case WEAPON_IRONCANNON:      return m_iMaxNukeBalls, m_iMaxIronBalls;
       case WEAPON_PLASMA:          return m_iMaxPlasma;
       case WEAPON_DEVASTATOR:      return m_iMaxDev;
       case WEAPON_HYDROGUN:        return m_iMaxPlasma;
@@ -2950,11 +2969,14 @@ functions:
     m_iNapalm = m_iMaxNapalm;
     m_iElectricity = m_iMaxElectricity;
     m_iIronBalls = m_iMaxIronBalls;
-    //m_iNukeBalls = m_iMaxNukeBalls;
+    m_iNukeBalls = m_iMaxNukeBalls;
     // precache eventual new weapons
     m_iSniperBullets = m_iMaxSniperBullets;
     m_iPlasma = m_iMaxPlasma;
     m_iDev = m_iMaxDev;
+    m_iSGG = m_iMaxSGG;
+    m_iCG = m_iMaxCG;
+    m_iHR = m_iMaxHR;
     Precache();
   };
 
@@ -2980,16 +3002,20 @@ functions:
     m_iNapalm        = ClampUp(m_iNapalm,        m_iMaxNapalm);
     m_iElectricity   = ClampUp(m_iElectricity,   m_iMaxElectricity);
     m_iIronBalls     = ClampUp(m_iIronBalls,     m_iMaxIronBalls);
-//    m_iNukeBalls   = ClampUp(m_iNukeBalls,     m_iMaxNukeBalls);
+    m_iNukeBalls   = ClampUp(m_iNukeBalls,     m_iMaxNukeBalls);
     m_iSniperBullets = ClampUp(m_iSniperBullets, m_iMaxSniperBullets);
     m_iPlasma        = ClampUp(m_iPlasma,        m_iMaxPlasma);
     m_iDev           = ClampUp(m_iDev,           m_iMaxDev);
+    m_iSGG          = ClampUp(m_iSGG, m_iMaxSGG);
+    m_iCG           = ClampUp(m_iCG,        m_iMaxCG);
+    m_iHR           = ClampUp(m_iHR,           m_iMaxHR);
   }
 
   // add default ammount of ammunition when receiving a weapon
   void AddDefaultAmmoForWeapon(INDEX iWeapon, FLOAT fMaxAmmoRatio)
   {
     INDEX iAmmoPicked;
+    INDEX iAmmo2Picked;
     // add ammo
     switch (iWeapon) {
       // unlimited ammo
@@ -3006,6 +3032,8 @@ functions:
       case WEAPON_DOUBLESHOTGUN:
         iAmmoPicked = Max(20.0f, m_iMaxShells*fMaxAmmoRatio);
         m_iShells += iAmmoPicked;
+        iAmmo2Picked = Max(5.0f, m_iMaxSGG*fMaxAmmoRatio);
+        m_iSGG += iAmmo2Picked;
         AddManaToPlayer(iAmmoPicked*70.0f*MANA_AMMO);
         break;
       // bullets
@@ -3028,12 +3056,16 @@ functions:
       case WEAPON_ROCKETLAUNCHER:
         iAmmoPicked = Max(5.0f, m_iMaxRockets*fMaxAmmoRatio);
         m_iRockets += iAmmoPicked;
+        iAmmo2Picked = Max(2.0f, m_iMaxHR*fMaxAmmoRatio);
+        m_iHR += iAmmo2Picked;
         AddManaToPlayer( iAmmoPicked*150.0f*MANA_AMMO);
         break;
       // grenades
       case WEAPON_GRENADELAUNCHER:
         iAmmoPicked = Max(5.0f, m_iMaxGrenades*fMaxAmmoRatio);
         m_iGrenades += iAmmoPicked;
+        iAmmo2Picked = Max(2.0f, m_iMaxCG*fMaxAmmoRatio);
+        m_iCG += iAmmo2Picked;
         AddManaToPlayer( iAmmoPicked*100.0f*MANA_AMMO);
         break;
 /*
@@ -3059,6 +3091,8 @@ functions:
         // for iron ball
         iAmmoPicked = Max(1.0f, m_iMaxIronBalls*fMaxAmmoRatio);
         m_iIronBalls += iAmmoPicked;
+        iAmmo2Picked = Max(1.0f, m_iMaxNukeBalls*fMaxAmmoRatio);
+        m_iNukeBalls += iAmmo2Picked;
         AddManaToPlayer( iAmmoPicked*700.0f*MANA_AMMO);
         break;
 /*      // for nuke ball
@@ -3349,13 +3383,13 @@ functions:
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Cells"), Eai.iQuantity);
         AddManaToPlayer(Eai.iQuantity*AV_ELECTRICITY *MANA_AMMO);
         break;
-/*      // cannon balls
+      // cannon balls
       case AIT_NUKEBALL:
         if (m_iNukeBalls>=m_iMaxNukeBalls) { m_iNukeBalls = m_iMaxNukeBalls; return FALSE; }
         m_iNukeBalls+= Eai.iQuantity;
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Nuke ball"), Eai.iQuantity);
         AddManaToPlayer(Eai.iQuantity*AV_NUKEBALLS *MANA_AMMO);
-        break;*/
+        break;
       case AIT_IRONBALLS:
         if (m_iIronBalls>=m_iMaxIronBalls) { m_iIronBalls = m_iMaxIronBalls; return FALSE; }
         m_iIronBalls+= Eai.iQuantity;
@@ -3402,6 +3436,23 @@ functions:
         m_iDev+= Eai.iQuantity;
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Devastator shells"), Eai.iQuantity);
         AddManaToPlayer(Eai.iQuantity*AV_DEV*MANA_AMMO);
+      case AIT_SGG:
+        if (m_iSGG>=m_iMaxSGG) { m_iSGG = m_iMaxSGG; return FALSE; }
+        m_iSGG+= Eai.iQuantity;
+        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Shotgun grenades"), Eai.iQuantity);
+        AddManaToPlayer(Eai.iQuantity*AV_SGG*MANA_AMMO);
+        break;
+      case AIT_CG:
+        if (m_iCG>=m_iMaxCG) { m_iCG = m_iMaxCG; return FALSE; }
+        m_iCG+= Eai.iQuantity;
+        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Cluster grenades"), Eai.iQuantity);
+        AddManaToPlayer(Eai.iQuantity*AV_CG*MANA_AMMO);
+        break;
+      case AIT_HR:
+        if (m_iHR>=m_iMaxHR) { m_iHR = m_iMaxHR; return FALSE; }
+        m_iHR+= Eai.iQuantity;
+        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Homing rockets"), Eai.iQuantity);
+        AddManaToPlayer(Eai.iQuantity*AV_HR*MANA_AMMO);
         break;
       
         
@@ -3439,6 +3490,10 @@ functions:
         (eapi.iIronBalls>0 && m_iIronBalls<m_iMaxIronBalls) ||
         (eapi.iPlasma>0 && m_iPlasma<m_iMaxPlasma) ||
         (eapi.iDev>0 && m_iDev<m_iMaxDev) ||
+        (eapi.iSGG>0 && m_iSGG<m_iMaxSGG) ||
+        (eapi.iNukeBalls>0 && m_iNukeBalls<m_iMaxNukeBalls) ||
+        (eapi.iCG>0 && m_iCG<m_iMaxCG) ||
+        (eapi.iHR>0 && m_iHR<m_iMaxHR) ||
         (eapi.iSniperBullets>0 && m_iSniperBullets<m_iMaxSniperBullets))
     {
       // add ammo from back pack
@@ -3452,6 +3507,10 @@ functions:
       m_iSniperBullets+=eapi.iSniperBullets;
       m_iPlasma+=eapi.iPlasma;
       m_iDev+=eapi.iDev;
+      m_iNukeBalls+=eapi.iNukeBalls;
+      m_iSGG+=eapi.iSGG;
+      m_iCG+=eapi.iCG;
+      m_iHR+=eapi.iHR;
       // make sure we don't have more ammo than maximum
       ClampAllAmmo();
 
@@ -3468,6 +3527,10 @@ functions:
       if( eapi.iSniperBullets != 0) { strMessage.PrintF("%s %d %s,", strMessage, eapi.iSniperBullets, TRANS("Sniper bullets")); iAmmoTypes++; }
       if( eapi.iPlasma != 0)        { strMessage.PrintF("%s %d %s,", strMessage, eapi.iPlasma, TRANS("Plasma pack")); iAmmoTypes++; }
       if( eapi.iDev != 0)           { strMessage.PrintF("%s %d %s,", strMessage, eapi.iDev, TRANS("Devastator shells")); iAmmoTypes++; }
+      if( eapi.iNukeBalls != 0)     { strMessage.PrintF("%s %d %s,", strMessage, eapi.iNukeBalls, TRANS("Nukeball")); iAmmoTypes++; }
+      if( eapi.iSGG != 0)         { strMessage.PrintF("%s %d %s,", strMessage, eapi.iSGG, TRANS("Shotgun grenades")); iAmmoTypes++; }
+      if( eapi.iCG != 0)        { strMessage.PrintF("%s %d %s,", strMessage, eapi.iCG, TRANS("Cluster grenades")); iAmmoTypes++; }
+      if( eapi.iHR != 0)           { strMessage.PrintF("%s %d %s,", strMessage, eapi.iHR, TRANS("Homing rockets")); iAmmoTypes++; }
 
       INDEX iLen = strlen(strMessage);
       if( iLen>0 && strMessage[iLen-1]==',')
@@ -5236,13 +5299,13 @@ procedures:
 
   FireGrenadeShotgun() {
     // fire two shell
-    if (m_iShells>2) {
+    if (m_iSGG>0) {
       GetAnimator()->FireAnimation(BODY_ANIM_SHOTGUN_FIRELONG, 0);
       FireGrenadeSG();
       DoRecoil();
       SpawnRangeSound(70.0f);
       if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("Dblshotgun_fire");}
-      DecAmmo(m_iShells, 3);
+      DecAmmo(m_iSGG, 1);
       SetFlare(0, FLARE_ADD);
       PlayLightAnim(LIGHT_ANIM_COLT_SHOTGUN, 0);
       m_moWeapon.PlayAnim(GetSP()->sp_bCooperative ? DOUBLESHOTGUN_ANIM_FIRE : DOUBLESHOTGUN_ANIM_FIREFAST, 0);
@@ -5305,7 +5368,7 @@ procedures:
       }
 
       autowait(GetSP()->sp_bCooperative ? 0.25f : 0.15f);
-      if (m_iShells>=2) {
+      if (m_iSGG>=1) {
         CPlayer &pl = (CPlayer&)*m_penPlayer;
         PlaySound(pl.m_soWeapon1, SOUND_DOUBLESHOTGUN_RELOAD, SOF_3D|SOF_VOLUMETRIC);
       }
@@ -5313,7 +5376,7 @@ procedures:
         (GetSP()->sp_bCooperative ? DOUBLESHOTGUN_ANIM_FIRE : DOUBLESHOTGUN_ANIM_FIREFAST)) -
         (GetSP()->sp_bCooperative ? 0.25f : 0.15f) );
       // no ammo -> change weapon
-      if (m_iShells<=1) { SelectNewWeapon(); }
+      if (m_iSGG<=0) { SelectNewWeapon(); }
     } else {
       ASSERTALWAYS("DoubleShotgun - Auto weapon change not working.");
       m_bFireWeapon = m_bHasAmmo = FALSE;
@@ -5767,7 +5830,7 @@ procedures:
 
 
   FireSecondaryRocket() {
-    if (m_iRockets>1) {
+    if (m_iHR>0) {
       CPlacement3D plCrosshair;
       FLOAT fFX = wpn_fFX[m_iCurrentWeapon]; 
       FLOAT fFY = wpn_fFY[m_iCurrentWeapon];
@@ -5814,7 +5877,7 @@ procedures:
 			  }
 		  }
       FireHomingRocket();
-      DecAmmo(m_iRockets, 2);
+      DecAmmo(m_iHR, 1);
       SpawnRangeSound(20.0f);
       if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("Rocketlauncher_fire");}
       // sound
@@ -5829,7 +5892,7 @@ procedures:
 
       autowait(m_moWeapon.GetAnimLength(ROCKETLAUNCHER_ANIM_FIRE)-0.05f);
       // no ammo -> change weapon
-      if (m_iRockets<=1) { SelectNewWeapon(); }
+      if (m_iHR<=0) { SelectNewWeapon(); }
     } else {
       ASSERTALWAYS("RocketLauncher - Auto weapon change not working.");
       m_bFireWeapon = m_bHasAmmo = FALSE;
@@ -5942,6 +6005,18 @@ procedures:
 
   FireGrenadeLauncherAlt()
   {
+   if (m_bPipeBombDropped) {
+    m_bPipeBombDropped = FALSE;
+        SendToTarget(m_penPipebomb, EET_START);
+        m_penPipebomb = NULL;
+        // sound
+        CPlayer &pl = (CPlayer&)*m_penPlayer;
+        /*PlaySound(pl.m_soWeapon0, SOUND_PIPEBOMB_FIRE, SOF_3D|SOF_VOLUMETRIC);*/
+        // get new bomb
+        autowait(0.15f);
+   } else if (TRUE) {
+    m_bPipeBombDropped = TRUE;
+
     TM_START = _pTimer->CurrentTick();
     // remember time for spring release
     F_TEMP = _pTimer->CurrentTick();
@@ -5961,14 +6036,14 @@ procedures:
 
 
     // release spring and fire one grenade
-    if (m_iGrenades>2)
+    if (m_iCG>0)
     {
       // fire grenade
       INDEX iPower = INDEX((_pTimer->CurrentTick()-F_TEMP)/_pTimer->TickQuantum);
       FireClusterGrenade( iPower);
       SpawnRangeSound(10.0f);
       if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("Gnadelauncher");}
-      DecAmmo(m_iGrenades, 3);
+      DecAmmo(m_iCG, 1);
       // sound
       CPlayer &pl = (CPlayer&)*m_penPlayer;
       PlaySound(pl.m_soWeapon0, SOUND_GRENADELAUNCHER_ALT, SOF_3D|SOF_VOLUMETRIC);
@@ -5985,12 +6060,13 @@ procedures:
         m_fWeaponDrawPower = ClampDn( m_fWeaponDrawPower, 0.0f);
         F_OFFSET_CHG = F_OFFSET_CHG*10;
       }
+	  }
 
       // reset moving part's offset
       ResetWeaponMovingOffset();
 
       // no ammo -> change weapon
-      if (m_iGrenades<=0)
+      if (m_iCG<=0)
       {
         SelectNewWeapon();
       }
@@ -6561,7 +6637,7 @@ procedures:
     F_OFFSET_CHG = 0.0f;
     m_fWeaponDrawPower = 0.0f;
     CPlayer &pl = (CPlayer&)*m_penPlayer;
-    if( m_iIronBalls&4)
+    if( m_iNukeBalls&1)
     {
       pl.m_soWeapon0.Set3DParameters(50.0f, 5.0f, 3.0f, 1.0f);
       PlaySound(pl.m_soWeapon0, SOUND_NUKE_PREPARE, SOF_3D|SOF_VOLUMETRIC);
@@ -6583,7 +6659,7 @@ procedures:
     }
     m_tmDrawStartTime = 0.0f;
     CPlayer &pl = (CPlayer&)*m_penPlayer;
-    if( m_iIronBalls&4)
+    if( m_iNukeBalls&1)
     {
       // turn off the sound
       pl.m_soWeapon0.Set3DParameters(50.0f, 5.0f, 0.0f, 1.0f);
@@ -6595,7 +6671,7 @@ procedures:
     }
     
     // fire one ball
-    if ( ((m_iIronBalls>4) && (m_iCurrentWeapon == WEAPON_IRONCANNON)) )
+    if ( ((m_iNukeBalls>0) && (m_iCurrentWeapon == WEAPON_IRONCANNON)) )
     {
       INDEX iPower = INDEX((_pTimer->CurrentTick()-TM_START)/_pTimer->TickQuantum);
       GetAnimator()->FireAnimation(BODY_ANIM_MINIGUN_FIRELONG, 0);
@@ -6610,7 +6686,7 @@ procedures:
       }
 
       // adjust volume of cannon firing acording to launch power
-      if( m_iIronBalls&4)
+      if( m_iNukeBalls&1)
       {
         pl.m_soWeapon2.Set3DParameters(fRange, fFalloff, 2.0f+iPower*0.05f, 1.0f);
         PlaySound(pl.m_soWeapon2, SOUND_NUKE, SOF_3D|SOF_VOLUMETRIC);
@@ -6625,7 +6701,7 @@ procedures:
       FireNukeBall( iPower);
 
       if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("Canon");}
-        DecAmmo(m_iIronBalls, 5);
+        DecAmmo(m_iNukeBalls, 1);
 
       SpawnRangeSound(30.0f);
 
@@ -6645,7 +6721,7 @@ procedures:
       ResetWeaponMovingOffset();
 
       // no cannon balls -> change weapon
-      if ( ((m_iIronBalls<=4) && (m_iCurrentWeapon == WEAPON_IRONCANNON) ) /*||
+      if ( ((m_iNukeBalls<=0) && (m_iCurrentWeapon == WEAPON_IRONCANNON) ) /*||
            ((m_iNukeBalls<=0) && (m_iCurrentWeapon == WEAPON_NUKECANNON) ) */)
       {
         SelectNewWeapon();
