@@ -525,7 +525,7 @@ procedures:
   Main(EVoid) {
     // declare yourself as a model
     InitAsModel();
-    SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
+    SetPhysicsFlags(EPF_MODEL_WALKING);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
     en_fDensity = 2000.0f;

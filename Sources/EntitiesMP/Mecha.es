@@ -250,6 +250,15 @@ functions:
     m_soFire4.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
   };
 
+/************************************************************
+ *                     MOVING FUNCTIONS                     *
+ ************************************************************/
+  // check whether may move while attacking
+  BOOL MayMoveToAttack(void) 
+  {
+      return CEnemyBase::WouldNotLeaveAttackRadius();
+  }
+
 
 procedures:
 

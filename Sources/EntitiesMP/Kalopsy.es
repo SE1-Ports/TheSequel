@@ -457,14 +457,6 @@ functions:
       return CEnemyBase::MayMoveToAttack();
     }
   }
-
-  // must be more relaxed about hitting then usual enemies
-  BOOL CanHitEnemy(CEntity *penTarget, FLOAT fCosAngle) {
-    if (IsInPlaneFrustum(penTarget, fCosAngle)) {
-      return IsVisibleCheckAll(penTarget);
-    }
-    return FALSE;
-  };
   
 
 procedures:

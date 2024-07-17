@@ -5410,7 +5410,7 @@ functions:
             CAttachmentModelObject &amoBody = *GetModelObject()->GetAttachmentModel(PLAYER_ATTACHMENT_TORSO);
             FLOATmatrix3D m;
             MakeRotationMatrix(m, amoBody.amo_plRelative.pl_OrientationAngle);
-            FLOAT3D vSource = wpn->m_vBulletSource + FLOAT3D(0.1f, -0.05f, -0.4f)*GetRotationMatrix()*m;
+            FLOAT3D vSource = wpn->m_vBulletSource + FLOAT3D(0.1f, -0.08f, -1.25f)*GetRotationMatrix()*m;
             Particles_SniperResidue(this, vSource , wpn->m_vBulletTarget);
         }
     

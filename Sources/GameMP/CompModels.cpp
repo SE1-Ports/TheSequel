@@ -113,6 +113,7 @@
 #include "ModelsF/Enemies/Mamut/Gun.h"
 #include "ModelsF/Enemies/Mamutman/Mamutman.h"
 #include "ModelsF/Enemies/Mamutman/Gun.h"
+#include "ModelsF/t3dgm/HiveBrain/HiveBrain.h"
 
 #include "ModelsMP/Weapons/PlasmaThrower/LaserItem.h"
 #include "Models/Weapons/GhostBuster/GhostBusterItem.h"
@@ -230,6 +231,22 @@ extern void SetupCompModel_t(const CTString &strName)
       CTFILENAME("Models\\Enemies\\Headman\\Projectile\\Bomb.mdl"), 0,
       CTFILENAME("Models\\Enemies\\Headman\\Projectile\\Bomb.tex"));
     pmo->StretchModel(FLOAT3D(1.25f,1.25f,1.25f));
+    _bHasFloor = TRUE;
+
+  } else if (strName=="HiveBrainSmall") {
+    pmo->SetData_t(CTFILENAME("ModelsF\\t3dgm\\HiveBrain\\HiveBrain.mdl"));
+    pmo->PlayAnim(HIVEBRAIN_ANIM_GROUNDIDLE, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\t3dgm\\HiveBrain\\ALIEN2.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-4.0f,-10.0), ANGLE3D(270,0,0));
+    pmo->StretchModel(FLOAT3D(2.0,2.0,2.0));
+    _bHasFloor = TRUE;
+
+  } else if (strName=="HiveBrainBig") {
+    pmo->SetData_t(CTFILENAME("ModelsF\\t3dgm\\HiveBrain\\HiveBrain.mdl"));
+    pmo->PlayAnim(HIVEBRAIN_ANIM_GROUNDIDLE, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\t3dgm\\HiveBrain\\ALIEN1.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-8.0f,-20.0), ANGLE3D(270,0,0));
+    pmo->StretchModel(FLOAT3D(4.0,4.0,4.0));
     _bHasFloor = TRUE;
 
   } else if (strName=="Ant") {
@@ -2168,7 +2185,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="Sniper") {
     pmo->SetData_t(CTFILENAME("ModelsF\\Weapons\\Sniper\\SniperItem.mdl"));
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Weapons\\Sniper\\W_Set2_Class2.tex"));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Weapons\\Sniper\\Body.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-0.4f,-4.0f), ANGLE3D(0,10,0));
     _aRotation = ANGLE3D(100,0,0);
     _fFOV = 50.0f;
@@ -2176,8 +2193,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
     AddAttachment_t(pmo, SNIPERITEM_ATTACHMENT_BODY, 
       CTFILENAME("ModelsF\\Weapons\\Sniper\\Body.mdl"), 0,
-      CTFILENAME("ModelsF\\Weapons\\Sniper\\W_Set2_Class2.tex"),
-      CTFILENAME("Models\\ReflectionTextures\\LightMetal01.tex"),
+      CTFILENAME("ModelsF\\Weapons\\Sniper\\Body.tex"),
       CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
     pmo->StretchModel(FLOAT3D(1.5,1.5,1.5));
     _bHasFloor = TRUE;

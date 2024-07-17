@@ -249,6 +249,15 @@ functions:
     m_vFlameSource2 = GetPlacement().pl_PositionVector + vFlamePos2*GetRotationMatrix();
   };
 
+/************************************************************
+ *                     MOVING FUNCTIONS                     *
+ ************************************************************/
+  // check whether may move while attacking
+  BOOL MayMoveToAttack(void) 
+  {
+      return CEnemyBase::WouldNotLeaveAttackRadius();
+  }
+
 
 procedures:
 

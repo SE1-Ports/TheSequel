@@ -317,11 +317,7 @@ functions:
   // check whether may move while attacking
   BOOL MayMoveToAttack(void) 
   {
-    if (m_bInAir) {
       return WouldNotLeaveAttackRadius();
-    } else {
-      return CEnemyBase::MayMoveToAttack();
-    }
   }
 
   // must be more relaxed about hitting then usual enemies

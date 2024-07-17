@@ -7,6 +7,17 @@
 uses "EntitiesMP/EnemyFly";
 uses "EntitiesMP/Projectile";
 
+// type of debris
+enum DebrisType {
+  1 DT_STONE "Stone",
+  2 DT_FLESH_RED  "Flesh red",
+  3 DT_FLESH_GREEN  "Flesh green",
+  4 DT_FLESH_YELLOW  "Flesh yellow",
+  5 DT_ROBOT  "Robot",
+  6 DT_NONE   "None",
+  7 DT_HIPPY  "Hippy",
+};
+
 enum CecDeath {
   0 CEC_FALL       "Fall Down",
   1 CEC_SPLODE      "Explode",
@@ -118,12 +129,37 @@ properties:
  71 ANIMATION m_iCecAnimTaunt "Animation Taunt" = 0,
  69 CTFileName m_CecModel      "Model" 'M' =CTFILENAME("Models\\Enemies\\Headman\\Projectile\\Bomb.mdl"),
  70 CTFileName m_CecTexture    "Texture" 'T' =CTFILENAME("Models\\Enemies\\Headman\\Projectile\\Bomb.tex"),
+ 
+ 80 enum DebrisType m_dtDebris "Debris" 'D' = DT_NONE,  // type of debris
+ 81 FLOAT m_fCecBlowUpSize "Debris size" = 2.0f,
+ 82 FLOAT m_fCecBodyParts "Debris count" = 6.0f,
 
 
 components:
   0 class   CLASS_BASE        "Classes\\EnemyFly.ecl",
   4 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
   5 class   CLASS_PROJECTILE      "Classes\\Projectile.ecl",
+
+// ************** FLESH PARTS **************
+ 10 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 11 model   MODEL_FLESH_APPLE    "Models\\Effects\\Debris\\Fruits\\Apple.mdl",
+ 12 model   MODEL_FLESH_BANANA   "Models\\Effects\\Debris\\Fruits\\Banana.mdl",
+ 13 model   MODEL_FLESH_BURGER   "Models\\Effects\\Debris\\Fruits\\CheeseBurger.mdl",
+ 14 model   MODEL_FLESH_LOLLY    "Models\\Effects\\Debris\\Fruits\\LollyPop.mdl",
+ 15 model   MODEL_FLESH_ORANGE   "Models\\Effects\\Debris\\Fruits\\Orange.mdl",
+
+ 20 texture TEXTURE_FLESH_RED    "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
+ 21 texture TEXTURE_FLESH_GREEN  "Models\\Effects\\Debris\\Flesh\\FleshGreen.tex",
+ 22 texture TEXTURE_FLESH_APPLE  "Models\\Effects\\Debris\\Fruits\\Apple.tex",       
+ 23 texture TEXTURE_FLESH_BANANA "Models\\Effects\\Debris\\Fruits\\Banana.tex",      
+ 24 texture TEXTURE_FLESH_BURGER "Models\\Effects\\Debris\\Fruits\\CheeseBurger.tex",
+ 25 texture TEXTURE_FLESH_LOLLY  "Models\\Effects\\Debris\\Fruits\\LollyPop.tex",
+ 26 texture TEXTURE_FLESH_ORANGE "Models\\Effects\\Debris\\Fruits\\Orange.tex",
+ 27 texture TEXTURE_FLESH_YELLOW  "ModelsF\\Effects\\Debris\\Flesh\\FleshYellow.tex",
+
+// ************** MACHINE PARTS **************
+ 31 model   MODEL_MACHINE        "Models\\Effects\\Debris\\Stone\\Stone.mdl",
+ 32 texture TEXTURE_MACHINE      "Models\\Effects\\Debris\\Stone\\Stone.tex",
 
 functions:
   // describe how this enemy killed player
@@ -136,6 +172,21 @@ functions:
   void Precache(void) {
     CEnemyBase::Precache();
     PrecacheClass(CLASS_PROJECTILE, m_prtType);
+    PrecacheModel(MODEL_FLESH);
+    PrecacheModel(MODEL_FLESH_APPLE);
+    PrecacheModel(MODEL_FLESH_BANANA);
+    PrecacheModel(MODEL_FLESH_BURGER);
+    PrecacheModel(MODEL_FLESH_LOLLY);
+    PrecacheModel(MODEL_FLESH_ORANGE);
+    PrecacheModel(MODEL_MACHINE);
+    PrecacheTexture(TEXTURE_MACHINE);
+    PrecacheTexture(TEXTURE_FLESH_RED);
+    PrecacheTexture(TEXTURE_FLESH_GREEN);
+    PrecacheTexture(TEXTURE_FLESH_APPLE); 
+    PrecacheTexture(TEXTURE_FLESH_BANANA);
+    PrecacheTexture(TEXTURE_FLESH_BURGER);
+    PrecacheTexture(TEXTURE_FLESH_LOLLY); 
+    PrecacheTexture(TEXTURE_FLESH_ORANGE); 
   };
 
   /* Entity info */
@@ -351,7 +402,158 @@ functions:
  ************************************************************/
   //DON'T spawn body parts
   void BlowUp(void) {
+    // blow up notify
+    BlowUpNotify();
+
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+    vNormalizedDamage *= 0.75f;
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+    if(m_dtDebris==DT_NONE ) {
     // hide yourself
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL); }
+    if(m_dtDebris==DT_ROBOT ) {
+      // determine debris texture (color)
+      ULONG ulFleshTexture = TEXTURE_MACHINE;
+      ULONG ulFleshModel   = MODEL_MACHINE;
+      // spawn debris
+      Debris_Begin(EIBT_ROBOT, DPR_SMOKETRAIL, BET_EXPLOSIONSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, MODEL_MACHINE, TEXTURE_MACHINE, 0, 0, 0, IRnd()%4, 0.2f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+      }
+      // spawn explosion
+      CPlacement3D plExplosion = GetPlacement();
+      CEntityPointer penExplosion = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
+      ESpawnEffect eSpawnEffect;
+      eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
+      eSpawnEffect.betType = BET_BOMB;
+      FLOAT fSize = m_fBlowUpSize*0.3f;
+      eSpawnEffect.vStretch = FLOAT3D(fSize,fSize,fSize);
+      penExplosion->Initialize(eSpawnEffect);
+    }
+    if(m_dtDebris==DT_FLESH_RED ) {
+      // determine debris texture (color)
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
+      // spawn debris
+      Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+      }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+      // leave a stain beneath
+      LeaveStain(FALSE);
+    }
+    if(m_dtDebris==DT_FLESH_GREEN ) {
+      // determine debris texture (color)
+      ULONG ulFleshTexture = TEXTURE_FLESH_GREEN;
+      ULONG ulFleshModel   = MODEL_FLESH;
+      // spawn debris
+      Debris_Begin(EIBT_FLESH, DPT_SLIMETRAIL, BET_GIZMOSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+      }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+      // leave a stain beneath
+      LeaveStain(FALSE);
+    }
+    if(m_dtDebris==DT_FLESH_YELLOW ) {
+      // determine debris texture (color)
+      ULONG ulFleshTexture = TEXTURE_FLESH_YELLOW;
+      ULONG ulFleshModel   = MODEL_FLESH;
+      // spawn debris
+      Debris_Begin(EIBT_FLESH, DPT_GOOTRAIL, BET_GOOSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+      }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+      // leave a stain beneath
+      LeaveStain(FALSE);
+    }
+    if(m_dtDebris==DT_STONE ) {
+      // determine debris texture (color)
+      ULONG ulFleshTexture = TEXTURE_MACHINE;
+      ULONG ulFleshModel   = MODEL_MACHINE;
+      // spawn debris
+      Debris_Begin(EIBT_ROCK, DPT_NONE, BET_NONE, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+      }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_EXPLOSION_DEBRIS;
+      penSplat->Initialize(ese);
+
+      // leave a stain beneath
+      LeaveStain(FALSE);
+    }
+    if(m_dtDebris==DT_HIPPY ) {
+      // determine debris texture (color)
+      ULONG ulFleshTexture = TEXTURE_FLESH_GREEN;
+      ULONG ulFleshModel   = MODEL_FLESH;
+      // spawn debris
+      Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_NONE, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+          switch( IRnd()%5) {
+          case 1:  { ulFleshModel = MODEL_FLESH_APPLE;   ulFleshTexture = TEXTURE_FLESH_APPLE;   break; }
+          case 2:  { ulFleshModel = MODEL_FLESH_BANANA;  ulFleshTexture = TEXTURE_FLESH_BANANA;  break; }
+          case 3:  { ulFleshModel = MODEL_FLESH_BURGER;  ulFleshTexture = TEXTURE_FLESH_BURGER;  break; }
+          case 4:  { ulFleshModel = MODEL_FLESH_LOLLY;   ulFleshTexture = TEXTURE_FLESH_LOLLY;   break; }
+          default: { ulFleshModel = MODEL_FLESH_ORANGE;  ulFleshTexture = TEXTURE_FLESH_ORANGE;  break; }
+          }
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+      }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+      // leave a stain beneath
+      LeaveStain(FALSE);
+    }
+
+    // hide yourself (must do this after spawning debris)
     SwitchToEditorModel();
     SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
     SetCollisionFlags(ECF_IMMATERIAL);
@@ -369,14 +571,6 @@ functions:
       return CEnemyBase::MayMoveToAttack();
     }
   }
-
-  // must be more relaxed about hitting then usual enemies
-  BOOL CanHitEnemy(CEntity *penTarget, FLOAT fCosAngle) {
-    if (IsInPlaneFrustum(penTarget, fCosAngle)) {
-      return IsVisibleCheckAll(penTarget);
-    }
-    return FALSE;
-  };
 
 
 procedures:
@@ -507,7 +701,7 @@ procedures:
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
     en_fDensity = 1000;
-    m_fBlowUpSize = 2.0f;
+    m_fBlowUpSize = m_fCecBlowUpSize;
     m_bBoss = m_bCecBoss;
 	m_bRenderParticles = m_bRenderParticles;
 
@@ -555,7 +749,7 @@ procedures:
        m_fBlowUpAmount = 99999999999999.0f; }
 	if (m_CecDeath == CEC_SPLODE) {
        m_fBlowUpAmount = 0.0f; }
-    m_fBodyParts = 0;
+    m_fBodyParts = m_fCecBodyParts;
     m_fDamageWounded = m_iCecWound;
 
      // properties that modify EnemyBase properties

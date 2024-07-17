@@ -434,11 +434,12 @@ procedures:
   Main(EVoid) {
     // declare yourself as a model
     InitAsModel();
-    SetPhysicsFlags(EPF_MODEL_WALKING);
+    SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
     SetHealth(100.0f);
     m_fMaxHealth = 100.0f;
+    en_tmMaxHoldBreath = 5.0f;
     en_fDensity = 2000.0f;
 
     // set your appearance

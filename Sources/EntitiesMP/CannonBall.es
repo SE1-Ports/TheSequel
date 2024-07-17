@@ -40,6 +40,7 @@ event EForceExplode {
 #define IRON_LIFE_TIME  10.0f
 #define NUKE_LIFE_TIME  5.0f
 #define WEAK_LIFE_TIME  5.0f
+#define NUKE2_LIFE_TIME  2.4f
 
 //#define CANNONBALL_STRETCH 3.0f
 
@@ -62,17 +63,17 @@ event EForceExplode {
 #define WEAK_RANGE_HOTSPOT 4.0f
 #define WEAK_RANGE_FALLOFF 8.0f
 
-#define DEV_DAMAGE_MIN 0.0f
-#define DEV_DAMAGE_MAX 140.0f
-#define DEV_RANGE_DAMAGE (20.0f)
-#define DEV_RANGE_HOTSPOT 3.0f
-#define DEV_RANGE_FALLOFF 4.0f
+#define DEV_DAMAGE_MIN 130.0f
+#define DEV_DAMAGE_MAX 130.0f
+#define DEV_RANGE_DAMAGE (30.0f)
+#define DEV_RANGE_HOTSPOT 5.0f
+#define DEV_RANGE_FALLOFF 6.0f
 
-#define NUKE2_DAMAGE_MIN 400.0f
-#define NUKE2_DAMAGE_MAX 400.0f
-#define NUKE2_RANGE_DAMAGE (1000.0f/10)   // because we have 10 explosions
-#define NUKE2_RANGE_HOTSPOT 20.0f
-#define NUKE2_RANGE_FALLOFF 35.0f
+#define NUKE2_DAMAGE_MIN 5.0f
+#define NUKE2_DAMAGE_MAX 5.0f
+#define NUKE2_RANGE_DAMAGE (700.0f/3)   // because we have 3 explosions
+#define NUKE2_RANGE_HOTSPOT 35.0f
+#define NUKE2_RANGE_FALLOFF 40.0f
 
 #define SOUND_RANGE 250.0f
 
@@ -90,6 +91,7 @@ void CCannonBall_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON);
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNONEXPLOSIONSTAIN);
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNONSHOCKWAVE);
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_T3DGMX);
 
   pdec->PrecacheModel(MODEL_BALL);
   pdec->PrecacheTexture(TEXTURE_IRON_BALL);
@@ -304,6 +306,13 @@ void Initialize(void) {
     en_fBounceDampNormal   = 1000.0f;
     en_fBounceDampParallel = 1000.0f;
     en_fAcceleration = 0.0f;
+    en_fDeceleration = 0.0f;
+    en_fCollisionSpeedLimit = 0.0f;
+    en_fCollisionDamageFactor = 1000.0f; }   
+  if (m_cbtType == CBT_NUKE2) {
+    en_fBounceDampNormal   = 1000.0f;
+    en_fBounceDampParallel = 1000.0f;
+    en_fAcceleration = 0.0f;
     en_fDeceleration = 10.0f;
     en_fCollisionSpeedLimit = 0.1f;
     en_fCollisionDamageFactor = 1000.0f; }   
@@ -369,7 +378,12 @@ void Explosion(FLOAT3D vCenter,
     ese.colMuliplier = C_WHITE|CT_OPAQUE;
     if( bHasLight)
     {
+     if(m_cbtType == CBT_NUKE || m_cbtType == CBT_NUKE2)
+        {
+      ese.betType = BET_T3DGMX;
+	  } else {
       ese.betType = BET_CANNON;
+	  }
     }
     else
     {
@@ -557,7 +571,7 @@ procedures:
     }
     if(m_cbtType == CBT_NUKE2)
     {
-      fWaitTime = WEAK_LIFE_TIME;
+      fWaitTime = NUKE2_LIFE_TIME;
     }
     // bounce loop
     wait(fWaitTime) {
@@ -738,25 +752,10 @@ procedures:
     if( m_cbtType == CBT_NUKE2)
     {
       Explosion( FLOAT3D(0.0f,0.0f,0.0f),   STRETCH_10, STRETCH_10, STRETCH_10, TRUE, TRUE,  TRUE, TRUE);
-      autowait(0.15f);
-      Explosion( FLOAT3D(4.0f,5.0f,5.0f),   STRETCH_8, STRETCH_8, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
-      autowait(0.2f);
-      Explosion( FLOAT3D(-5.0f,3.0f,-4.0f), STRETCH_8, STRETCH_8, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
-      autowait(0.15f);
-      Explosion( FLOAT3D(-3.0f,2.0f,3.0f),  STRETCH_6, STRETCH_6, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
-      autowait(0.15f);
-      Explosion( FLOAT3D(2.0f,1.0f,4.0f),   STRETCH_6, STRETCH_6, STRETCH_10, TRUE, TRUE,  FALSE, FALSE);
-      autowait(0.2f);
-      Explosion( FLOAT3D(-2.0f,5.0f,-4.0f), STRETCH_4, STRETCH_4, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
-      autowait(0.18f);
-      Explosion( FLOAT3D(-3.0f,2.0f,2.0f),  STRETCH_4, STRETCH_4, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
-      autowait(0.25f);
-      Explosion( FLOAT3D(0.0f,4.0f,-1.0f),  STRETCH_3, STRETCH_3, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
-      autowait(0.15f);
-      Explosion( FLOAT3D(2.0f,0.0f,-3.0f),  STRETCH_2, STRETCH_2, STRETCH_10, TRUE, TRUE,  FALSE, FALSE);
-      autowait(0.25f);
-      Explosion( FLOAT3D(-1.0f,2.0f,0.0f),  STRETCH_1, STRETCH_1, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
-      autowait(0.125f);
+      autowait(0.05f);
+      Explosion( FLOAT3D(4.0f,5.0f,5.0f),   STRETCH_8, STRETCH_8, STRETCH_10, TRUE, FALSE, FALSE, TRUE);
+      autowait(0.05f);
+      Explosion( FLOAT3D(-5.0f,3.0f,-4.0f), STRETCH_6, STRETCH_6, STRETCH_10, TRUE, FALSE, FALSE, TRUE);
     }
 
     // cease to exist
