@@ -1227,7 +1227,7 @@ void CGame::ComputerRender(CDrawPort *pdp)
   _colLight  = LCDFadedColor(C_WHITE|255);
   _colMedium = LCDFadedColor(SE_COL_BLUE_LIGHT|255);
   _colDark   = LCDFadedColor(LerpColor(SE_COL_BLUE_DARK, SE_COL_BLUE_LIGHT, 0.5f)|255);
-  _colBoxes  = LCDFadedColor(LerpColor(SE_COL_BLUE_DARK, SE_COL_BLUE_LIGHT, 0.5f)|255);
+  _colBoxes  = LCDFadedColor(LerpColor(SE_COL_BLUE_DARK, SE_COL_BLUE_NEUTRAL, 0.5f)|255);
 
   // background
   LCDRenderCloudsForComp();

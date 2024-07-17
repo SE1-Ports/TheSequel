@@ -105,6 +105,11 @@
 #include "ModelsF/Enemies/Panda/Panda.h"
 #include "ModelsF/Enemies/BuffGnaar/BuffGnaar.h"
 #include "ModelsF/Enemies/Crabman/Crabman2.h"
+#include "ModelsF/t3dgm/Jaws/Jaws.h"
+#include "ModelsF/t3dgm/Ghoul/Ghoul.h"
+#include "ModelsF/Enemies/ZorgPro/ZorgPro.h"
+#include "ModelsF/Enemies/ZorgPro/Gun.h"
+#include "ModelsF/t3dgm/Cyclops/Cyclop.h"
 
 #include "ModelsMP/Weapons/PlasmaThrower/LaserItem.h"
 #include "Models/Weapons/GhostBuster/GhostBusterItem.h"
@@ -343,6 +348,14 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\Monkey\\Monkey.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-1.0f,-3.0), ANGLE3D(195,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
+    _bHasFloor = TRUE;
+
+  } else if (strName=="Ghoul") {
+    pmo->SetData_t(CTFILENAME("ModelsF\\t3dgm\\Ghoul\\Ghoul.mdl"));
+    pmo->PlayAnim(GHOUL_ANIM_WALK , AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\t3dgm\\Ghoul\\ALIEN2.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-1.0f,-3.0), ANGLE3D(200,0,0));
+    pmo->StretchModel(FLOAT3D(1.5f,1.5f,1.5f));
     _bHasFloor = TRUE;
 
   } else if (strName=="Boneman") {
@@ -1272,6 +1285,15 @@ extern void SetupCompModel_t(const CTString &strName)
     _fFloorY = 0.0f;
     _bHasFloor = TRUE;
 
+  } else if (strName=="Jaws") {
+    pmo->SetData_t(CTFILENAME("ModelsF\\t3dgm\\Jaws\\Jaws.mdl"));
+    pmo->PlayAnim(JAWS_ANIM_IDLE, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\t3dgm\\Jaws\\jawsbrown.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-0.75f,-2.0f), ANGLE3D(180,0,0));
+    pmo->StretchModel(FLOAT3D(1,1,1));
+    _fFloorY = 0.0f;
+    _bHasFloor = TRUE;
+
   } else if (strName=="DumDum") {
     pmo->SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\DumDum\\DumDum.mdl"));
     pmo->PlayAnim(DUMDUM_ANIM_IDLE, AOF_LOOPING);
@@ -1368,6 +1390,22 @@ extern void SetupCompModel_t(const CTString &strName)
     //CPrintF("%f %f %f : %f : %f\n", tmp_af[5],tmp_af[6],tmp_af[7], tmp_af[8], tmp_af[9]);
     
     pmo->StretchModel(FLOAT3D(6,6,6));
+    _bHasFloor = TRUE;
+
+  } else if (strName=="CyclopsGreen") {
+    pmo->SetData_t(CTFILENAME("ModelsF\\t3dgm\\Cyclops\\Cyclop.mdl"));
+    pmo->PlayAnim(CYCLOP_ANIM_WALK, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\t3dgm\\Cyclops\\cyclop03.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-2.0f,-6.0), ANGLE3D(205,0,0));
+    pmo->StretchModel(FLOAT3D(1.5,1.5,1.5));
+    _bHasFloor = TRUE;
+
+  } else if (strName=="CyclopsBlue") {
+    pmo->SetData_t(CTFILENAME("ModelsF\\t3dgm\\Cyclops\\Cyclop.mdl"));
+    pmo->PlayAnim(CYCLOP_ANIM_WALK, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\t3dgm\\Cyclops\\cyclop01.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-2.0f,-6.0), ANGLE3D(205,0,0));
+    pmo->StretchModel(FLOAT3D(1.5,1.5,1.5));
     _bHasFloor = TRUE;
 
   } else if (strName=="Juggernaut") {
@@ -1645,13 +1683,16 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="GruntSoldier") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Grunt\\Grunt.mdl"));
-    pmo->PlayAnim(GRUNT_ANIM_IDLEPATROL, AOF_LOOPING);
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\ZorgPro\\ZorgPro.mdl"));
+    pmo->PlayAnim(ZORGPRO_ANIM_IDLEPOSE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Grunt\\Soldier.tex"));
-    AddAttachment_t(pmo, GRUNT_ATTACHMENT_GUN_SMALL, 
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_GUN_SOLDIER, 
       CTFILENAME("ModelsMP\\Enemies\\Grunt\\Gun.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\Grunt\\Gun.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0.0f,-1.5f,-3.7f), ANGLE3D(165.0f,0.0f,0.0f));
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_BLADE, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\Blade.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\Blade.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0.0f,-1.5f,-3.7f), ANGLE3D(200.0f,0.0f,0.0f));
     _fFOV = 70.0f;
     
     _vLightDir = FLOAT3D( -0.1f, -0.2f, -0.2f);
@@ -1662,13 +1703,16 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="GruntCommander") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Grunt\\Grunt.mdl"));
-    pmo->PlayAnim(GRUNT_ANIM_IDLEPATROL, AOF_LOOPING);
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\ZorgPro\\ZorgPro.mdl"));
+    pmo->PlayAnim(ZORGPRO_ANIM_IDLEPOSE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Grunt\\Commander.tex"));
-    AddAttachment_t(pmo, GRUNT_ATTACHMENT_GUN_COMMANDER, 
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_GUN_COMMANDER, 
       CTFILENAME("ModelsMP\\Enemies\\Grunt\\Gun_Commander.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\Grunt\\Gun_Commander.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0.0f,-1.65f,-3.9f), ANGLE3D(165.0f,0.0f,0.0f));
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_BLADE, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\Blade.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\Blade.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0.0f,-1.8f,-4.0f), ANGLE3D(200.0f,0.0f,0.0f));
     _fFOV = 70.0f;
     
     _vLightDir = FLOAT3D( -0.1f, -0.2f, -0.2f);
@@ -1678,18 +1722,54 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="GruntSniper") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Grunt\\Grunt.mdl"));
-    pmo->PlayAnim(GRUNT_ANIM_IDLEPATROL, AOF_LOOPING);
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\ZorgPro\\ZorgPro.mdl"));
+    pmo->PlayAnim(ZORGPRO_ANIM_IDLEPOSE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Grunt\\Grunt_GreenPurple.tex"));
-    AddAttachment_t(pmo, GRUNT_ATTACHMENT_GUN_SNIPER, 
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_GUN_SNIPER, 
       CTFILENAME("ModelsF\\Enemies\\Grunt\\Rifle.mdl"), 0,
       CTFILENAME("ModelsF\\Enemies\\Grunt\\Rifle.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0.0f,-1.8f,-4.1f), ANGLE3D(165.0f,0.0f,0.0f));
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_BLADE, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\Blade.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\Blade.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0.0f,-2.1f,-4.3f), ANGLE3D(200.0f,0.0f,0.0f));
     _fFOV = 70.0f;
     
     _vLightDir = FLOAT3D( -0.1f, -0.2f, -0.2f);
     
     pmo->StretchModel(FLOAT3D(1.6f, 1.6f, 1.6f));
+    _fFloorY = 0.0f;
+    _bHasFloor = TRUE;
+
+  } else if (strName=="GruntHeavy") {
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\ZorgPro\\ZorgPro.mdl"));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Grunt\\HDCommander.tex"));
+    pmo->PlayAnim(ZORGPRO_ANIM_IDLE_HEAVY, AOF_LOOPING);
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_BLADE, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\Blade.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\Blade.tex"));
+
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_GUNBODY, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\GunBody.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\BodyGrey.tex"));
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_BARREL1, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\GunBarrel.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\BarrelGrey.tex"));
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_BARREL2, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\GunBarrel.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\BarrelGrey.tex"));
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_BARREL3, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\GunBarrel.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\BarrelGrey.tex"));
+    AddAttachment_t(pmo, ZORGPRO_ATTACHMENT_BARREL4, 
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\GunBarrel.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\ZorgPro\\BarrelGrey.tex"));
+
+    _plModel = CPlacement3D(FLOAT3D(0.0f,-2.4f,-4.6f), ANGLE3D(200.0f,0.0f,0.0f));
+    _fFOV = 70.0f;
+    
+    _vLightDir = FLOAT3D( -0.1f, -0.2f, -0.2f);
+    
+    pmo->StretchModel(FLOAT3D(1.8f, 1.8f, 1.8f));
     _fFloorY = 0.0f;
     _bHasFloor = TRUE;
 

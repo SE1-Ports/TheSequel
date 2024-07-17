@@ -693,6 +693,12 @@
     <ClCompile Include="Jaws.cpp">
       <Filter>Source Files\Entity sources</Filter>
     </ClCompile>
+    <ClCompile Include="Cyclops.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="CyclopsProjectile.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\Common.h">
@@ -1334,6 +1340,12 @@
       <Filter>Class Files\TheSequel</Filter>
     </CustomBuild>
     <CustomBuild Include="BulletPiercing.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Cyclops.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CyclopsProjectile.es">
       <Filter>Class Files\TheSequel</Filter>
     </CustomBuild>
   </ItemGroup>

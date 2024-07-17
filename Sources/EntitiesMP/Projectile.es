@@ -125,7 +125,8 @@ enum ProjectileType {
  129 PRT_FISHMAN_FIRE_STRONG    "Fishman strong",   // fishman fire strong
  130 PRT_GRENADE_WEAK           "Weaker Grenade",   // grenade
  131 PRT_GRENADE_SHOTGUN        "Shotgun Grenade",   // grenade
- 132 PRT_GHOUL                  "Ghoul",   // grenade
+ 132 PRT_GHOUL                  "Ghoul",   // ghoul
+ 133 PRT_GRUNTBOMB              "Grunt bomb",   // Grunt bomb
 };
 
 enum ProjectileMovingType {
@@ -252,6 +253,15 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheModel(MODEL_GRUNT_PROJECTILE           );
     pdec->PrecacheTexture(TEXTURE_GRUNT_PROJECTILE_02    );
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_LASERWAVE);
+    break;
+
+  case PRT_GRUNTBOMB:
+    pdec->PrecacheModel(MODEL_GRUNT_BOMB           );
+    pdec->PrecacheTexture(TEXTURE_GRUNT_BOMB    );
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BOMB);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE_PLANE);
+    pdec->PrecacheSound(SOUND_ANNOYINGBEEP  );
     break;
 
   case PRT_CATMAN_FIRE:
@@ -742,6 +752,9 @@ components:
 137 texture TEXTURE_GRUNT_PROJECTILE_02 "ModelsMP\\Enemies\\Grunt\\Projectile\\GruntProjectileCommander.tex",
 138 texture TEXTURE_GRUNT_PROJECTILE_03 "ModelsMP\\Enemies\\Grunt\\Projectile\\GruntProjectileBlue.tex",
 139 sound   SOUND_FLYING02        "SoundsF\\Weapons\\Flying02.wav",
+370 model   MODEL_GRUNT_BOMB      "ModelsF\\SS2\\Projectiles\\Capsule\\Capsule.mdl",
+371 texture TEXTURE_GRUNT_BOMB      "ModelsF\\SS2\\Projectiles\\Capsule\\Capsule.tex",
+372 sound   SOUND_ANNOYINGBEEP      "SoundsF\\Weapons\\AnnoyingBeep.wav",
 
 // ********* DEVIL FIRE *********
 /*
@@ -999,6 +1012,11 @@ functions:
         break;
       case PRT_GRUNT_PROJECTILE_COM:
         lsNew.ls_colColor = C_vdRED;
+        lsNew.ls_rFallOff = 1.5f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_GRUNTBOMB:
+        lsNew.ls_colColor = C_vdGREEN;
         lsNew.ls_rFallOff = 1.5f;
         lsNew.ls_plftLensFlare = NULL;
         break;
@@ -1371,6 +1389,7 @@ functions:
       case PRT_FISHMAN_FIRE: Particles_BeastProjectileDebrisTrail(this, 0.10f); break;
       case PRT_FISHMAN_FIRE_STRONG: Particles_BeastProjectileDebrisTrail(this, 0.20f); break;
       case PRT_GHOUL: Particles_BeastProjectileTrail( this, 0.25f, 0.1f, 6); break;
+      case PRT_GRUNTBOMB: Particles_GrenadeTrail(this); break;
     }
   }
 
@@ -5075,6 +5094,79 @@ void GhoulExplosion(void) {
 };
 
 
+void GruntBomb(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_GRUNT_BOMB);
+  SetModelMainTexture(TEXTURE_GRUNT_BOMB);
+  GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
+  // play the flying sound
+  m_soEffect.Set3DParameters(30.0f, 3.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_ANNOYINGBEEP, SOF_3D|SOF_LOOP);
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, FRnd()*120.0f+120.0f, FRnd()*250.0f-125.0f));
+  en_fBounceDampNormal   = 0.75f;
+  en_fBounceDampParallel = 0.6f;
+  en_fJumpControlMultiplier = 0.0f;
+  en_fCollisionSpeedLimit = 45.0f;
+  en_fCollisionDamageFactor = 10.0f;
+  m_fFlyTime = 6.0f;
+  m_fDamageAmount = 5.0f;
+  m_fRangeDamageAmount = 20.0f;
+  m_fDamageHotSpotRange = 3.0f;
+  m_fDamageFallOffRange = 6.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  en_fDeceleration = 75.0f;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_SLIDING;
+  m_tmInvisibility = 0.05f;
+  m_tmExpandBox = 0.1f;
+};
+
+void GruntBombExplosion(void) {
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // explosion
+  ese.colMuliplier = C_GREEN|CT_OPAQUE;
+  ese.betType = BET_CANNON;
+  ese.vStretch = FLOAT3D(0.75,0.75,0.75);
+  SpawnEffect(GetPlacement(), ese);
+  // spawn sound event in range
+  if( IsDerivedFromClass( m_penLauncher, "Player")) {
+    SpawnRangeSound( m_penLauncher, this, SNDT_PLAYER, m_fSoundRange);
+  }
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // wall stain
+      ese.betType = BET_EXPLOSIONSTAIN;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // shock wave
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // second explosion on plane
+      ese.betType = BET_GRENADE_PLANE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint+ese.vNormal/50.0f, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+};
+
+
 /************************************************************
  *             C O M M O N   F U N C T I O N S              *
  ************************************************************/
@@ -5930,6 +6022,7 @@ procedures:
          Particles_FirecrackerTrail_Prepare(this);
          break;
       case PRT_SHOOTER_FIREBALL: Particles_Fireball01Trail_Prepare(this); break;
+      case PRT_GRUNTBOMB: Particles_GrenadeTrail_Prepare(this); break;
     }
     // projectile initialization
     switch (m_prtType)
@@ -6015,6 +6108,7 @@ procedures:
       case PRT_GRENADE_WEAK: WeakGrenade(); break;
       case PRT_GRENADE_SHOTGUN: ShotgunGrenade(); break;
       case PRT_GHOUL: Ghoul(); break;
+      case PRT_GRUNTBOMB: GruntBomb(); break;
       default: ASSERTALWAYS("Unknown projectile type");
     }
 
@@ -6093,6 +6187,7 @@ procedures:
       case PRT_GRENADE_WEAK: PlayerGrenadeExplosion(); break;
       case PRT_GRENADE_SHOTGUN: HeadmanBombermanExplosion(); break;
       case PRT_GHOUL: GhoulExplosion(); break;
+      case PRT_GRUNTBOMB: GruntBombExplosion(); break;
     }
 
     // wait after death

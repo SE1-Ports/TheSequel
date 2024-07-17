@@ -5,6 +5,7 @@
 %}
 
 uses "EntitiesMP/EnemyFly";
+uses "EntitiesMP/Projectile";
 
 enum CecDeath {
   0 CEC_FALL       "Fall Down",
@@ -43,6 +44,7 @@ static EntityInfo eiCec = {
 #define CEC_MAX_TA 10
 FLOAT cecTriggerArray[CEC_MAX_TA] = { 0.9f, 0.8f, 0.7f, 0.6f, 0.5f,
                                          0.4f, 0.3f, 0.2f, 0.1f, 0.05f };
+#define FIRE_POS      FLOAT3D(0.0f, 0.0f, 0.0f)
 %}
 
 
@@ -88,30 +90,78 @@ properties:
  45 FLOAT fHeight              "Particle Height" = 0.0f,
  46 FLOAT m_fSize              "Particle Size"  = 1.0f,
 
+ 47 BOOL m_bCecShoot                "Shooter" 'S' = FALSE,
+ 48 enum ProjectileType m_prtType   "Projectile" 'P' = PRT_LAVA_COMET,
+ 49 FLOAT m_iCecShootSpeed          "Shoot Speed" = 1.0f,
+ 50 FLOAT m_fCecShootAngle          "Shoot Angle" 'A' = 45.0f,
+ 51 BOOL m_bCecShootInArc           "Shoot In Arc" 'I' = FALSE,
+ 52 FLOAT m_iCecShootDistance       "Shoot Distance" = 100.0f,
+ 72 FLOAT m_fCecShootHeight         "Shoot Height" 'H' = 0.0f,
+
+ 53 CTFileName m_fnSoundIdle    "Sound File Idle"     = CTFILENAME("Sounds\\Misc\\Silence.wav"),
+ 54 CTFileName m_fnSoundSight   "Sound File Sight"    = CTFILENAME("Sounds\\Misc\\Silence.wav"),
+ 55 CTFileName m_fnSoundWound   "Sound File Wound"    = CTFILENAME("Sounds\\Misc\\Silence.wav"),
+ 56 CTFileName m_fnSoundTaunt   "Sound File Taunt"    = CTFILENAME("Sounds\\Misc\\Silence.wav"),
+ 57 CTFileName m_fnSoundDeath   "Sound File Death"    = CTFILENAME("Sounds\\Misc\\Silence.wav"),
+ 58 CTFileName m_fnSoundFire    "Sound File Fire"     = CTFILENAME("Sounds\\Misc\\Silence.wav"),
+ 59 RANGE m_rFallOffRange  "Sound Fall-off" 'F' = 80.0f,
+ 60 RANGE m_rHotSpotRange  "Sound Hot-spot" 'H' =  5.0f,
+ 61 FLOAT m_fVolume        "Sound Volume"   'V' = 1.0f,
+ 62 FLOAT m_fPitch         "Sound Pitch"   'P' = 1.0f,
+ 63 FLOAT m_iCecWound      "Damage Wounded" = 1000000.0f,
+ 
+ 64 ANIMATION m_iCecAnimIdle  "Animation Idle" = 0,
+ 65 ANIMATION m_iCecAnimMove  "Animation Move" = 0,
+ 66 ANIMATION m_iCecAnimWound "Animation Wound" = 0,
+ 67 ANIMATION m_iCecAnimDeath "Animation Death" = 0,
+ 68 ANIMATION m_iCecAnimFire  "Animation Attack" = 0,
+ 71 ANIMATION m_iCecAnimTaunt "Animation Taunt" = 0,
+ 69 CTFileName m_CecModel      "Model" 'M' =CTFILENAME("Models\\Enemies\\Headman\\Projectile\\Bomb.mdl"),
+ 70 CTFileName m_CecTexture    "Texture" 'T' =CTFILENAME("Models\\Enemies\\Headman\\Projectile\\Bomb.tex"),
 
 
 components:
   0 class   CLASS_BASE        "Classes\\EnemyFly.ecl",
-  1 model   MODEL_CEC      "Models\\Enemies\\Headman\\Projectile\\Bomb.mdl",
-  2 texture TEXTURE_CEC    "Models\\Enemies\\Headman\\Projectile\\Bomb.tex",
   4 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
+  5 class   CLASS_PROJECTILE      "Classes\\Projectile.ecl",
 
 functions:
   // describe how this enemy killed player
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
     CTString str;
-    str.PrintF(TRANS("%s was killed by a monster"), strPlayerName);
+    str.PrintF(TRANS("%s was killed by a something"), strPlayerName);
     return str;
   }
   void Precache(void) {
     CEnemyBase::Precache();
+    PrecacheClass(CLASS_PROJECTILE, m_prtType);
   };
 
   /* Entity info */
   void *GetEntityInfo(void)
   {
     return &eiCec;
+  };
+
+  /* Get anim data for given animation property - return NULL for none. */
+  CAnimData *GetAnimData(SLONG slPropertyOffset) 
+  {
+    if (slPropertyOffset==offsetof(CCustomEnemyCollision, m_iCecAnimIdle)) {
+      return GetModelObject()->GetData();
+    } else if (slPropertyOffset==offsetof(CCustomEnemyCollision, m_iCecAnimMove)) {
+      return GetModelObject()->GetData();
+    } else if (slPropertyOffset==offsetof(CCustomEnemyCollision, m_iCecAnimWound)) {
+      return GetModelObject()->GetData();
+    } else if (slPropertyOffset==offsetof(CCustomEnemyCollision, m_iCecAnimDeath)) {
+      return GetModelObject()->GetData();
+    } else if (slPropertyOffset==offsetof(CCustomEnemyCollision, m_iCecAnimFire)) {
+      return GetModelObject()->GetData();
+    } else if (slPropertyOffset==offsetof(CCustomEnemyCollision, m_iCecAnimTaunt)) {
+      return GetModelObject()->GetData();
+    } else {
+      return CEntity::GetAnimData(slPropertyOffset);
+    }
   };
 
   /* Fill in entity statistics - for AI purposes only */
@@ -245,6 +295,56 @@ functions:
     }
    }
 
+  // damage anim
+  INDEX AnimForDamage(FLOAT fDamage)
+  {
+    StartModelAnim(m_iCecAnimWound, 0);
+    return m_iCecAnimWound;
+  };
+
+  INDEX AnimForDeath(void) {
+    StartModelAnim(m_iCecAnimDeath, 0);
+    return m_iCecAnimDeath;
+  };
+
+  // virtual anim functions
+  void StandingAnim(void) {
+    StartModelAnim(m_iCecAnimIdle, AOF_LOOPING|AOF_NORESTART);
+  };
+  void WalkingAnim(void) {
+    StartModelAnim(m_iCecAnimMove, AOF_LOOPING|AOF_NORESTART);
+  };
+  void RunningAnim(void) {
+    StartModelAnim(m_iCecAnimMove, AOF_LOOPING|AOF_NORESTART);
+  };
+  void RotatingAnim(void) {
+    StartModelAnim(m_iCecAnimMove, AOF_LOOPING|AOF_NORESTART);
+  };
+
+  // virtual sound functions
+  void IdleSound(void) {
+    PlaySound(m_soSound, m_fnSoundIdle, SOF_3D);
+  };
+  void SightSound(void) {
+    PlaySound(m_soSound, m_fnSoundSight, SOF_3D);
+  };
+  void TauntSound(void) {
+    PlaySound(m_soSound, m_fnSoundTaunt, SOF_3D);
+  };
+  void WoundSound(void) {
+    PlaySound(m_soSound, m_fnSoundWound, SOF_3D);
+   };
+  void DeathSound(void) {
+    PlaySound(m_soSound, m_fnSoundDeath, SOF_3D);
+  };
+
+
+  // adjust sound and watcher parameters here if needed
+  void EnemyPostInit(void) 
+  {
+    m_soSound.Set3DParameters(FLOAT(m_rFallOffRange), FLOAT(m_rHotSpotRange), m_fVolume, m_fPitch);
+  };
+
 
 /************************************************************
  *                 BLOW UP FUNCTIONS                        *
@@ -280,6 +380,102 @@ functions:
 
 
 procedures:
+/************************************************************
+ *                A T T A C K   E N E M Y                   *
+ ************************************************************/
+
+  FlyFire(EVoid) : CEnemyFly::FlyFire {
+   if (m_bCecShoot == TRUE) {
+    if (m_bCecShootInArc == TRUE) {
+
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, FLOAT3D(0.0f, m_fCecShootHeight, 0.0f)(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      m_fCecShootAngle,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+    // launch
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, FLOAT3D(0.0f, m_fCecShootHeight, 0.0f), ANGLE3D(0, m_fCecShootAngle, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = m_prtType;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    StartModelAnim(m_iCecAnimFire, 0);
+    PlaySound(m_soSound, m_fnSoundFire, SOF_3D);
+
+	} else {
+
+    StartModelAnim(m_iCecAnimFire, 0);
+    ShootProjectile(m_prtType, FLOAT3D(0.0f, m_fCecShootHeight, 0.0f), ANGLE3D(0, 0, 0));
+
+    StartModelAnim(m_iCecAnimFire, 0);
+    PlaySound(m_soSound, m_fnSoundFire, SOF_3D);
+
+	}
+    autowait(GetModelObject()->GetAnimLength(m_iCecAnimFire));
+    return EReturn();
+   }
+   else { 
+    return EReturn(); }
+  };
+
+  GroundFire(EVoid) : CEnemyFly::GroundFire {
+   if (m_bCecShoot == TRUE) {
+    if (m_bCecShootInArc == TRUE) {
+
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, FLOAT3D(0.0f, m_fCecShootHeight, 0.0f)(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      m_fCecShootAngle,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+    // launch
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, FLOAT3D(0.0f, m_fCecShootHeight, 0.0f), ANGLE3D(0, m_fCecShootAngle, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = m_prtType;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    StartModelAnim(m_iCecAnimFire, 0);
+    PlaySound(m_soSound, m_fnSoundFire, SOF_3D);
+
+	} else {
+
+    ShootProjectile(m_prtType, FLOAT3D(0.0f, m_fCecShootHeight, 0.0f), ANGLE3D(0, 0, 0));
+
+    StartModelAnim(m_iCecAnimFire, 0);
+    PlaySound(m_soSound, m_fnSoundFire, SOF_3D); 
+
+	}
+    autowait(GetModelObject()->GetAnimLength(m_iCecAnimFire));
+    return EReturn();
+   }
+   else { 
+    return EReturn(); }
+  };
 
 /************************************************************
  *                    D  E  A  T  H                         *
@@ -299,6 +495,12 @@ procedures:
  *                       M  A  I  N                         *
  ************************************************************/
   Main(EVoid) {
+
+    // must not crash when model is removed
+    if (m_CecModel=="") {
+      m_CecModel=CTFILENAME("Models\\Enemies\\Headman\\Projectile\\Bomb.mdl");
+    }
+
     // declare yourself as a model
     InitAsModel();
     SetPhysicsFlags(EPF_MODEL_WALKING);
@@ -310,8 +512,8 @@ procedures:
 	m_bRenderParticles = m_bRenderParticles;
 
     // set your appearance
-    SetModel(MODEL_CEC);
-    SetModelMainTexture(TEXTURE_CEC);
+    SetModel(m_CecModel);
+    SetModelMainTexture(m_CecTexture);
     if (m_bInvisible) {
       GetModelObject()->mo_colBlendColor = C_WHITE|0x0;
 	  }
@@ -323,11 +525,11 @@ procedures:
     m_fCloseRunSpeed = m_iCecSpeed;
     m_aCloseRotateSpeed = AngleDeg(360.0f);
 	// setup attack distances
-    m_fAttackDistance = 100.0f;
-    m_fCloseDistance = 3.5f;
+    m_fAttackDistance = m_iCecShootDistance;
+    m_fCloseDistance = 0.0f;
     m_fStopDistance = 1.5f;
-    m_fAttackFireTime = 2.0f;
-    m_fCloseFireTime = 0.5f;
+    m_fAttackFireTime = m_iCecShootSpeed;
+    m_fCloseFireTime = m_iCecShootSpeed;
     m_fIgnoreRange = 2000.0f;
     // fly moving properties
     m_fFlyWalkSpeed = m_iCecSpeed;
@@ -342,11 +544,11 @@ procedures:
     m_fAirToGroundMax = 0.1f;
     m_fFlyHeight = 1.0f;
     // attack properties - CAN BE SET
-    m_fFlyAttackDistance = 100.0f;
-    m_fFlyCloseDistance = 10.0f;
+    m_fFlyAttackDistance = m_iCecShootDistance;
+    m_fFlyCloseDistance = 0.0f;
     m_fFlyStopDistance = 1.5f;
-    m_fFlyAttackFireTime = 2.0f;
-    m_fFlyCloseFireTime = 0.5f;
+    m_fFlyAttackFireTime = m_iCecShootSpeed;
+    m_fFlyCloseFireTime = m_iCecShootSpeed;
     m_fFlyIgnoreRange = 2000.0f;
     // damage/explode properties
 	if (m_CecDeath == CEC_FALL) {
@@ -354,7 +556,7 @@ procedures:
 	if (m_CecDeath == CEC_SPLODE) {
        m_fBlowUpAmount = 0.0f; }
     m_fBodyParts = 0;
-    m_fDamageWounded = 0.0f;
+    m_fDamageWounded = m_iCecWound;
 
      // properties that modify EnemyBase properties
     if (m_fHealth<=0.0f) { m_fHealth=1.0f; }
