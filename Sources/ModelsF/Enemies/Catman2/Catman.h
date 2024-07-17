@@ -1,0 +1,31 @@
+// Animation names
+#define CATMAN_ANIM_DEFAULT 0
+#define CATMAN_ANIM_IDLE 1
+#define CATMAN_ANIM_WALK 2
+#define CATMAN_ANIM_RUN 3
+#define CATMAN_ANIM_LEAP 4
+#define CATMAN_ANIM_TOFIRE 5
+#define CATMAN_ANIM_FIRE 6
+#define CATMAN_ANIM_FROMFIRE 7
+#define CATMAN_ANIM_MELEE 8
+#define CATMAN_ANIM_WOUND01 9
+#define CATMAN_ANIM_WOUND02 10
+#define CATMAN_ANIM_DEATH01 11
+#define CATMAN_ANIM_DEATH02 12
+
+// Color names
+
+// Patch names
+
+// Names of collision boxes
+#define CATMAN_COLLISION_BOX_PART_NAME 0
+
+// Attaching position names
+#define CATMAN_ATTACHMENT_CLAW 0
+#define CATMAN_ATTACHMENT_GUN1 1
+#define CATMAN_ATTACHMENT_GUN2 2
+#define CATMAN_ATTACHMENT_GUN3 3
+#define CATMAN_ATTACHMENT_FLARE1 4
+#define CATMAN_ATTACHMENT_FLARE2 5
+
+// Sound names
