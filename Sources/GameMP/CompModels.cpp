@@ -46,8 +46,7 @@
 #include "ModelsMP/Weapons/ChainSaw/BladeForPlayer.h"
 #include "ModelsMP/Weapons/Flamer/FlamerItem.h"
 
-#include "ModelsF/Enemies/Catman/Catman.h"
-#include "ModelsF/Enemies/Catman/Armor.h"
+#include "ModelsF/Enemies/Catman2/Catman.h"
 #include "AREP/Models/Cyborg2/Cyborg.h"
 #include "AREP/Models/DevilAlpha/Devil.h"
 #include "AREP/Models/Dragonman2/Dragonman.h"
@@ -100,7 +99,7 @@
 #include "ModelsF/Enemies/Neptune/Neptune2.h"
 #include "ModelsF/Enemies/Juggernaut/Mesh/Mesh.h"
 #include "ModelsF/Enemies/Panda/Panda.h"
-#include "ModelsF/Enemies/BuffGnaar/BuffGnaar.h"
+#include "ModelsF/Enemies/BuffGnaar2/BuffGnaar.h"
 #include "ModelsF/Enemies/Crabman/Crabman2.h"
 #include "ModelsF/t3dgm/Jaws/Jaws.h"
 #include "ModelsF/t3dgm/Ghoul/Ghoul.h"
@@ -251,7 +250,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="EyemanGreen") {
-    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\BuffGnaar\\BuffGnaar.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\BuffGnaar2\\BuffGnaar.mdl"));
     pmo->PlayAnim(BUFFGNAAR_ANIM_WALK, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("Models\\Enemies\\Eyeman\\Eyeman5.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-1.2f,-3.0), ANGLE3D(210,0,0));
@@ -275,7 +274,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="EyemanBrute") {
-    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\BuffGnaar\\BuffGnaar.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\BuffGnaar2\\BuffGnaar.mdl"));
     pmo->PlayAnim(BUFFGNAAR_ANIM_WALK, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\BuffGnaar\\EyemanBrute.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-1.5f,-3.8f), ANGLE3D(210,0,0));
@@ -401,91 +400,72 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="CatmanSmall") {
-    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman\\Catman.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman2\\Catman.mdl"));
     pmo->PlayAnim(CATMAN_ANIM_WALK, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman\\Body_Blue.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,-1.2f,-2.0), ANGLE3D(150,0,0));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman2\\Catman1.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-1.2f,-2.0), ANGLE3D(210,0,0));
   
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_ARMOR, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Armor.mdl"), 0,
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Armor.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_MASK, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Mask.mdl"), 0,
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Mask.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_CLAWS, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Claws.mdl"), 0,
-      CTFILENAME("Models\\ReflectionTextures\\LightBlueMetal01.tex"));
-      pmo->mo_toReflection.SetData_t(CTFILENAME("Models\\ReflectionTextures\\LightBlueMetal01.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLAREL, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Flare.mdl"), 0,
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_CLAW, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Claw.mdl"), 0,
+      CTFILENAME("TexturesMP\\Detail\\White.tex"),
+      CTFILENAME("Models\\ReflectionTextures\\DarkMetal.tex"));
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_GUN1, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Gun1.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Gun1.tex"));
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARE1, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Flare.mdl"), 0,
       CTFILENAME("ModelsF\\Enemies\\Catman\\Flare_green.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARER, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Flare.mdl"), 0,
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARE2, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Flare.mdl"), 0,
       CTFILENAME("ModelsF\\Enemies\\Catman\\Flare_green.tex"));
-	  CModelObject *pmoArmor = &pmo->GetAttachmentModel(CATMAN_ATTACHMENT_ARMOR)->amo_moModelObject;
-      pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-      pmoArmor->PlayAnim(ARMOR_ANIM_WALK, AOF_LOOPING);
 
-    pmo->StretchModel(FLOAT3D(0.6f,0.6f,0.6f));
+    pmo->StretchModel(FLOAT3D(1.2f,1.2f,1.2f));
     _bHasFloor = TRUE;
 
   } else if (strName=="CatmanMedium") {
-    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman\\Catman.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman2\\Catman.mdl"));
     pmo->PlayAnim(CATMAN_ANIM_WALK, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman\\Body_Yellow.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,-1.2f,-3.0), ANGLE3D(150,0,0));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman2\\Catman.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-1.6f,-2.7), ANGLE3D(210,0,0));
   
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_ARMOR, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Armor.mdl"), 0,
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Armor.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_MASK, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Mask.mdl"), 0,
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Mask.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_CLAWS, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Claws.mdl"), 0,
-      CTFILENAME("Models\\ReflectionTextures\\LightBlueMetal01.tex"));
-      pmo->mo_toReflection.SetData_t(CTFILENAME("Models\\ReflectionTextures\\LightBlueMetal01.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLAREL, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Flare.mdl"), 0,
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_CLAW, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Claw.mdl"), 0,
+      CTFILENAME("TexturesMP\\Detail\\White.tex"),
+      CTFILENAME("Models\\ReflectionTextures\\DarkMetal.tex"));
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_GUN2, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Gun2.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Gun2.tex"));
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARE1, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Flare.mdl"), 0,
       CTFILENAME("ModelsF\\Enemies\\Catman\\Flare_green.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARER, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Flare.mdl"), 0,
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARE2, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Flare.mdl"), 0,
       CTFILENAME("ModelsF\\Enemies\\Catman\\Flare_green.tex"));
-	  CModelObject *pmoArmor = &pmo->GetAttachmentModel(CATMAN_ATTACHMENT_ARMOR)->amo_moModelObject;
-      pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-      pmoArmor->PlayAnim(ARMOR_ANIM_WALK, AOF_LOOPING);
 
-    pmo->StretchModel(FLOAT3D(0.8f,0.8f,0.8f));
+    pmo->StretchModel(FLOAT3D(1.6f,1.6f,1.6f));
     _bHasFloor = TRUE;
 
   } else if (strName=="CatmanBig") {
-    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman\\Catman.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman2\\Catman.mdl"));
     pmo->PlayAnim(CATMAN_ANIM_WALK, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman\\Body_Green.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,-1.2f,-4.0), ANGLE3D(150,0,0));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Catman2\\Catman3.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-2.0f,-3.4), ANGLE3D(210,0,0));
   
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_ARMOR, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Armor.mdl"), 0,
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Armor.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_MASK, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Mask.mdl"), 0,
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Mask.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_CLAWS, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Claws.mdl"), 0,
-      CTFILENAME("Models\\ReflectionTextures\\LightBlueMetal01.tex"));
-	  CModelObject *pmoClaws = &pmo->GetAttachmentModel(CATMAN_ATTACHMENT_CLAWS)->amo_moModelObject;
-      pmoClaws->mo_toReflection.SetData_t(CTFILENAME("Models\\ReflectionTextures\\LightBlueMetal01.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLAREL, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Flare.mdl"), 0,
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_CLAW, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Claw.mdl"), 0,
+      CTFILENAME("TexturesMP\\Detail\\White.tex"),
+      CTFILENAME("Models\\ReflectionTextures\\DarkMetal.tex"));
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_GUN3, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Gun3.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Gun3.tex"));
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARE1, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Flare.mdl"), 0,
       CTFILENAME("ModelsF\\Enemies\\Catman\\Flare_green.tex"));
-    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARER, 
-      CTFILENAME("ModelsF\\Enemies\\Catman\\Flare.mdl"), 0,
+    AddAttachment_t(pmo, CATMAN_ATTACHMENT_FLARE2, 
+      CTFILENAME("ModelsF\\Enemies\\Catman2\\Flare.mdl"), 0,
       CTFILENAME("ModelsF\\Enemies\\Catman\\Flare_green.tex"));
-	  CModelObject *pmoArmor = &pmo->GetAttachmentModel(CATMAN_ATTACHMENT_ARMOR)->amo_moModelObject;
-      pmoArmor->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-      pmoArmor->PlayAnim(ARMOR_ANIM_WALK, AOF_LOOPING);
 
-    pmo->StretchModel(FLOAT3D(1.0f,1.0f,1.0f));
+    pmo->StretchModel(FLOAT3D(2.0f,2.0f,2.0f));
     _bHasFloor = TRUE;
 
   } else if (strName=="Huanman") {

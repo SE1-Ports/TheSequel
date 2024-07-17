@@ -2,7 +2,7 @@
 %{
 #include "StdH.h"
 #include "Models/Enemies/Eyeman/Eyeman.h"
-#include "ModelsF/Enemies/BuffGnaar/BuffGnaar.h"
+#include "ModelsF/Enemies/BuffGnaar2/BuffGnaar.h"
 %}
 
 uses "EntitiesMP/EnemyFly";
@@ -92,7 +92,7 @@ components:
   4 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
   6 class   CLASS_PROJECTILE  "Classes\\Projectile.ecl",
   
- 12 model   MODEL_BUFF      "ModelsF\\Enemies\\BuffGnaar\\BuffGnaar.mdl",
+ 12 model   MODEL_BUFF      "ModelsF\\Enemies\\BuffGnaar2\\BuffGnaar.mdl",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "Models\\Enemies\\Eyeman\\Sounds\\Idle.wav",
@@ -644,10 +644,7 @@ procedures:
       m_fShootTime = _pTimer->CurrentTick() + 0.25f;
       return EReturn(); }
     }
-    if (m_EecChar==EYC_B) {
-      StartModelAnim(BUFFGNAAR_ANIM_ATTACK03, 0); }
-    else {
-      StartModelAnim(EYEMAN_ANIM_ATTACK02, 0); }
+    StartModelAnim(EYEMAN_ANIM_ATTACK02, 0);
     StopMoving();
     // damage enemy
     autowait(0.2f);
