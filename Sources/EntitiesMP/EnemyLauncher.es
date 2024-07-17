@@ -46,7 +46,8 @@ properties:
  22 BOOL m_bFirstPass = TRUE,
  23 INDEX m_ctVSpeed            "Speed Vertical" 'V' = 10,
  24 INDEX m_ctHSpeed            "Speed Horizontal" 'H' = 10,
- 25 CEntityPointer m_penEasyTarget  "Template for Easy"  COLOR(C_BLUE|0x20),
+ 25 CEntityPointer m_penEasyTarget  "Template for Easy"  COLOR(C_BLUE|0x40),
+ 26 CEntityPointer m_penHardTarget  "Template for Hard"  COLOR(C_BLUE|0x60),
  
  50 CSoundObject m_soSpawn,    // sound channel
  51 INDEX m_iInGroup=0,        // in group counter for loops
@@ -84,6 +85,10 @@ functions:
       if (m_penEasyTarget!=NULL) {
         ((CTString&)m_strDescription).PrintF("->%s, %s", 
           m_penTarget->GetName(), m_penEasyTarget->GetName());
+      }
+      if (m_penHardTarget!=NULL) {
+        ((CTString&)m_strDescription).PrintF("->%s, %s", 
+          m_penTarget->GetName(), m_penHardTarget->GetName());
       }
     }
     ((CTString&)m_strDescription) = EnemyLauncherType_enum.NameForValue(INDEX(m_estType))
@@ -123,6 +128,10 @@ functions:
     {
       return CheckTemplateValid(penTarget);
     }   
+    else if( slPropertyOffset == offsetof(CEnemyLauncher, m_penHardTarget))
+    {
+      return CheckTemplateValid(penTarget);
+    }  
     else if( slPropertyOffset == offsetof(CEnemyLauncher, m_penTacticsHolder))
     {
       if (IsOfClass(penTarget, "TacticsHolder")) { return TRUE; }
@@ -144,6 +153,9 @@ functions:
     }
     if (m_penEasyTarget!=NULL) {
       pes->es_strName += " (has easy)";
+    }
+    if (m_penHardTarget!=NULL) {
+      pes->es_strName += " (has hard)";
     }
     return TRUE;
   }
@@ -479,6 +491,12 @@ procedures:
         m_penEasyTarget = NULL;
       }
     }
+    if (m_penHardTarget!=NULL) {
+      if (!IsDerivedFromClass(m_penHardTarget, "Enemy Base")) {
+        WarningMessage("Target '%s' is of wrong class!", m_penHardTarget->GetName());
+        m_penHardTarget = NULL;
+      }
+    }
 
     // never start ai in wed
     autowait(_pTimer->TickQuantum);
@@ -502,6 +520,9 @@ procedures:
     }
     if (m_penEasyTarget!=NULL && GetSP()->sp_gdGameDifficulty==CSessionProperties::GD_EASY) {
       m_penTarget = m_penEasyTarget;
+    }
+    if (m_penHardTarget!=NULL && GetSP()->sp_gdGameDifficulty==CSessionProperties::GD_HARD) {
+      m_penTarget = m_penHardTarget;
     }
 
     if (m_estType==EST_MAINTAINGROUP) {

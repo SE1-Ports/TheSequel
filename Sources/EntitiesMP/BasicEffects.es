@@ -88,6 +88,7 @@ enum BasicEffectType {
  78 BET_BULLETSTAINENERGYNOSOUND  "Bullet stain energynosound",  // bullet stain on water surface with no sound
  79 BET_HYDROGUN                  "Hydro explosion",     // cannon explosion with lo sound volume
  80 BET_TELEPORT_REVERSE          "Teleport reverse",     // teleportation in reverse
+ 81 BET_GASCLOUD                  "Gas cloud",     // teleportation in reverse
 };
 
 
@@ -266,28 +267,28 @@ void CBasicEffect_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheSound(SOUND_FLESH_SPLAT1);
     pdec->PrecacheSound(SOUND_FLESH_SPLAT2);
     pdec->PrecacheSound(SOUND_FLESH_SPLAT3);
-    break;
   case BET_BONE_SPLAT_FX:
     pdec->PrecacheModel(MODEL_BULLET_HIT);
     pdec->PrecacheTexture(TEXTURE_BULLET_HIT);
     pdec->PrecacheSound(SOUND_BONE_SPLAT1);
     pdec->PrecacheSound(SOUND_BONE_SPLAT2);
     pdec->PrecacheSound(SOUND_BONE_SPLAT3);
-    break;
   case BET_SPIDER_SPLAT_FX:
     pdec->PrecacheModel(MODEL_BULLET_HIT);
     pdec->PrecacheTexture(TEXTURE_BULLET_HIT);
     pdec->PrecacheSound(SOUND_SPIDER_SPLAT);
-    break;
   case BET_FLOATER_SPLAT_FX:
     pdec->PrecacheModel(MODEL_BULLET_HIT);
     pdec->PrecacheTexture(TEXTURE_BULLET_HIT);
     pdec->PrecacheSound(SOUND_FLOATER_SPLAT1);
     pdec->PrecacheSound(SOUND_FLOATER_SPLAT2);
     pdec->PrecacheSound(SOUND_FLOATER_SPLAT3);
-    break;
   case BET_ARROWHIT:
     pdec->PrecacheSound(SOUND_ARROWHIT);
+  case BET_GASCLOUD:
+    pdec->PrecacheSound(SOUND_GASCLOUD);
+    pdec->PrecacheModel(MDL_T3DGM_EXPLOSION);
+    pdec->PrecacheTexture(TEXTURE_GASCLOUD);
     break;
   default:
     ASSERT(FALSE);
@@ -440,6 +441,11 @@ components:
  232 sound   SOUND_FLOATER_SPLAT3            "ModelsMP\\Enemies\\SS2\\Floater\\Sounds\\Death3.wav",
 // ********** ARROW HIT **********
  240 sound   SOUND_ARROWHIT            "ModelsF\\NextEncounter\\Enemies\\Chariot\\Sounds\\ArrowHit.wav",
+
+// ********** GASCLOUD **********
+ 260 model   MDL_T3DGM_EXPLOSION        "ModelsF\\t3dgm\\Explosion\\Explosion.mdl",
+ 261 texture TEXTURE_GASCLOUD           "ModelsF\\t3dgm\\Explosion\\GasCloud.tex",
+ 262 sound   SOUND_GASCLOUD               "SoundsF\\Hazards\\GasCloud.wav",
 
 functions:
 
@@ -1115,6 +1121,22 @@ functions:
     m_fSoundTime = GetSoundLength(SOUND_HYDROGUN);
     m_fWaitTime = 0.95f;
     m_bLightSource = TRUE;
+    m_iLightAnimation = 0;
+  };
+
+  void GasCloud(void)
+  {
+    SetPredictable(TRUE);
+    Stretch();
+    SetModel(MDL_T3DGM_EXPLOSION);
+    SetModelMainTexture(TEXTURE_GASCLOUD);
+    RandomBanking();
+    SetNonLoopingTexAnims();
+    m_soEffect.Set3DParameters(100.0f, 3.0f, 1.0f, 1.0f);
+    PlaySound(m_soEffect, SOUND_GASCLOUD, SOF_3D);
+    m_fSoundTime = GetSoundLength(SOUND_GASCLOUD);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
     m_iLightAnimation = 0;
   };
 
@@ -1887,6 +1909,7 @@ procedures:
       case BET_BULLETSTAINENERGY: BulletStainEnergy(TRUE); break;
       case BET_BULLETSTAINENERGYNOSOUND: BulletStainEnergy(FALSE); break;
       case BET_TELEPORT_REVERSE: TeleportReverseEffect(); break;
+      case BET_GASCLOUD: GasCloud(); break;
       default:
         ASSERTALWAYS("Unknown effect type");
     }

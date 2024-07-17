@@ -532,6 +532,9 @@ functions:
   void WoundSound(void) {
     PlaySound(m_soSound, SOUND_LAVA_WOUND, SOF_3D);
   };
+  void TauntSound(void) {
+    PlaySound(m_soSound, SOUND_LAVA_ANGER, SOF_3D);
+  };
   void DeathSound(void) {
     PlaySound(m_soSound, SOUND_LAVA_DEATH, SOF_3D);
   };

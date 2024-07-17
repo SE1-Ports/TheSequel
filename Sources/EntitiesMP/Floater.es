@@ -287,7 +287,7 @@ procedures:
     // setup moving speed
     // fly moving properties
       m_fFlyWalkSpeed = FRnd()*2.0f + 20.0f;
-      m_aFlyWalkRotateSpeed = AngleDeg(FRnd()*25.0f + 45.0f);
+      m_aFlyWalkRotateSpeed = AngleDeg(FRnd()*25.0f + 100.0f);
       m_fFlyAttackRunSpeed = m_fFlyWalkSpeed;
       m_aFlyAttackRotateSpeed = AngleDeg(FRnd()*60 + 100.0f);
       m_fFlyCloseRunSpeed = FRnd()*2.0f + 20.0f;

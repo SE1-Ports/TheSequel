@@ -4514,6 +4514,9 @@ functions:
     if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_IRONCANNON))) {
       ((CPlayerWeapons&)*m_penWeapons).SendEvent(ENukeBall());
     }
+    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_DOUBLESHOTGUN))) {
+      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EGrenadeSG());
+    }
     // if secondary fire is released
     if (ulReleasedButtons&PLACT_FIRE_SECONDARY) {
       ((CPlayerWeapons&)*m_penWeapons).SendEvent(EReleaseWeapon());
@@ -5397,6 +5400,16 @@ functions:
   void RenderParticles(void)
   {
     FLOAT tmNow = _pTimer->GetLerpedCurrentTick();
+
+          CPlayerWeapons *wpn = GetPlayerWeapons();
+          if (wpn->m_tmLastSniperFire == _pTimer->CurrentTick())
+          {
+            CAttachmentModelObject &amoBody = *GetModelObject()->GetAttachmentModel(PLAYER_ATTACHMENT_TORSO);
+            FLOATmatrix3D m;
+            MakeRotationMatrix(m, amoBody.amo_plRelative.pl_OrientationAngle);
+            FLOAT3D vSource = wpn->m_vBulletSource + FLOAT3D(0.1f, -0.05f, -0.4f)*GetRotationMatrix()*m;
+            Particles_SniperResidue(this, vSource , wpn->m_vBulletTarget);
+        }
     
     // render empty shells
     Particles_EmptyShells( this, m_asldData);
@@ -5419,17 +5432,6 @@ functions:
         }
         if (m_tmSeriousSpeed>tmNow) {
           Particles_RunAfterBurner(this, m_tmSeriousSpeed, 0.3f, 0);
-        }
-        if (!GetSP()->sp_bCooperative) {
-          CPlayerWeapons *wpn = GetPlayerWeapons();
-          if (wpn->m_tmLastSniperFire == _pTimer->CurrentTick())
-          {
-            CAttachmentModelObject &amoBody = *GetModelObject()->GetAttachmentModel(PLAYER_ATTACHMENT_TORSO);
-            FLOATmatrix3D m;
-            MakeRotationMatrix(m, amoBody.amo_plRelative.pl_OrientationAngle);
-            FLOAT3D vSource = wpn->m_vBulletSource + FLOAT3D(0.0f, 0.1f, -0.4f)*GetRotationMatrix()*m;
-            Particles_SniperResidue(this, vSource , wpn->m_vBulletTarget);
-          }
         }
       }
     }

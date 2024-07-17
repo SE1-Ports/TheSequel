@@ -11,6 +11,7 @@ uses "EntitiesMP/CannonBall";
 uses "EntitiesMP/Twister";
 uses "EntitiesMP/AirWave";
 uses "EntitiesMP/Bullet";
+uses "EntitiesMP/BulletPiercing";
 
 enum FireType {
   0 SFT_WOODEN_DART "Wooden dart",
@@ -24,6 +25,7 @@ enum FireType {
   8 SFT_BULLET      "Bullet",
   9 SFT_DEV         "Devastator",
   10 SFT_NUKEBALL2    "Nukeball final",
+  11 SFT_BULLETPIERCING "Piercing Bullet",
 };
 
 class CShooter: CModelHolder2 {
@@ -68,6 +70,7 @@ properties:
  
 {
   CEntity *penBullet;     // bullet
+  CEntity *penBulletPiercing;     // bullet
 }
 
 components:
@@ -77,6 +80,7 @@ components:
   4 class   CLASS_TWISTER     "Classes\\Twister.ecl",
   5 class   CLASS_AIRWAVE     "Classes\\AirWave.ecl",
   6 class   CLASS_BULLET      "Classes\\Bullet.ecl",
+  7 class   CLASS_BULLETPIERCING      "Classes\\BulletPiercing.ecl",
 
 functions:                                        
   
@@ -326,6 +330,23 @@ functions:
     ((CBullet&)*penBullet).CalcJitterTarget(m_bJitter);
     ((CBullet&)*penBullet).LaunchBullet( TRUE, TRUE, TRUE);
     ((CBullet&)*penBullet).DestroyBullet();
+  };
+
+  void ShootBulletPiercing() {
+    // bullet start position
+    CPlacement3D plBullet;
+    plBullet = GetPlacement();
+    // create bullet
+    penBullet = CreateEntity(plBullet, CLASS_BULLETPIERCING);
+    // init bullet
+    EBulletPiercingInit eInit;
+    eInit.penOwner = this;
+    eInit.fDamage = m_bDamage;
+    penBullet->Initialize(eInit);
+    ((CBulletPiercing&)*penBullet).CalcTarget(10000);
+    ((CBulletPiercing&)*penBullet).CalcJitterTarget(m_bJitter);
+    ((CBulletPiercing&)*penBullet).LaunchBullet( TRUE, TRUE, TRUE);
+    ((CBulletPiercing&)*penBullet).DestroyBullet();
   };
 
   void ShootDev()

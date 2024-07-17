@@ -7,6 +7,7 @@
 
 #include "EntitiesMP/Player.h"
 #include "EntitiesMP/Bullet.h"
+#include "EntitiesMP/BulletPiercing.h"
 #include "Models/Weapons/Knife/Knife.h"
 #include "Models/Weapons/Knife/KnifeItem.h"
 #include "Models/Weapons/Colt/Colt.h"
@@ -77,6 +78,7 @@ uses "EntitiesMP/Player";
 uses "EntitiesMP/PlayerWeaponsEffects";
 uses "EntitiesMP/Projectile";
 uses "EntitiesMP/Bullet";
+uses "EntitiesMP/BulletPiercing";
 uses "EntitiesMP/BasicEffects";
 uses "EntitiesMP/WeaponItem";
 uses "EntitiesMP/AmmoItem";
@@ -296,6 +298,7 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
   pdec->PrecacheTexture(TEXTURE_FLARE01          );
   pdec->PrecacheModel(MODEL_FLARE01);
   pdec->PrecacheClass(CLASS_BULLET);
+  pdec->PrecacheClass(CLASS_BULLET_PIERCING);
   pdec->PrecacheSound(SOUND_SILENCE);
   pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION);
 
@@ -353,6 +356,7 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
     pdec->PrecacheModel(MODEL_TG_SLIDER             );
     pdec->PrecacheTexture(TEXTURE_TG_BODY           );  
     pdec->PrecacheSound(SOUND_TOMMYGUN_FIRE         );
+
   }
 
   if ( ulAvailable&(1<<(WEAPON_SNIPER-1)) ) {
@@ -737,6 +741,7 @@ components:
   6 class   CLASS_CANNONBALL        "Classes\\CannonBall.ecl",
   7 class   CLASS_WEAPONITEM        "Classes\\WeaponItem.ecl",
   8 class   CLASS_BASIC_EFFECT      "Classes\\BasicEffect.ecl",
+  9 class   CLASS_BULLET_PIERCING   "Classes\\BulletPiercing.ecl",
 
 // ************** HAND **************
  10 texture TEXTURE_HAND                "Models\\Weapons\\Hand.tex",
@@ -2198,6 +2203,7 @@ functions:
             if( IsOfClass(crRay.cr_penHit, "Ant") ||
                 IsOfClass(crRay.cr_penHit, "Crabman") ||
                 IsOfClass(crRay.cr_penHit, "Spider") ||
+                IsOfClass(crRay.cr_penHit, "Ghoul") ||
                 IsOfClass(crRay.cr_penHit, "SpiderMech"))     {sptType=SPT_GOO; fPower=4.0f;}
             if( IsOfClass(crRay.cr_penHit, "Woman"))     {sptType=SPT_FEATHER; fPower=3.0f;}
             if( IsOfClass(crRay.cr_penHit, "Ram") ||
@@ -2275,15 +2281,15 @@ functions:
     return FALSE;
   };
 
-  // prepare Bullet
+  // prepare Sniper Bullet
   void PrepareSniperBullet(FLOAT fX, FLOAT fY, FLOAT fDamage, FLOAT fImprecission) {
     // bullet start position
     CalcWeaponPositionImprecise(FLOAT3D(fX, fY, 0), plBullet, TRUE, fImprecission);
     // create bullet
-    penBullet = CreateEntity(plBullet, CLASS_BULLET);
+    penBullet = CreateEntity(plBullet, CLASS_BULLET_PIERCING);
     m_vBulletSource = plBullet.pl_PositionVector;
 	// init bullet
-    EBulletInit eInit;
+    EBulletPiercingInit eInit;
     eInit.penOwner = m_penPlayer;
     eInit.fDamage = fDamage;
     penBullet->Initialize(eInit);
@@ -2302,18 +2308,18 @@ functions:
     penBullet->Initialize(eInit);
   };
 
-  // fire one bullet
+  // fire Sniper bullet
   void FireSniperBullet(FLOAT fX, FLOAT fY, FLOAT fRange, FLOAT fDamage, FLOAT fImprecission) {
     PrepareSniperBullet(fX, fY, fDamage, fImprecission);
-    ((CBullet&)*penBullet).CalcTarget(fRange);
-    ((CBullet&)*penBullet).m_fBulletSize = 0.1f;
+    ((CBulletPiercing&)*penBullet).CalcTarget(fRange);
+    ((CBulletPiercing&)*penBullet).m_fBulletSize = 0.1f;
     // launch bullet
-    ((CBullet&)*penBullet).LaunchBullet(TRUE, FALSE, TRUE);
+    ((CBulletPiercing&)*penBullet).LaunchBullet(TRUE, FALSE, TRUE);
     
-    if (((CBullet&)*penBullet).m_vHitPoint != FLOAT3D(0.0f, 0.0f, 0.0f)) {
-      m_vBulletTarget = ((CBullet&)*penBullet).m_vHitPoint;
+    if (((CBulletPiercing&)*penBullet).m_vHitPoint != FLOAT3D(0.0f, 0.0f, 0.0f)) {
+      m_vBulletTarget = ((CBulletPiercing&)*penBullet).m_vHitPoint;
     } else if (TRUE) {
-      m_vBulletTarget = m_vBulletSource + FLOAT3D(0.0f, 0.0f, -500.0f)*((CBullet&)*penBullet).GetRotationMatrix();
+      m_vBulletTarget = m_vBulletSource + FLOAT3D(0.0f, 0.0f, -500.0f)*((CBulletPiercing&)*penBullet).GetRotationMatrix();
       
     }
 
@@ -2329,7 +2335,7 @@ functions:
     penFX->Initialize(ese);*/
     
 	  // bullet no longer needed
-	  ((CBullet&)*penBullet).DestroyBullet();
+	  ((CBulletPiercing&)*penBullet).DestroyBullet();
   };
 
   // fire one bullet
@@ -3156,7 +3162,7 @@ functions:
         fnmMsg = CTFILENAME("Data\\Messages\\Weapons\\tommygun.txt"); 
         break;
       case WIT_SNIPER:        
-        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("RAPTOR Anti-tank Sniper"), 0);
+        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("RAPTOR Hypervelocity Sniper"), 0);
         fnmMsg = CTFILENAME("DataMP\\Messages\\Weapons\\sniper.txt"); 
         break;
       case WIT_MINIGUN:         

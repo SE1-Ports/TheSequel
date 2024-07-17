@@ -1,7 +1,7 @@
 335
 %{
 #include "StdH.h"
-#include "Models/Enemies/Gizmo/Gizmo.h"
+#include "ModelsF/t3dgm/Jaws/Jaws.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -9,18 +9,18 @@ uses "EntitiesMP/BasicEffects";
 
 %{
 // info structure
-static EntityInfo eiGizmo = {
+static EntityInfo eiJaws = {
   EIBT_FLESH, 100.0f,
   0.0f, 1.3f, 0.0f,     // source (eyes)
   0.0f, 1.0f, 0.0f,     // target (body)
 };
 
-#define EXPLODE_GIZMO   2.5f
+#define EXPLODE_JAWS   2.5f
 %}
 
-class CGizmo: CEnemyBase {
-name      "Gizmo";
-thumbnail "Thumbnails\\Gizmo.tbn";
+class CJaws: CEnemyBase {
+name      "Jaws";
+thumbnail "Thumbnails\\Jaws.tbn";
 
 properties:
   // class internal
@@ -32,34 +32,36 @@ components:
   3 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
 
 // ************** DATA **************
- 10 model   MODEL_GIZMO           "Models\\Enemies\\Gizmo\\Gizmo.mdl",
- 20 texture TEXTURE_GIZMO         "Models\\Enemies\\Gizmo\\Gizmo.tex",
+ 10 model   MODEL_JAWS           "ModelsF\\t3dgm\\Jaws\\Jaws.mdl",
+ 20 texture TEXTURE_JAWS         "ModelsF\\t3dgm\\Jaws\\jawsbrown.tex",
 
- 11 model   MODEL_LEG1           "ModelsF\\Enemies\\Gizmo\\Debris\\Leg1.mdl",
- 12 model   MODEL_LEG2           "ModelsF\\Enemies\\Gizmo\\Debris\\Leg2.mdl",
- 13 model   MODEL_HORN           "ModelsF\\Enemies\\Gizmo\\Debris\\Horn.mdl",
+ 11 model   MODEL_LEG           "ModelsF\\t3dgm\\Jaws\\Debris\\Leg.mdl",
+
+ 33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
  
- 50 sound   SOUND_IDLE            "Models\\Enemies\\Gizmo\\Sounds\\Idle.wav",
- 51 sound   SOUND_JUMP            "Models\\Enemies\\Gizmo\\Sounds\\Jump.wav",
- 52 sound   SOUND_DEATH_JUMP      "Models\\Enemies\\Gizmo\\Sounds\\JumpDeath.wav",
- 53 sound   SOUND_SIGHT           "Models\\Enemies\\Gizmo\\Sounds\\Sight.wav",
+ 50 sound   SOUND_IDLE            "ModelsF\\t3dgm\\Jaws\\Sounds\\Idle.wav",
+ 51 sound   SOUND_JUMP            "ModelsF\\t3dgm\\Jaws\\Sounds\\Jump.wav",
+ 52 sound   SOUND_DEATH_JUMP      "ModelsF\\t3dgm\\Jaws\\Sounds\\Attack.wav",
+ 53 sound   SOUND_SIGHT           "ModelsF\\t3dgm\\Jaws\\Sounds\\Sight.wav",
+ 54 sound   SOUND_DEATH           "ModelsF\\t3dgm\\Jaws\\Sounds\\Death.wav",
 
 functions:
   // describe how this enemy killed player
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
     CTString str;
-    str.PrintF(TRANS("%s ate a marsh hopper"), strPlayerName);
+    str.PrintF(TRANS("%s got consumed by a nulling"), strPlayerName);
     return str;
   }
   virtual const CTFileName &GetComputerMessageName(void) const {
-    static DECLARE_CTFILENAME(fnm, "Data\\Messages\\Enemies\\Gizmo.txt");
+    static DECLARE_CTFILENAME(fnm, "DataF\\Messages\\Enemies\\Jaws.txt");
     return fnm;
   };
   /* Entity info */
   void *GetEntityInfo(void)
   {
-    return &eiGizmo;
+    return &eiJaws;
   };
 
   void Precache(void)
@@ -69,45 +71,79 @@ functions:
     PrecacheSound(SOUND_IDLE);
     PrecacheSound(SOUND_JUMP);
     PrecacheSound(SOUND_DEATH_JUMP);
+    PrecacheSound(SOUND_DEATH);
     PrecacheClass(CLASS_BASIC_EFFECT, BET_GIZMO_SPLASH_FX);
     PrecacheClass(CLASS_BLOOD_SPRAY);
 
-    PrecacheModel(MODEL_LEG1);
-    PrecacheModel(MODEL_LEG2);
-    PrecacheModel(MODEL_HORN);
+    PrecacheModel(MODEL_LEG);
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_RED);
   };
 
-  void SightSound(void) {
-    PlaySound(m_soSound, SOUND_SIGHT, SOF_3D);
+  /* Receive damage */
+  void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
+    FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
+  {
+    // jaws can't harm jaws
+    if (!IsOfClass(penInflictor, "Jaws")) {
+      CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+      // if died of chainsaw
+      if (dmtType==DMT_CHAINSAW && GetHealth()<=0) {
+        // must always blowup
+        m_fBlowUpAmount = 0;
+      }
+    }
   };
 
+
+  // death
+  INDEX AnimForDeath(void) {
+    INDEX iAnim;
+    switch (IRnd()%3) {
+      case 0: iAnim = JAWS_ANIM_DEATH1; break;
+      case 1: iAnim = JAWS_ANIM_DEATH2; break;
+      case 2: iAnim = JAWS_ANIM_DEATH3; break;
+      default: ASSERTALWAYS("Jaws unknown death");
+    }
+    StartModelAnim(iAnim, 0);
+    return iAnim;
+  };
   void RunningAnim(void)
   {
-    StartModelAnim(GIZMO_ANIM_RUN, 0);
+    StartModelAnim(JAWS_ANIM_RUN, 0);
   };
-
   void MortalJumpAnim(void)
   {
-    StartModelAnim(GIZMO_ANIM_RUN, 0);
+    StartModelAnim(JAWS_ANIM_ATTACK, 0);
   };
-  
   void StandingAnim(void)
   {
-    StartModelAnim(GIZMO_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(JAWS_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+  };
+  void WalkingAnim(void) {
+    StartModelAnim(JAWS_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
   };
 
   // virtual sound functions
   void IdleSound(void) {
     PlaySound(m_soSound, SOUND_IDLE, SOF_3D);
   };
+  void SightSound(void) {
+    PlaySound(m_soSound, SOUND_SIGHT, SOF_3D);
+  };
+  void DeathSound(void) {
+    PlaySound(m_soSound, SOUND_DEATH, SOF_3D);
+  };
+
+  // adjust sound and watcher parameters here if needed
+  void EnemyPostInit(void) 
+  {
+    m_soSound.Set3DParameters(80.0f, 5.0f, 0.5f, 1.0f);
+  };
 
 /************************************************************
  *                 BLOW UP FUNCTIONS                        *
  ************************************************************/
-  void BlowUpNotify(void) {
-    Explode();
-  };
-
   void BlowUp(void) {
     // get your size
     FLOATaabbox3D box;
@@ -117,25 +153,25 @@ functions:
     FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
     vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
 
-    vNormalizedDamage *= 0.25f;
+    vNormalizedDamage *= 1.0f;
 
     FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
 
-    Debris_Begin(EIBT_FLESH, DPT_SLIMETRAIL, BET_GIZMOSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
+
+    Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
 
 
-    Debris_Spawn(this, this, MODEL_LEG1, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
+    Debris_Spawn(this, this, MODEL_LEG, TEXTURE_JAWS, 0, 0, 0, IRnd()%4, 0.5,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEG2, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
+    Debris_Spawn(this, this, MODEL_LEG, TEXTURE_JAWS, 0, 0, 0, IRnd()%4, 0.5,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-	Debris_Spawn(this, this, MODEL_HORN, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
-      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEG1, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
-      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEG2, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
-      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-	Debris_Spawn(this, this, MODEL_HORN, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
-      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.25f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
 
       // spawn splash fx (sound)
       CPlacement3D plSplat = GetPlacement();
@@ -150,34 +186,6 @@ functions:
     SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
     SetCollisionFlags(ECF_IMMATERIAL);
   };
-
-  // explode only once
-  void Explode(void)
-  {
-    if (!m_bExploded)
-    {
-      m_bExploded = TRUE;
-      // spawn blood spray
-      CPlacement3D plSpray = GetPlacement();
-      CEntity *penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
-      penSpray->SetParent( this);
-      ESpawnSpray eSpawnSpray;
-      eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
-      eSpawnSpray.fDamagePower = 1.0f;
-      eSpawnSpray.fSizeMultiplier = 1.0f;
-      eSpawnSpray.sptType = SPT_SLIME;
-      eSpawnSpray.vDirection = en_vCurrentTranslationAbsolute/8.0f;
-      eSpawnSpray.penOwner = this;
-      penSpray->Initialize( eSpawnSpray);
-    }
-  };
-
-
-  // gizmo should always blow up
-  BOOL ShouldBlowUp(void)
-  {
-    return TRUE;
-  }
 
 
   // leave stain
@@ -200,7 +208,7 @@ functions:
         FLOAT fStretch = box.Size().Length();
         // stain
         ese.colMuliplier = C_WHITE|CT_OPAQUE;
-        ese.betType    = BET_GIZMOSTAIN;
+        ese.betType    = BET_BLOODSTAIN;
         ese.vStretch   = FLOAT3D( fStretch*0.75f, fStretch*0.75f, 1.0f);
         ese.vNormal    = FLOAT3D( vPlaneNormal);
         ese.vDirection = FLOAT3D( 0, 0, 0);
@@ -259,7 +267,7 @@ procedures:
       m_fMoveSpeed = m_fCloseRunSpeed*1.5f;
       m_aRotateSpeed = m_aCloseRotateSpeed*0.5f;
       FLOAT fSpeedX = 0.0f;
-      FLOAT fSpeedY = 10.0f;
+      FLOAT fSpeedY = 5.0f;
       FLOAT fSpeedZ = -m_fMoveSpeed;
       // if can't see enemy
       if( !IsInFrustum(m_penEnemy, CosFast(30.0f)))
@@ -286,7 +294,7 @@ procedures:
       m_aRotateSpeed = m_aCloseRotateSpeed;
       // set random jump parameters
       FLOAT fSpeedX = (FRnd()-0.5f)*10.0f;
-      FLOAT fSpeedY = FRnd()*5.0f+5.0f;
+      FLOAT fSpeedY = FRnd()*4.0f+4.0f;
       FLOAT fSpeedZ = -m_fMoveSpeed-FRnd()*2.5f;
       FLOAT3D vTranslation(fSpeedX, fSpeedY, fSpeedZ);
       SetDesiredTranslation(vTranslation);
@@ -320,11 +328,8 @@ procedures:
           // we touched player, explode
           else if ( IsDerivedFromClass( etouch.penOther, "Player"))
           {            
-            InflictDirectDamage(etouch.penOther, this, DMT_IMPACT, 10.0f,
+            InflictDirectDamage(etouch.penOther, this, DMT_IMPACT, 2.5f,
               GetPlacement().pl_PositionVector, -en_vGravityDir);
-            SetHealth(-10.0f);
-            m_vDamage = FLOAT3D(0,10000,0);
-            SendEvent(EDeath());
           }
           // we didn't touch ground nor player, ignore
           resume;
@@ -342,21 +347,21 @@ procedures:
     SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
-    SetHealth(9.5f);
-    m_fMaxHealth = 9.5f;
+    SetHealth(15.0f);
+    m_fMaxHealth = 15.0f;
     en_tmMaxHoldBreath = 5.0f;
-    en_fDensity = 2000.0f;
-    m_fBlowUpSize = 2.5f;
+    en_fDensity = 1000.0f;
+    m_fBlowUpSize = 2.0f;
 
     // set your appearance
-    SetModel(MODEL_GIZMO);
-    SetModelMainTexture(TEXTURE_GIZMO);
+    SetModel(MODEL_JAWS);
+    SetModelMainTexture(TEXTURE_JAWS);
     // setup moving speed
     m_fWalkSpeed = FRnd() + 1.5f;
     m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
     m_fAttackRunSpeed = FRnd()*5.0f + 15.0f;
     m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
-    m_fCloseRunSpeed = FRnd()*5.0f + 15.0f;
+    m_fCloseRunSpeed = FRnd()*5.0f + 10.0f;
     m_aCloseRotateSpeed = AngleDeg(360.0f);
     // setup attack distances
     m_fAttackDistance = 400.0f;
@@ -366,16 +371,16 @@ procedures:
     m_fCloseFireTime = 0.5f;
     m_fIgnoreRange = 500.0f;
     // damage/explode properties
-    m_fBlowUpAmount = 0.0f;
-    m_fBodyParts = 0;
+    m_fBlowUpAmount = 40.0f;
+    m_fBodyParts = 4;
     m_fDamageWounded = 0.0f;
-    m_iScore = 500;
-    m_sptType = SPT_SLIME;
+    m_iScore = 400;
+    m_sptType = SPT_BLOOD;
 
     en_fDeceleration = 150.0f;
 
     // set stretch factors for height and width
-    GetModelObject()->StretchModel(FLOAT3D(1.25f, 1.25f, 1.25f));
+    GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
     ModelChangeNotify();
     StandingAnim();
 
