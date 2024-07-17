@@ -357,7 +357,7 @@ functions:
 
   void LaunchMonster1(void)
   {
-    ASSERT(penTemplate!=NULL);
+    ASSERT(m_penSpawn1!=NULL);
     CPlacement3D pl;
     // spawn placement
     pl = CPlacement3D(vSumXLaunchPos, ANGLE3D(0.0f+FRnd()*30, 5+FRnd()*10, 0));
@@ -374,7 +374,7 @@ functions:
 
   void LaunchMonster2(void)
   {
-    ASSERT(penTemplate!=NULL);
+    ASSERT(m_penSpawn2!=NULL);
     CPlacement3D pl;
     // spawn placement
     pl = CPlacement3D(vSumXLaunchPos, ANGLE3D(0.0f+FRnd(), 5+FRnd()*10, 0));
@@ -392,7 +392,7 @@ functions:
 
   void LaunchMonster3(void)
   {
-    ASSERT(penTemplate!=NULL);
+    ASSERT(m_penSpawn3!=NULL);
     CPlacement3D pl;
     // spawn placement
     pl = CPlacement3D(vSumXLaunchPos, ANGLE3D(0.0f+FRnd()*-30, 5+FRnd()*10, 0));

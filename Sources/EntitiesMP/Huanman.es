@@ -2,13 +2,14 @@
 
 %{
 #include "StdH.h"
-#include "AREP/Models/Huanman2/Huanman.h"
+#include "ModelsF/Enemies/Huanman/Huanman.h"
 #include "EntitiesMP/WorldSettingsController.h"
 #include "EntitiesMP/BackgroundViewer.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
 uses "EntitiesMP/BasicEffects";
+uses "EntitiesMP/AirWave";
 
 enum HuanChar {
   0 HUAN_SMALL         "Small",      // normal (fighter)
@@ -19,6 +20,7 @@ enum HuanChar {
 static _tmLastStandingAnim =0.0f;  
 #define HUAN_STRETCH 1.3f
 #define BIG_HUAN_STRETCH 4.0f
+#define FIRE    FLOAT3D( 0.0f, 2.0f, -1.25f)
 
 #define HUSOUND(soundname) ((m_HuType==HUAN_SMALL)? (SOUND_SMALL_##soundname) : (SOUND_BIG_##soundname))
 
@@ -49,10 +51,15 @@ components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
   1 class   CLASS_PROJECTILE    "Classes\\Projectile.ecl",
   2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
+  3 class   CLASS_AIRWAVE     "Classes\\AirWave.ecl",
 
- 10 model   MODEL_HUAN           "AREP\\Models\\Huanman2\\Huanman.mdl",
- 11 texture TEXTURE_HUAN_SMALL  "AREP\\Models\\Huanman2\\HuanmanBlack.tex",
- 12 texture TEXTURE_HUAN_BIG     "AREP\\Models\\Huanman2\\HuanmanRed.tex",
+ 10 model   MODEL_HUAN           "ModelsF\\Enemies\\Huanman\\Huanman.mdl",
+ 11 texture TEXTURE_HUAN_SMALL  "ModelsF\\Enemies\\Huanman\\Black.tex",
+ 12 texture TEXTURE_HUAN_BIG     "ModelsF\\Enemies\\Huanman\\Red.tex",
+ 
+ 13 model   MODEL_SPEAR                 "ModelsF\\Enemies\\Huanman\\Spear.mdl",
+ 14 texture TEXTURE_SPEAR_SMALL         "ModelsF\\Enemies\\Huanman\\SpearBlack.tex",
+ 15 texture TEXTURE_SPEAR_BIG           "ModelsF\\Enemies\\Huanman\\Spear.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_SMALL_IDLE      "AREP\\Models\\Huanman2\\Sounds\\Small\\Idle.wav",
@@ -66,10 +73,16 @@ components:
  58 sound   SOUND_BIG_WOUND     "AREP\\Models\\Huanman2\\Sounds\\Big\\Wound.wav",
  60 sound   SOUND_BIG_KICK      "AREP\\Models\\Huanman2\\Sounds\\Big\\Kick.wav",
  61 sound   SOUND_BIG_DEATH     "AREP\\Models\\Huanman2\\Sounds\\Big\\Death.wav",
+ 
+ 20 sound   SOUND_FIRE_SMALL     "ModelsF\\Enemies\\Huanman\\Sounds\\FireSmall.wav",
+ 21 sound   SOUND_FIRE_BIG       "ModelsF\\Enemies\\Huanman\\Sounds\\FireBig.wav",
+ 22 sound   SOUND_HIT_SMALL     "ModelsF\\Enemies\\Huanman\\Sounds\\HitSmall.wav",
+ 23 sound   SOUND_HIT_BIG       "ModelsF\\Enemies\\Huanman\\Sounds\\HitBig.wav",
 
- 30 model   MODEL_DEBRIS_HEAD           "AREP\\Models\\Huanman2\\Debris\\hed.mdl",
- 31 model   MODEL_DEBRIS_BODY           "AREP\\Models\\Huanman2\\Debris\\bod.mdl",
- 32 model   MODEL_DEBRIS_TAIL           "AREP\\Models\\Huanman2\\Debris\\tail.mdl",
+ 30 model   MODEL_DEBRIS_HEAD           "ModelsF\\Enemies\\Huanman\\Debris\\Hed.mdl",
+ 31 model   MODEL_DEBRIS_BODY           "ModelsF\\Enemies\\Huanman\\Debris\\Bod.mdl",
+ 32 model   MODEL_DEBRIS_TAIL           "ModelsF\\Enemies\\Huanman\\Debris\\Tail.mdl",
+ 35 model   MODEL_DEBRIS_ARM            "ModelsF\\Enemies\\Huanman\\Debris\\Arm.mdl",
 
  33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
@@ -98,6 +111,7 @@ functions:
     PrecacheModel(MODEL_DEBRIS_HEAD);
     PrecacheModel(MODEL_DEBRIS_BODY);
     PrecacheModel(MODEL_DEBRIS_TAIL);
+    PrecacheModel(MODEL_DEBRIS_ARM);
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
@@ -110,6 +124,9 @@ functions:
     PrecacheSound(SOUND_SMALL_DEATH);
     PrecacheSound(SOUND_SMALL_KICK);
     PrecacheTexture(TEXTURE_HUAN_SMALL);
+    PrecacheSound(SOUND_FIRE_SMALL);
+    PrecacheSound(SOUND_HIT_SMALL);
+    PrecacheClass(CLASS_PROJECTILE, PRT_HUANMAN2_FIRE);
 	}
 
     if (m_HuType==HUAN_BIG)
@@ -120,6 +137,9 @@ functions:
     PrecacheSound(SOUND_BIG_DEATH);
     PrecacheSound(SOUND_BIG_KICK);
     PrecacheTexture(TEXTURE_HUAN_BIG);
+    PrecacheSound(SOUND_FIRE_BIG);
+    PrecacheSound(SOUND_HIT_BIG);
+    PrecacheClass(CLASS_AIRWAVE);
 	}
   };
 
@@ -172,11 +192,6 @@ functions:
     // can't harm own class
     if (!IsOfClass(penInflictor, "Huanman")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
-      // if died of chainsaw
-      if (dmtType==DMT_CHAINSAW && GetHealth()<=0) {
-        // must always blowup
-        m_fBlowUpAmount = 0;
-      }
     }
   };
 
@@ -203,14 +218,14 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(HUANMAN_COLLISION_BOX_DEATH);
+    ChangeCollisionBoxIndexWhenPossible(HUANMAN_COLLISION_BOX_PART_NAME);
     en_fDensity = 500.0f;
   };
 
   // virtual anim functions
   void StandingAnim(void) {
     _tmLastStandingAnim = _pTimer->CurrentTick();
-    StartModelAnim(HUANMAN_ANIM_STAND, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(HUANMAN_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
   };
 
   void WalkingAnim(void) {
@@ -218,7 +233,7 @@ functions:
   };
 
   void RunningAnim(void) {
-    WalkingAnim();
+    StartModelAnim(HUANMAN_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
   };
   void RotatingAnim(void) {
     WalkingAnim();
@@ -242,7 +257,29 @@ functions:
   // adjust sound and watcher parameters here if needed
   void EnemyPostInit(void) 
   {
-    m_soSound.Set3DParameters(80.0f, 5.0f, 1.0f, 1.0f);
+    m_soSound.Set3DParameters(80.0f, 10.0f, 1.25f, 1.0f);
+  };
+
+
+/************************************************************
+ *                      FIRE AIRWAVE                        *
+ ************************************************************/
+  // fire air wave
+  void FireAirWave(void) {
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    // launch
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, FIRE, ANGLE3D(0, 0, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_AIRWAVE);
+    EAirWave eLaunch;
+    eLaunch.penLauncher = this;
+    penProjectile->Initialize(eLaunch);
+
+      ShakeItBaby(_pTimer->CurrentTick(), 3.0f);
   };
 
 /************************************************************
@@ -274,6 +311,10 @@ functions:
     Debris_Spawn(this, this, MODEL_DEBRIS_BODY, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_DEBRIS_TAIL, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_ARM, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_ARM, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
@@ -345,33 +386,45 @@ procedures:
 /************************************************************
  *                A T T A C K   E N E M Y                   *
  ************************************************************/
+  Fire(EVoid) : CEnemyBase::Fire {
+    if (m_HuType==HUAN_SMALL) {
+      // fire projectile
+      StartModelAnim(HUANMAN_ANIM_FIRE1, 0);
+      PlaySound(m_soSound, SOUND_FIRE_SMALL, SOF_3D);
+      autowait(0.4f);
+      ShootProjectile(PRT_HUANMAN2_FIRE, FIRE, ANGLE3D(0, 0, 0));
+      autowait(0.6f);
+      StandingAnim();
+      autowait(FRnd()/2 + _pTimer->TickQuantum);
+	} else if (m_HuType==HUAN_BIG) { 
+      // fire projectile
+      StartModelAnim(HUANMAN_ANIM_FIRE2, 0);
+      PlaySound(m_soSound, SOUND_FIRE_BIG, SOF_3D);
+      autowait(0.6f);
+      FireAirWave();
+      autowait(0.5f);
+	}
+    MaybeSwitchToAnotherPlayer();
+    return EReturn();
+  };
 
   // hit enemy
   Hit(EVoid) : CEnemyBase::Hit {
     // close attack
-    StartModelAnim(HUANMAN_ANIM_ATTACK, 0);
+    StartModelAnim(HUANMAN_ANIM_MELEE1, 0);
     autowait(0.45f);
-    /*
-    StartModelAnim(HUANMAN_ANIM_ATTACK, 0);
-    autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-    */
-    PlaySound(m_soSound, HUSOUND(KICK), SOF_3D);
     if (CalcDist(m_penEnemy) < m_fCloseDistance) {
       FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
       vDirection.Normalize();
       if (m_HuType == HUAN_BIG) {
         InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 40.0f, FLOAT3D(0, 0, 0), vDirection);
+        PlaySound(m_soSound, SOUND_HIT_BIG, SOF_3D);
       } else if (m_HuType == HUAN_SMALL) {
         InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection);
+        PlaySound(m_soSound, SOUND_HIT_SMALL, SOF_3D);
       }
     }
-
-    /*
-    StartModelAnim(HUANMAN_ANIM_STAND, 0);
-    autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-    */
     autowait(0.45f);
-    MaybeSwitchToAnotherPlayer();
     return EReturn();
   };
 
@@ -400,8 +453,8 @@ procedures:
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
     m_bBoss = m_bBeBoss;
-    m_fStopDistance = 4.0f;
-    m_fCloseDistance = 4.0f;
+    m_fStopDistance = 5.0f;
+    m_fCloseDistance = 5.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
 
     // damage/explode properties
@@ -412,7 +465,8 @@ procedures:
       SetHealth(100.0f);
       SetModelMainTexture(TEXTURE_HUAN_SMALL);
 		m_fgibTexture = TEXTURE_HUAN_SMALL;
-      m_fBlowUpAmount = 140.0f;
+      AddAttachment(HUANMAN_ATTACHMENT_SPEAR, MODEL_SPEAR, TEXTURE_SPEAR_SMALL);
+      m_fBlowUpAmount = 200.0f;
       m_fBodyParts = 3;
 	  m_fBlowUpSize = 2.6f;
       m_fDamageWounded = 50.0f;
@@ -421,7 +475,7 @@ procedures:
       GetModelObject()->StretchModel(FLOAT3D(HUAN_STRETCH, HUAN_STRETCH, HUAN_STRETCH));
      ModelChangeNotify();
       m_sptType = SPT_BLOOD;
-      m_fAttackFireTime = 3.0f;
+      m_fAttackFireTime = 5.0f;
     }
     else if (m_HuType == HUAN_BIG)
     {
@@ -430,6 +484,7 @@ procedures:
       SetHealth(1000.0f);//500
       SetModelMainTexture(TEXTURE_HUAN_BIG);
 		m_fgibTexture = TEXTURE_HUAN_BIG;
+      AddAttachment(HUANMAN_ATTACHMENT_SPEAR, MODEL_SPEAR, TEXTURE_SPEAR_BIG);
       m_fBlowUpAmount = 1500.0f;//500
       m_fBodyParts = 8;
 	  m_fBlowUpSize = 8.0f;

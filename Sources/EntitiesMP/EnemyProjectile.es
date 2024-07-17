@@ -167,7 +167,7 @@ functions:
   void SpawnEntity(BOOL bCopy) {
     // spawn new entity if of class basic enemy
       CEntity *pen = NULL;
-    ASSERT(penTemplate!=NULL);
+    ASSERT(m_penTarget!=NULL);
     CPlacement3D plProj;
     // spawn placement
     plProj = CPlacement3D(m_vProjSource, ANGLE3D(0, 0, 0));

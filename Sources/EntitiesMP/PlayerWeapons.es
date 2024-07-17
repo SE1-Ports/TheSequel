@@ -57,6 +57,9 @@
 #include "ModelsF/Weapons/HydroGun/Body.h"
 #include "ModelsF/Weapons/HydroGun/Barrel.h"
 
+#include "ModelsF/Weapons/XM8/XM8.h"
+#include "ModelsF/Weapons/XM8/Body.h"
+
 // Mission Pack player body instead of the old one
 #include "ModelsMP/Player/SeriousSam/Body.h"
 #include "ModelsMP/Player/SeriousSam/Player.h"
@@ -353,8 +356,11 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
   if ( ulAvailable&(1<<(WEAPON_TOMMYGUN-1)) ) {
     pdec->PrecacheModel(MODEL_TOMMYGUN              );
     pdec->PrecacheModel(MODEL_TG_BODY               );
-    pdec->PrecacheModel(MODEL_TG_SLIDER             );
+    pdec->PrecacheModel(MODEL_TG_SCOPE              );
+    pdec->PrecacheModel(MODEL_TG_MAG                );
     pdec->PrecacheTexture(TEXTURE_TG_BODY           );  
+    pdec->PrecacheTexture(TEXTURE_TG_SCOPE          );  
+    pdec->PrecacheTexture(TEXTURE_TG_MAG            );  
     pdec->PrecacheSound(SOUND_TOMMYGUN_FIRE         );
 
   }
@@ -588,7 +594,7 @@ static FLOAT afSniperShellPos[3] = { 0.2f, 0.0f, -0.15f};
 static FLOAT afRightColtPipe[3] = { 0.07f, -0.05f, -0.26f};
 static FLOAT afSingleShotgunPipe[3] = { 0.2f, 0.0f, -1.25f};
 static FLOAT afDoubleShotgunPipe[3] = { 0.2f, 0.0f, -1.25f};
-static FLOAT afTommygunPipe[3] = { -0.06f, 0.1f, -0.6f};
+static FLOAT afTommygunPipe[3] = { -0.06f, 0.1f, -1.3f};
 static FLOAT afMinigunPipe[3] = { -0.06f, 0.0f, -0.6f};
 static FLOAT afMinigunPipe3rdView[3] = { 0.25f, 0.3f, -2.5f};
 
@@ -789,10 +795,13 @@ components:
  62 sound   SOUND_DOUBLESHOTGUN_GRENADE "Models\\Weapons\\DoubleShotgun\\Sounds\\Grenade.wav",
 
 // ************** TOMMYGUN **************
- 70 model   MODEL_TOMMYGUN              "Models\\Weapons\\TommyGun\\TommyGun.mdl",
- 71 model   MODEL_TG_BODY               "Models\\Weapons\\TommyGun\\Body.mdl",
- 72 model   MODEL_TG_SLIDER             "Models\\Weapons\\TommyGun\\Slider.mdl",
- 73 texture TEXTURE_TG_BODY             "Models\\Weapons\\TommyGun\\Body.tex",
+ 70 model   MODEL_TOMMYGUN              "ModelsF\\Weapons\\XM8\\XM8.mdl",
+ 71 model   MODEL_TG_BODY               "ModelsF\\Weapons\\XM8\\Body.mdl",
+ 72 model   MODEL_TG_SCOPE              "ModelsF\\Weapons\\XM8\\Scope.mdl",
+ 73 model   MODEL_TG_MAG                "ModelsF\\Weapons\\XM8\\Magazine.mdl",
+ 75 texture TEXTURE_TG_BODY             "ModelsF\\Weapons\\XM8\\Body.tex",
+ 76 texture TEXTURE_TG_SCOPE            "ModelsF\\Weapons\\XM8\\Scope.tex",
+ 77 texture TEXTURE_TG_MAG              "ModelsF\\Weapons\\XM8\\Magazine.tex",
  74 sound   SOUND_TOMMYGUN_FIRE         "Models\\Weapons\\TommyGun\\Sounds\\_Fire.wav",
 
 // ************** MINIGUN **************
@@ -1624,7 +1633,7 @@ functions:
           ShowFlare(m_moWeapon, DOUBLESHOTGUN_ATTACHMENT_BARRELS, DSHOTGUNBARRELS_ATTACHMENT_FLARE, 1.75f);
           break;
         case WEAPON_TOMMYGUN:
-          ShowFlare(m_moWeapon, TOMMYGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 0.5f);
+          ShowFlare(m_moWeapon, XM8_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 0.5f);
           break;
         case WEAPON_SNIPER:
           ShowFlare(m_moWeapon, SNIPER_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 0.5f);
@@ -1646,7 +1655,7 @@ functions:
           HideFlare(m_moWeapon, DOUBLESHOTGUN_ATTACHMENT_BARRELS, DSHOTGUNBARRELS_ATTACHMENT_FLARE);
           break;
         case WEAPON_TOMMYGUN:
-          HideFlare(m_moWeapon, TOMMYGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
+          HideFlare(m_moWeapon, XM8_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;
         case WEAPON_SNIPER:
           HideFlare(m_moWeapon, SNIPER_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
@@ -1724,10 +1733,11 @@ functions:
         break; }
       case WEAPON_TOMMYGUN: {
         SetComponents(this, m_moWeapon, MODEL_TOMMYGUN, TEXTURE_HAND, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, TOMMYGUN_ATTACHMENT_BODY, MODEL_TG_BODY, TEXTURE_TG_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddAttachmentToModel(this, m_moWeapon, TOMMYGUN_ATTACHMENT_SLIDER, MODEL_TG_SLIDER, TEXTURE_TG_BODY, 0, TEX_SPEC_MEDIUM, 0);
-        CModelObject &mo = m_moWeapon.GetAttachmentModel(TOMMYGUN_ATTACHMENT_BODY)->amo_moModelObject;
+        AddAttachmentToModel(this, m_moWeapon, XM8_ATTACHMENT_BODY, MODEL_TG_BODY, TEXTURE_TG_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        CModelObject &mo = m_moWeapon.GetAttachmentModel(XM8_ATTACHMENT_BODY)->amo_moModelObject;
         AddAttachmentToModel(this, mo, BODY_ATTACHMENT_FLARE, MODEL_FLARE01, TEXTURE_FLARE01, 0, 0, 0);
+        AddAttachmentToModel(this, m_moWeapon, XM8_ATTACHMENT_SCOPE, MODEL_TG_SCOPE, TEXTURE_TG_SCOPE, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0);
+        AddAttachmentToModel(this, m_moWeapon, XM8_ATTACHMENT_MAGAZINE, MODEL_TG_MAG, TEXTURE_TG_MAG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         break; }
       case WEAPON_SNIPER: {
         SetComponents(this, m_moWeapon, MODEL_SNIPER, TEXTURE_SNIPER_BODY, 0, 0, 0);
@@ -2071,9 +2081,47 @@ functions:
           {
             BOOL bRender=TRUE;
             FLOAT3D vSpillDir=-((CPlayer&)*m_penPlayer).en_vGravityDir*0.5f;
-            SprayParticlesType sptType=SPT_NONE;
+            SprayParticlesType sptType=SPT_BLOOD;
             COLOR colParticles=C_WHITE|CT_OPAQUE;
+            if (!IsDerivedFromClass(crRay.cr_penHit, "Enemy Base")) {
+              sptType=SPT_NONE;
+            }
             FLOAT fPower=4.0f;
+            if( IsOfClass(crRay.cr_penHit, "Boneman") ||   
+                IsOfClass(crRay.cr_penHit, "FlyingKleer")) {sptType=SPT_BONES; fPower=6.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Gizmo") ||
+                IsOfClass(crRay.cr_penHit, "Beast") ||
+                IsOfClass(crRay.cr_penHit, "DumDum") ||
+                IsOfClass(crRay.cr_penHit, "Fishman") ||
+                IsOfClass(crRay.cr_penHit, "Lizard") ||
+                IsOfClass(crRay.cr_penHit, "Lurker") ||
+                IsOfClass(crRay.cr_penHit, "Neptune") ||
+                IsOfClass(crRay.cr_penHit, "Mantaman") ||
+                IsOfClass(crRay.cr_penHit, "WitchBride"))     {sptType=SPT_SLIME; fPower=4.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Ant") ||
+                IsOfClass(crRay.cr_penHit, "Crabman") ||
+                IsOfClass(crRay.cr_penHit, "Spider") ||
+                IsOfClass(crRay.cr_penHit, "Ghoul") ||
+                IsOfClass(crRay.cr_penHit, "SpiderMech"))     {sptType=SPT_GOO; fPower=4.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Woman"))     {sptType=SPT_FEATHER; fPower=3.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Ram") ||
+			    IsOfClass(crRay.cr_penHit, "Guardian"))     {sptType=SPT_STONES; fPower=3.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Elemental")) {sptType=SPT_LAVA_STONES; fPower=3.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Walker") ||
+                IsOfClass(crRay.cr_penHit, "Catman") ||
+                IsOfClass(crRay.cr_penHit, "Chariot") ||
+                IsOfClass(crRay.cr_penHit, "Tank") ||
+                IsOfClass(crRay.cr_penHit, "Cyborg") ||
+                IsOfClass(crRay.cr_penHit, "Floater") ||
+                IsOfClass(crRay.cr_penHit, "Mecha") ||
+                IsOfClass(crRay.cr_penHit, "RobotDog") ||
+                IsOfClass(crRay.cr_penHit, "Runner") ||
+                IsOfClass(crRay.cr_penHit, "Sentry") ||
+                IsOfClass(crRay.cr_penHit, "Spawner"))    {sptType=SPT_ELECTRICITY_SPARKS; fPower=30.0f;}
+            if( IsOfClass(crRay.cr_penHit, "AirElemental") ||
+			    IsOfClass(crRay.cr_penHit, "Waterman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f;}
+            if( IsOfClass(crRay.cr_penHit, "CannonRotating") ||
+                IsOfClass(crRay.cr_penHit, "CannonStatic"))    {sptType=SPT_WOOD;}
             if( IsOfClass(crRay.cr_penHit, "ModelHolder2"))
             {
               bRender=FALSE;
@@ -2113,7 +2161,7 @@ functions:
         }
       }
       const FLOAT fDamageMul = GetSeriousDamageMultiplier(m_penPlayer);
-      InflictDirectDamage(penClosest, m_penPlayer, DMT_CLOSERANGE, fDamage*fDamageMul, vHit, vDir);
+      InflictDirectDamage(penClosest, m_penPlayer, DMT_CHAINSAW, fDamage*fDamageMul, vHit, vDir);
       return TRUE;
     }
     return FALSE;
@@ -3620,7 +3668,7 @@ functions:
       case WEAPON_DOUBLESHOTGUN:
         m_moWeapon.PlayAnim(DOUBLESHOTGUN_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_TOMMYGUN:
-        m_moWeapon.PlayAnim(TOMMYGUN_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
+        m_moWeapon.PlayAnim(XM8_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_SNIPER:
         m_moWeapon.PlayAnim(SNIPER_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_MINIGUN:
@@ -3665,9 +3713,9 @@ functions:
   FLOAT KnifeBoring(void) {
     // play boring anim
     INDEX iAnim;
-    switch (m_iKnifeStand) {
-      case 1: iAnim = KNIFE_ANIM_WAIT1; break;
-      case 3: iAnim = KNIFE_ANIM_WAIT1; break;
+    switch (IRnd()%2) {
+      case 0: iAnim = KNIFE_ANIM_WAIT2; break;
+      case 1: iAnim = KNIFE_ANIM_WAIT3; break;
     }
     m_moWeapon.PlayAnim(iAnim, AOF_SMOOTHCHANGE);
     return m_moWeapon.GetAnimLength(iAnim);
@@ -3727,8 +3775,8 @@ functions:
     // play boring anim
     INDEX iAnim;
     switch (IRnd()%2) {
-      case 0: iAnim = TOMMYGUN_ANIM_WAIT2; break;
-      case 1: iAnim = TOMMYGUN_ANIM_WAIT3; break;
+      case 0: iAnim = XM8_ANIM_WAIT2; break;
+      case 1: iAnim = XM8_ANIM_WAIT3; break;
     }
     m_moWeapon.PlayAnim(iAnim, AOF_SMOOTHCHANGE);
     return m_moWeapon.GetAnimLength(iAnim);
@@ -4221,7 +4269,7 @@ procedures:
         m_iAnim = DOUBLESHOTGUN_ANIM_DEACTIVATE;
         break;
       case WEAPON_TOMMYGUN:
-        m_iAnim = TOMMYGUN_ANIM_DEACTIVATE;
+        m_iAnim = XM8_ANIM_DEACTIVATE;
         break;
       case WEAPON_SNIPER:
         m_iAnim = SNIPER_ANIM_DEACTIVATE;
@@ -4339,7 +4387,7 @@ procedures:
         SetFlare(0, FLARE_REMOVE);
         break;
       case WEAPON_TOMMYGUN:
-        m_iAnim = TOMMYGUN_ANIM_ACTIVATE;
+        m_iAnim = XM8_ANIM_ACTIVATE;
         SetFlare(0, FLARE_REMOVE);
         break;
       case WEAPON_SNIPER:
@@ -4831,11 +4879,11 @@ procedures:
         break;
     }
     m_moWeapon.PlayAnim(m_iAnim, 0);
-    if (CutWithKnife(0, 0, 3.0f, 2.0f, 0.5f, ((GetSP()->sp_bCooperative) ? 100.0f : 50.0f))) {
+    if (CutWithKnife(0, 0, 3.0f, 2.0f, 0.5f, ((GetSP()->sp_bCooperative) ? 130.0f : 65.0f))) {
       autowait(m_fAnimWaitTime);
     } else if (TRUE) {
       autowait(m_fAnimWaitTime/2);
-      CutWithKnife(0, 0, 3.0f, 2.0f, 0.5f, ((GetSP()->sp_bCooperative) ? 100.0f : 50.0f));
+      CutWithKnife(0, 0, 3.0f, 2.0f, 0.5f, ((GetSP()->sp_bCooperative) ? 130.0f : 65.0f));
       autowait(m_fAnimWaitTime/2);
     }
 
@@ -5326,7 +5374,7 @@ procedures:
       if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("Tommygun_fire");}
       DecAmmo(m_iBullets, 1);
       SetFlare(0, FLARE_ADD);
-      m_moWeapon.PlayAnim(TOMMYGUN_ANIM_FIRE, AOF_LOOPING|AOF_NORESTART);
+      m_moWeapon.PlayAnim(XM8_ANIM_FIRE, AOF_LOOPING|AOF_NORESTART);
 
       // firing FX
       CPlacement3D plShell;
@@ -5365,7 +5413,7 @@ procedures:
         }
       }
 
-      autowait(m_moWeapon.GetAnimLength(TOMMYGUN_ANIM_FIRE)*2-0.04);
+      autowait(m_moWeapon.GetAnimLength(XM8_ANIM_FIRE)-0.08);
       // no ammo -> change weapon
       if (m_iBullets<=0) { SelectNewWeapon(); }
     } else {

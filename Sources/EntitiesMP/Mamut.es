@@ -2,7 +2,9 @@
 
 %{
 #include "StdH.h"
-#include "AREP/Models/Mamut2/MAMUT.h"
+#include "ModelsF/Enemies/Mamut/Mamut.h"
+#include "EntitiesMP/WorldSettingsController.h"
+#include "EntitiesMP/BackgroundViewer.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -26,8 +28,8 @@ enum MtType {
 #define CLOSE_ATTACK_RANGE   42.0f
 #define MAMUT_STRETCH        1.0f
 static _tmLastStandingAnim = 0.0f;   
-#define FIRING_POSITION_MUZZLE = (FLOAT3D(0.0f, 3.3f, -5.0f)*MAMUT_STRETCH);
-FLOAT3D vSummPos = (FLOAT3D(0.0f, 3.3f, -5.0f)*MAMUT_STRETCH);
+#define FIRING_POSITION_MUZZLE = (FLOAT3D(0.0f, 5.3f, -5.0f)*MAMUT_STRETCH);
+FLOAT3D vSummPos = (FLOAT3D(0.0f, 5.3f, -6.0f)*MAMUT_STRETCH);
 #define TEMP_PER_GROUP 3  
 
 // info structure
@@ -67,32 +69,33 @@ components:
   4 class   CLASS_CANNONBALL    "Classes\\CannonBall.ecl",
   5 class   CLASS_SPAWNER_PROJECTILE "Classes\\SpawnerProjectile.ecl",
 
- 10 model   MODEL_MAMUT         "AREP\\Models\\Mamut2\\Mamut.mdl",
- 11 texture TEXTURE_MAMUT_SUMMER       "AREP\\Models\\Mamut2\\MamutSummer.tex",
- 12 texture TEXTURE_MAMUT_WINTER       "AREP\\Models\\Mamut2\\MamutWinter.tex",
+ 10 model   MODEL_MAMUT         "ModelsF\\Enemies\\Mamut\\Mamut.mdl",
+ 11 texture TEXTURE_MAMUT_SUMMER       "ModelsF\\Enemies\\Mamut\\MamutSummer.tex",
+ 12 texture TEXTURE_MAMUT_WINTER       "ModelsF\\Enemies\\Mamut\\MamutWinter.tex",
 
- 14 model   MODEL_CANNON           "ModelsMP\\Enemies\\CannonStatic\\Cannon.mdl",
- 15 texture TEXTURE_CANNON         "ModelsMP\\Enemies\\CannonStatic\\Cannon.tex",
+ 14 model   MODEL_CANNON           "ModelsF\\Enemies\\Mamut\\Cannon.mdl",
+ 15 texture TEXTURE_CANNON         "ModelsF\\Enemies\\Mamut\\Cannon.tex",
 
- 17 model   MODEL_GUN           "Models\\Enemies\\Devil\\Weapons\\ElectricityGun.mdl",
- 18 texture TEXTURE_GUN         "Models\\Enemies\\Devil\\Weapons\\ElectricityGun.tex",
+ 17 model   MODEL_GUN           "ModelsF\\Enemies\\Mamut\\Gun.mdl",
+ 18 texture TEXTURE_GUN         "ModelsF\\Enemies\\Mamut\\Gun.tex",
  
- 60 model   MODEL_HEAD			 "AREP\\Models\\Mamut2\\Debris\\Head.mdl",
- 61 model   MODEL_BUTT	     	 "AREP\\Models\\Mamut2\\Debris\\Butt.mdl",
- 63 model   MODEL_LEG	     	 "AREP\\Models\\Mamut2\\Debris\\leg.mdl",
+ 60 model   MODEL_HEAD			 "ModelsF\\Enemies\\Mamut\\Debris\\Head.mdl",
+ 61 model   MODEL_TUSK	     	 "ModelsF\\Enemies\\Mamut\\Debris\\TuskBig.mdl",
+ 63 model   MODEL_LEG1	     	 "ModelsF\\Enemies\\Mamut\\Debris\\Leg1.mdl",
+ 66 model   MODEL_LEG2	     	 "ModelsF\\Enemies\\Mamut\\Debris\\Leg2.mdl",
 
  64 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  65 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
  // ************** SOUNDS **************
- 50 sound   SOUND_IDLE      "AREP\\Models\\Mamut2\\Sounds\\Idle.wav",
- 51 sound   SOUND_SIGHT     "AREP\\Models\\Mamut2\\Sounds\\Sight.wav",
- 52 sound   SOUND_WOUND     "AREP\\Models\\Mamut2\\Sounds\\Wound.wav",
- 55 sound   SOUND_DEATH     "AREP\\Models\\Mamut2\\Sounds\\Death.wav",
+ 50 sound   SOUND_IDLE      "ModelsF\\Enemies\\Mamut\\Sounds\\Idle.wav",
+ 51 sound   SOUND_SIGHT     "ModelsF\\Enemies\\Mamut\\Sounds\\Sight.wav",
+ 52 sound   SOUND_WOUND     "ModelsF\\Enemies\\Mamut\\Sounds\\Wound.wav",
+ 55 sound   SOUND_DEATH     "ModelsF\\Enemies\\Mamut\\Sounds\\Death.wav",
  56 sound   SOUND_MOVING     "AREP\\Models\\Mamut2\\Sounds\\Moving.wav",
- 57 sound   SOUND_ATTACK      "AREP\\Models\\Mamut2\\Sounds\\Kick.wav",
- 58 sound   SOUND_CANNON      "AREP\\Models\\Mamut2\\Sounds\\Cannon.wav",
- 59 sound   SOUND_SUMMON      "AREP\\Models\\Mamut2\\Sounds\\Summon.wav",
+ 57 sound   SOUND_ATTACK      "ModelsF\\Enemies\\Mamut\\Sounds\\Stomp.wav",
+ 58 sound   SOUND_CANNON      "ModelsF\\Enemies\\Mamut\\Sounds\\Fire.wav",
+ 59 sound   SOUND_SUMMON      "ModelsF\\Enemies\\Mamut\\Sounds\\Summon.wav",
 
 functions:
 
@@ -100,7 +103,7 @@ functions:
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
     CTString str;
-    str.PrintF(TRANS("An altajbeest flattened %s"), strPlayerName);
+    str.PrintF(TRANS("A mammoth flattened %s"), strPlayerName);
     return str;
   }
   
@@ -151,8 +154,9 @@ functions:
     PrecacheClass(CLASS_CANNONBALL);
 
 	PrecacheModel(MODEL_HEAD);
-	PrecacheModel(MODEL_BUTT);
-	PrecacheModel(MODEL_LEG);
+	PrecacheModel(MODEL_TUSK);
+	PrecacheModel(MODEL_LEG1);
+	PrecacheModel(MODEL_LEG2);
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
@@ -175,13 +179,30 @@ functions:
     return TRUE;
   }
 
-  /*FLOAT GetCrushHealth(void)
+  void ShakeItBaby(FLOAT tmShaketime, FLOAT fPower)
   {
-    if (m_bcType == BT_BIG) {
-      return 100.0f;
+    CWorldSettingsController *pwsc = GetWSC(this);
+    if (pwsc!=NULL) {
+      pwsc->m_tmShakeStarted = tmShaketime;
+      pwsc->m_vShakePos = GetPlacement().pl_PositionVector;
+      pwsc->m_fShakeFalloff = 150.0f;
+      pwsc->m_fShakeFade = 3.0f;
+
+      pwsc->m_fShakeIntensityZ = 0.0f;
+      pwsc->m_tmShakeFrequencyZ = 5.0f;
+      pwsc->m_fShakeIntensityY = 0.1f*fPower;
+      pwsc->m_tmShakeFrequencyY = 5.0f;
+      pwsc->m_fShakeIntensityB = 2.5f*fPower;
+      pwsc->m_tmShakeFrequencyB = 7.2f;
+
+      pwsc->m_bShakeFadeIn = FALSE;
     }
-    return 0.0f;
-  }*/
+  }
+
+  FLOAT GetCrushHealth(void)
+  {
+    return 100.0f;
+  }
 
   /* Receive damage */
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
@@ -197,8 +218,8 @@ functions:
 
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
-    StartModelAnim(MAMUT_ANIM_WOUND02, 0);
-    return MAMUT_ANIM_WOUND02;
+    StartModelAnim(MAMUT_ANIM_WOUND, 0);
+    return MAMUT_ANIM_WOUND;
     DeactivateRunningSound();
   };
 
@@ -211,8 +232,8 @@ functions:
 
   FLOAT WaitForDust(FLOAT3D &vStretch)
   {
-    vStretch=FLOAT3D(2,2,3)*3.0f;
-    return 1.1f;
+    vStretch=FLOAT3D(1,1,1)*0.5f;
+    return 0.5f;
   };
 
   void DeathNotify(void) {
@@ -223,7 +244,7 @@ functions:
   // virtual anim functions
   void StandingAnim(void) {
     //_tmLastStandingAnim = _pTimer->CurrentTick();
-    StartModelAnim(MAMUT_ANIM_STAND, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(MAMUT_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
     DeactivateRunningSound();
   };
 
@@ -237,7 +258,7 @@ functions:
     ActivateRunningSound();
   };
   void RotatingAnim(void) {
-    StartModelAnim(MAMUT_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(MAMUT_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
     ActivateRunningSound();
   };
 
@@ -258,7 +279,7 @@ functions:
 
   void LaunchMonster1(void)
   {
-    ASSERT(penTemplate!=NULL);
+    ASSERT(m_penSpawn1!=NULL);
     // calculate parameters for predicted angular launch curve
     FLOAT3D vFirePos = vSummPos;
     FLOAT3D vShooting = GetPlacement().pl_PositionVector + m_vFiringPos;
@@ -295,7 +316,7 @@ functions:
 
   void LaunchMonster2(void)
   {
-    ASSERT(penTemplate!=NULL);
+    ASSERT(m_penSpawn2!=NULL);
     // calculate parameters for predicted angular launch curve
     FLOAT3D vFirePos = vSummPos;
     FLOAT3D vShooting = GetPlacement().pl_PositionVector + m_vFiringPos;
@@ -332,7 +353,7 @@ functions:
 
   void LaunchMonster3(void)
   {
-    ASSERT(penTemplate!=NULL);
+    ASSERT(m_penSpawn3!=NULL);
     // calculate parameters for predicted angular launch curve
     FLOAT3D vFirePos = vSummPos;
     FLOAT3D vShooting = GetPlacement().pl_PositionVector + m_vFiringPos;
@@ -386,7 +407,7 @@ functions:
   {
   m_soFeet.Set3DParameters(300.0f, 50.0f, 1.0f, 1.0f);
     m_bRunSoundPlaying = FALSE;
-    m_soSound.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
+    m_soSound.Set3DParameters(160.0f, 50.0f, 1.5f, 1.0f);
   };
 
  /************************************************************
@@ -415,11 +436,17 @@ functions:
 
     Debris_Spawn(this, this, MODEL_HEAD, m_fgibTexture, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_BUTT, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+    Debris_Spawn(this, this, MODEL_TUSK, m_fgibTexture, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEG, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+    Debris_Spawn(this, this, MODEL_TUSK, m_fgibTexture, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEG, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+    Debris_Spawn(this, this, MODEL_LEG1, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG1, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG2, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG2, m_fgibTexture, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
@@ -443,15 +470,53 @@ functions:
 
 procedures:
 /************************************************************
+ *                    D  E  A  T  H                         *
+ ************************************************************/
+  Death(EVoid) : CEnemyBase::Death {
+    
+    // stop moving
+    StopMoving();
+    DeathSound();     // death sound
+    LeaveStain(TRUE);
+    // set physic flags
+    SetPhysicsFlags(EPF_MODEL_CORPSE);
+    SetCollisionFlags(ECF_CORPSE);
+    SetFlags(GetFlags() | ENF_SEETHROUGH);
+    // stop making fuss
+    RemoveFromFuss();
+    // death notify (usually change collision box and change body density)
+    DeathNotify();
+    // start death anim
+    AnimForDeath();
+    autowait(1.0f);
+    ShakeItBaby(_pTimer->CurrentTick(), 4.0f);
+
+    // spawn dust effect
+    CPlacement3D plFX=GetPlacement();
+    ESpawnEffect ese;
+    ese.colMuliplier = C_WHITE|CT_OPAQUE;
+    ese.vStretch = FLOAT3D(1,1,1)*5.0f;
+    ese.vNormal = FLOAT3D(0,1,0);
+    ese.betType = BET_DUST_FALL;
+    CPlacement3D plSmoke=plFX;
+    plSmoke.pl_PositionVector+=FLOAT3D(0,0.35f*ese.vStretch(2),0);
+    CEntityPointer penFX = CreateEntity(plSmoke, CLASS_BASIC_EFFECT);
+    penFX->Initialize(ese);
+
+    autowait(GetModelObject()->GetAnimLength(MAMUT_ANIM_DEATH)-0.5f);
+    return EEnd();
+  };
+
+/************************************************************
  *                A T T A C K   E N E M Y                   *
  ************************************************************/
 Hit(EVoid) : CEnemyBase::Hit {
     // close attack
     if (CalcDist(m_penEnemy) < 42.0f) {
       DeactivateRunningSound();
-      StartModelAnim(MAMUT_ANIM_WOUND01, 0);
+      StartModelAnim(MAMUT_ANIM_STOMP, 0);
       PlaySound(m_soSound, SOUND_ATTACK, SOF_3D);
-	  autowait(0.7f);
+	  autowait(0.65f);
 	  FLOAT3D vSource;
       vSource = GetPlacement().pl_PositionVector +
       FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
@@ -462,6 +527,7 @@ Hit(EVoid) : CEnemyBase::Hit {
         KickEntity(m_penEnemy, 0.0);
       }
 	  {
+    ShakeItBaby(_pTimer->CurrentTick(), 2.0f);
 	      // spawn particle effect
     CPlacement3D pl = GetPlacement();
     pl.pl_PositionVector(2) += 0.1f;
@@ -472,8 +538,10 @@ Hit(EVoid) : CEnemyBase::Hit {
     eSpawnEffect.vStretch = FLOAT3D(3.0f, 3.0f, 3.0f);
 	penShockwave->Initialize(eSpawnEffect);
 	}
-	autowait(1.5f);
+	autowait(0.4f);
       MaybeSwitchToAnotherPlayer();
+	  StandingAnim();
+	autowait(0.6f);
     } else {
       // run to enemy
       m_fShootTime = _pTimer->CurrentTick() + 0.5f;
@@ -483,11 +551,11 @@ Hit(EVoid) : CEnemyBase::Hit {
 
 Fire(EVoid) : CEnemyBase::Fire {
     // fire projectile 
-    StartModelAnim(MAMUT_ANIM_WOUND01, 0);
-    DeactivateRunningSound();
     if (m_mtType==MT_CANNON) {
+      StartModelAnim(MAMUT_ANIM_FIRE, 0);
+      DeactivateRunningSound();
       PlaySound(m_soSound, SOUND_CANNON, SOF_3D);
-	  autowait(0.7f);
+	  autowait(0.45f);
    
       m_vFiringPos FIRING_POSITION_MUZZLE;
       m_vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
@@ -516,13 +584,15 @@ Fire(EVoid) : CEnemyBase::Fire {
       eLaunch.fSize = 1.5f;
       penBall->Initialize(eLaunch);
 
-	  autowait(1.5f);
+	  autowait(0.55f);
       MaybeSwitchToAnotherPlayer();
    
 	}
     if (m_mtType==MT_SUMM) {
+      StartModelAnim(MAMUT_ANIM_SUMMON, 0);
+      DeactivateRunningSound();
       PlaySound(m_soSound, SOUND_SUMMON, SOF_3D);
-	  autowait(0.7f);
+	  autowait(0.45f);
 
     INDEX iRnd = IRnd()%3;
     switch(iRnd)
@@ -532,7 +602,7 @@ Fire(EVoid) : CEnemyBase::Fire {
     case 2: LaunchMonster3(); break;
 	}
 
-	  autowait(1.5f);
+	  autowait(0.8f);
       MaybeSwitchToAnotherPlayer();
 	}
 
@@ -567,19 +637,15 @@ Fire(EVoid) : CEnemyBase::Fire {
 		m_fgibTexture = TEXTURE_MAMUT_WINTER;
     }
     if (m_mtType==MT_CANNON) {
-    AddAttachment(MAMUT_ATTACHMENT_MAN_FRONT, MODEL_CANNON, TEXTURE_CANNON);
-    CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(MAMUT_ATTACHMENT_MAN_FRONT)->amo_moModelObject;
-    pmoRight->StretchModel(FLOAT3D(2,2,2));
+    AddAttachment(MAMUT_ATTACHMENT_CANNON, MODEL_CANNON, TEXTURE_CANNON);
     ModelChangeNotify();
     } else if (m_mtType==MT_SUMM) {
-    AddAttachment(MAMUT_ATTACHMENT_MAN_FRONT, MODEL_GUN, TEXTURE_GUN);
-    CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(MAMUT_ATTACHMENT_MAN_FRONT)->amo_moModelObject;
-    pmoRight->StretchModel(FLOAT3D(5,5,5));
+    AddAttachment(MAMUT_ATTACHMENT_GUN, MODEL_GUN, TEXTURE_GUN);
     ModelChangeNotify();
     }
     StandingAnim();
     // setup moving speed
-    m_fWalkSpeed = FRnd()/1.0f + 4.0f;
+    m_fWalkSpeed = FRnd()/1.0f + 3.0f;
     m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
     m_fCloseRunSpeed = FRnd()/1.0f + 13.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
@@ -599,14 +665,16 @@ Fire(EVoid) : CEnemyBase::Fire {
     SetHealth(800.0f);
     m_fMaxHealth = GetHealth();
     m_fBlowUpAmount = 2000.0f;
-	m_fBlowUpSize = 2.0f;
+	m_fBlowUpSize = 2.5f;
     m_fBodyParts = 10;
     m_fDamageWounded = 500.0f;
     if (m_mtType==MT_CANNON) {
           m_iScore = 10000;
-	} else {
+	} else if (m_mtType==MT_SUMM)  {
+          m_iScore = 14000;
+	} else if (m_mtType==MT_NORMAL)  {
           m_iScore = 6000;
-		  }
+		  };
     m_fLockOnEnemyTime = 3.0f;
 
     // set stretch factor
