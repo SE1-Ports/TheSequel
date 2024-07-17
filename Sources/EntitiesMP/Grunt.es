@@ -2,6 +2,10 @@
 %{
 #include "StdH.h"
 #include "ModelsMP/Enemies/Grunt/Grunt.h"
+#include "ModelsF/Enemies/ZorgPro/ZorgPro.h"
+#include "ModelsF/Enemies/ZorgPro/Gun.h"
+#include "ModelsF/Enemies/ZorgPro/Blade.h"
+#include "ModelsF/Enemies/ZorgPro/GunBarrel.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -11,12 +15,14 @@ enum GruntType {
   0 GT_SOLDIER    "Grunt soldier",
   1 GT_COMMANDER  "Grunt commander",
   2 GT_SNIPER     "Grunt sniper",
+  3 GT_HEAVY      "Grunt heavy",
 };
 
 %{
 #define STRETCH_SOLDIER   1.2f
 #define STRETCH_COMMANDER 1.4f
 #define STRETCH_SNIPER    1.6f
+#define STRETCH_HEAVY    1.8f
   
 // info structure
 static EntityInfo eiGruntSoldier = {
@@ -37,10 +43,24 @@ static EntityInfo eiGruntSniper = {
   0.0f, 1.3f*STRETCH_SNIPER, 0.0f,     // target (body)
 };
 
+static EntityInfo eiGruntHeavy = {
+  EIBT_FLESH, 250.0f,
+  0.0f, 1.9f*STRETCH_HEAVY, 0.0f,     // source (eyes)
+  0.0f, 1.3f*STRETCH_HEAVY, 0.0f,     // target (body)
+};
+
 #define FIREPOS_SOLDIER      FLOAT3D(0.07f, 1.36f, -0.78f)*STRETCH_SOLDIER
 #define FIREPOS_COMMANDER_UP  FLOAT3D(0.09f, 1.45f, -0.62f)*STRETCH_COMMANDER
 #define FIREPOS_COMMANDER_DN  FLOAT3D(0.10f, 1.30f, -0.60f)*STRETCH_COMMANDER
 #define FIREPOS_SNIPER      FLOAT3D(0.07f, 1.36f, -0.78f)*STRETCH_SNIPER
+
+#define FIREPOS_HEAVY1  FLOAT3D(0.3f, 1.0f, -0.62f)*STRETCH_HEAVY
+#define FIREPOS_HEAVY2  FLOAT3D(0.3f, 0.8f, -0.62f)*STRETCH_HEAVY
+#define FIREPOS_HEAVY3  FLOAT3D(0.6f, 1.0f, -0.62f)*STRETCH_HEAVY
+#define FIREPOS_HEAVY4  FLOAT3D(0.6f, 0.8f, -0.62f)*STRETCH_HEAVY
+
+#define FIREPOS_BOMB      FLOAT3D(-0.07f, 1.72f, -0.78f)
+#define BOMB_ANGLE (20.0f)
 %}
 
 
@@ -50,11 +70,14 @@ thumbnail "Thumbnails\\Grunt.tbn";
 
 properties:
   1 enum GruntType m_gtType "Type" 'Y' = GT_SOLDIER,
+  2 INDEX m_iLoopCounter = 0,
   4 BOOL    m_bBeFriendlyFire  "Friendly Fire" 'F' = FALSE,
   5 INDEX   m_fgibTexture = TEXTURE_SOLDIER,
 
   10 CSoundObject m_soFire1,
   11 CSoundObject m_soFire2,
+  12 CSoundObject m_soFire3,
+  13 CSoundObject m_soFire4,
 
 // class internal
     
@@ -63,17 +86,28 @@ components:
   2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
   3 class   CLASS_PROJECTILE      "Classes\\Projectile.ecl",
 
- 10 model   MODEL_GRUNT           "ModelsMP\\Enemies\\Grunt\\Grunt.mdl",
+ 10 model   MODEL_GRUNT           "ModelsF\\Enemies\\ZorgPro\\ZorgPro.mdl",
  11 model   MODEL_GUN_COMMANDER   "ModelsMP\\Enemies\\Grunt\\Gun_Commander.mdl",
  12 model   MODEL_GUN_SOLDIER     "ModelsMP\\Enemies\\Grunt\\Gun.mdl",
  13 model   MODEL_GUN_SNIPER      "ModelsF\\Enemies\\Grunt\\Rifle.mdl",
+
+ 15 model   MODEL_GUN_HEAVY_BODY     "ModelsF\\Enemies\\ZorgPro\\GunBody.mdl",
+ 16 model   MODEL_GUN_HEAVY_BARREL   "ModelsF\\Enemies\\ZorgPro\\GunBarrel.mdl",
+ 17 texture TEXTURE_GUN_HEAVY        "ModelsF\\Enemies\\ZorgPro\\BodyGrey.tex",
+ 18 texture TEXTURE_GUN_HEAVY_BARREL "ModelsF\\Enemies\\ZorgPro\\BarrelGrey.tex",
  
  20 texture TEXTURE_SOLDIER       "ModelsMP\\Enemies\\Grunt\\Soldier.tex",
  21 texture TEXTURE_COMMANDER     "ModelsMP\\Enemies\\Grunt\\Commander.tex",
  25 texture TEXTURE_SNIPER        "ModelsF\\Enemies\\Grunt\\Grunt_GreenPurple.tex",
+ 26 texture TEXTURE_HEAVY         "ModelsF\\Enemies\\Grunt\\HDCommander.tex",
  22 texture TEXTURE_GUN_COMMANDER "ModelsMP\\Enemies\\Grunt\\Gun_Commander.tex",
  23 texture TEXTURE_GUN_SOLDIER   "ModelsMP\\Enemies\\Grunt\\Gun.tex",
  24 texture TEXTURE_GUN_SNIPER    "ModelsF\\Enemies\\Grunt\\Rifle.tex",
+
+ 27 model   MODEL_BLADE          "ModelsF\\Enemies\\ZorgPro\\Blade.mdl",
+ 28 texture TEXTURE_BLADE        "ModelsF\\Enemies\\ZorgPro\\Blade.tex",
+ 
+ 29 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
 
  30 model   MODEL_DEBRIS_HEAD           "ModelsF\\Enemies\\Grunt\\Debris\\Hed.mdl",
  31 model   MODEL_DEBRIS_ARM           "ModelsF\\Enemies\\Grunt\\Debris\\Arm.mdl",
@@ -89,6 +123,11 @@ components:
  57 sound   SOUND_FIRE            "ModelsMP\\Enemies\\Grunt\\Sounds\\Fire.wav",
  58 sound   SOUND_DEATH           "ModelsMP\\Enemies\\Grunt\\Sounds\\Death.wav",
  59 sound   SOUND_SNIPERFIRE      "ModelsF\\Enemies\\Grunt\\Sounds\\FireSeeker.wav",
+ 
+ 60 sound   SOUND_HEAVYFIRE      "ModelsF\\Enemies\\ZorgPro\\Sounds\\FireHeavy.wav",
+ 61 sound   SOUND_SHEATH         "ModelsF\\Enemies\\ZorgPro\\Sounds\\Sheath.wav",
+ 62 sound   SOUND_HIT            "ModelsF\\Enemies\\ZorgPro\\Sounds\\Hit.wav",
+ 63 sound   SOUND_THROW          "ModelsF\\Enemies\\ZorgPro\\Sounds\\Throw.wav",
 
 functions:
     
@@ -108,6 +147,8 @@ functions:
       return &eiGruntSoldier;
     } else if (m_gtType==GT_SNIPER) {
       return &eiGruntSniper;
+    } else if (m_gtType==GT_HEAVY) {
+      return &eiGruntHeavy;
     }
   };
 
@@ -115,25 +156,51 @@ functions:
     static DECLARE_CTFILENAME(fnmSoldier,     "DataMP\\Messages\\Enemies\\GruntSoldier.txt");
     static DECLARE_CTFILENAME(fnmCommander,   "DataMP\\Messages\\Enemies\\GruntCommander.txt");
     static DECLARE_CTFILENAME(fnmSniper,   "DataF\\Messages\\Enemies\\GruntSniper.txt");
+    static DECLARE_CTFILENAME(fnmHeavy,    "DataF\\Messages\\Enemies\\GruntHeavy.txt");
     switch(m_gtType) {
     default: ASSERT(FALSE);
     case GT_SOLDIER:  return fnmSoldier;
     case GT_COMMANDER: return fnmCommander;
     case GT_SNIPER: return fnmSniper;
+    case GT_HEAVY: return fnmHeavy;
     }
   };
 
   void Precache(void) {
     CEnemyBase::Precache();
+
+    PrecacheModel(MODEL_GRUNT);
+    PrecacheTexture(TEXTURE_SOLDIER);
+    PrecacheTexture(TEXTURE_COMMANDER);
+    PrecacheTexture(TEXTURE_SNIPER);
+    PrecacheTexture(TEXTURE_HEAVY);
+
+    PrecacheModel(MODEL_BLADE);
+    PrecacheTexture(TEXTURE_BLADE);
     
+    PrecacheModel(MODEL_GUN_SOLDIER);
+    PrecacheTexture(TEXTURE_GUN_SOLDIER);
+    PrecacheModel(MODEL_GUN_COMMANDER);
+    PrecacheTexture(TEXTURE_GUN_COMMANDER);
+    PrecacheModel(MODEL_GUN_SNIPER);
+    PrecacheTexture(TEXTURE_GUN_SNIPER);
+    PrecacheModel(MODEL_GUN_HEAVY_BODY);
+    PrecacheTexture(TEXTURE_GUN_HEAVY);
+    PrecacheModel(MODEL_GUN_HEAVY_BARREL);
+    PrecacheTexture(TEXTURE_GUN_HEAVY_BARREL);
+
    if (m_gtType==GT_SOLDIER) {
       PrecacheClass(CLASS_PROJECTILE, PRT_GRUNT_PROJECTILE_SOL);
     }
     if (m_gtType==GT_COMMANDER) {
       PrecacheClass(CLASS_PROJECTILE, PRT_GRUNT_PROJECTILE_COM);
+      PrecacheClass(CLASS_PROJECTILE, PRT_GRUNTBOMB);
     }
     if (m_gtType==GT_SNIPER) {
       PrecacheClass(CLASS_PROJECTILE, PRT_GRUNT_PROJECTILE_SNIPER);
+    }
+    if (m_gtType==GT_HEAVY) {
+      PrecacheClass(CLASS_PROJECTILE, PRT_CYBORG_LASER);
     }
 
     PrecacheSound(SOUND_IDLE);
@@ -142,6 +209,11 @@ functions:
     PrecacheSound(SOUND_FIRE);
     PrecacheSound(SOUND_DEATH);
     PrecacheSound(SOUND_SNIPERFIRE);
+	
+    PrecacheSound(SOUND_HEAVYFIRE);
+    PrecacheSound(SOUND_SHEATH);
+    PrecacheSound(SOUND_HIT);
+    PrecacheSound(SOUND_THROW);
 
     PrecacheModel(MODEL_DEBRIS_HEAD);
     PrecacheModel(MODEL_DEBRIS_ARM);
@@ -171,7 +243,11 @@ functions:
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
     INDEX iAnim;
-    iAnim = GRUNT_ANIM_WOUND01;
+    if(m_gtType==GT_HEAVY) {
+      iAnim = ZORGPRO_ANIM_WOUND_HEAVY;
+    } else {
+      iAnim = ZORGPRO_ANIM_WOUND;
+    }
     StartModelAnim(iAnim, 0);
     return iAnim;
   };
@@ -183,22 +259,21 @@ functions:
     GetHeadingDirection(0, vFront);
     FLOAT fDamageDir = m_vDamage%vFront;
     if (fDamageDir<0) {
-      iAnim = GRUNT_ANIM_DEATHBACKWARD;
+      iAnim = ZORGPRO_ANIM_DEATHBACK;
     } else {
-      iAnim = GRUNT_ANIM_DEATHFORWARD;
+      iAnim = ZORGPRO_ANIM_DEATHFORW;
     }
-
     StartModelAnim(iAnim, 0);
     return iAnim;
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
     vStretch=FLOAT3D(1,1,2);
-    if(GetModelObject()->GetAnim()==GRUNT_ANIM_DEATHBACKWARD)
+    if(GetModelObject()->GetAnim()==ZORGPRO_ANIM_DEATHBACK)
     {
       return 0.5f;
     }
-    else if(GetModelObject()->GetAnim()==GRUNT_ANIM_DEATHFORWARD)
+    else if(GetModelObject()->GetAnim()==ZORGPRO_ANIM_DEATHFORW)
     {
       return 1.0f;
     }
@@ -206,26 +281,42 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(GRUNT_COLLISION_BOX_DEATH);
+    ChangeCollisionBoxIndexWhenPossible(ZORGPRO_COLLISION_BOX_PART_NAME);
     en_fDensity = 500.0f;
   };
 
   // virtual anim functions
   void StandingAnim(void) {
-    StartModelAnim(GRUNT_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    if(m_gtType==GT_HEAVY) {
+      StartModelAnim(ZORGPRO_ANIM_IDLE_HEAVY, AOF_LOOPING|AOF_NORESTART);
+    } else {
+      StartModelAnim(ZORGPRO_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    }
   };
-  /*void StandingAnimFight(void)
+  void StandingAnimFight(void)
   {
-    StartModelAnim(HEADMAN_ANIM_IDLE_FIGHT, AOF_LOOPING|AOF_NORESTART);
-  }*/
+    if(m_gtType==GT_HEAVY) {
+      StartModelAnim(ZORGPRO_ANIM_IDLEFIGHT_HEAVY, AOF_LOOPING|AOF_NORESTART);
+    } else {
+      StartModelAnim(ZORGPRO_ANIM_IDLEFIGHT, AOF_LOOPING|AOF_NORESTART);
+    }
+  }
   void RunningAnim(void) {
-    StartModelAnim(GRUNT_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    if(m_gtType==GT_HEAVY) {
+      StartModelAnim(ZORGPRO_ANIM_WALK_HEAVY, AOF_LOOPING|AOF_NORESTART);
+    } else {
+      StartModelAnim(ZORGPRO_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    }
   };
-    void WalkingAnim(void) {
-    RunningAnim();
+  void WalkingAnim(void) {
+    if(m_gtType==GT_HEAVY) {
+      StartModelAnim(ZORGPRO_ANIM_WALK_HEAVY, AOF_LOOPING|AOF_NORESTART);
+    } else {
+      StartModelAnim(ZORGPRO_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+    }
   };
   void RotatingAnim(void) {
-    RunningAnim();
+    WalkingAnim();
   };
 
   // virtual sound functions
@@ -248,6 +339,8 @@ functions:
     // set sound default parameters
     m_soFire1.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
     m_soFire2.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
+    m_soFire3.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
+    m_soFire4.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
   };
 
 /************************************************************
@@ -314,10 +407,17 @@ procedures:
       autocall SoldierAttack() EEnd;
     // commander
     } else if (m_gtType == GT_COMMANDER) {
-      autocall CommanderAttack() EEnd;
+      switch (IRnd()%3) {
+      case 0: jump CommanderAttack(); break;
+      case 1: jump CommanderAttack(); break;
+      case 2: jump CommanderBomb(); break;
+	  }
     // sniper
     } else if (m_gtType == GT_SNIPER) {
       autocall SniperAttack() EEnd;
+    // heavy
+    } else if (m_gtType == GT_HEAVY) {
+      autocall HeavyAttack() EEnd;
     // should never get here
     } else{
       ASSERT(FALSE);
@@ -330,12 +430,13 @@ procedures:
     StandingAnimFight();
     autowait(0.2f + FRnd()*0.25f);
 
-    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+    StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
     ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.15f + FRnd()*0.1f);
-    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+
+    StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
     ShootProjectile(PRT_GRUNT_PROJECTILE_SOL, FIREPOS_SOLDIER, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
     
@@ -357,40 +458,80 @@ procedures:
       vEnemyPos, fLaserSpeed, vEnemySpeed, GetPlacement().pl_PositionVector(2) );
     ShootPredictedProjectile(PRT_GRUNT_LASER, vPredictedEnemyPosition, FLOAT3D(0.0f, 1.0f, 0.0f), ANGLE3D(0, 0, 0));*/
 
-    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+    StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
     ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(-20, 0, 0));
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
-    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+    StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
     ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(-10, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
-    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+    StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
     ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
-    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+    StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
     ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(10, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(0.035f);
-    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+    StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
     ShootProjectile(PRT_GRUNT_PROJECTILE_COM, FIREPOS_COMMANDER_DN, ANGLE3D(20, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
     autowait(FRnd()*0.5f);
-    return EEnd();
+    return EReturn();
+  };
+
+  // Commander bomb
+  CommanderBomb(EVoid) {
+    StandingAnimFight();
+    autowait(0.2f + FRnd()*0.25f);
+	
+    StartModelAnim(ZORGPRO_ANIM_THROW, 0);
+    PlaySound(m_soSound, SOUND_THROW, SOF_3D);
+
+    autowait(0.8f);
+
+      FLOAT3D vShooting = GetPlacement().pl_PositionVector;
+      FLOAT3D vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
+      FLOAT3D vSpeedDest = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
+      FLOAT fLaunchSpeed;
+      FLOAT fRelativeHdg;
+      
+      FLOAT fPitch = 20.0f;
+      
+      // calculate parameters for predicted angular launch curve
+      EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+      CalculateAngularLaunchParams( vShooting, FIREPOS_BOMB(2)-peiTarget->vTargetCenter[1]-1.5f/3.0f, vTarget, 
+        vSpeedDest, fPitch, fLaunchSpeed, fRelativeHdg);
+
+      // target enemy body
+      FLOAT3D vShootTarget;
+      GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+      // launch
+      CPlacement3D pl;
+      PrepareFreeFlyingProjectile(pl, vShootTarget, FIREPOS_BOMB, ANGLE3D( fRelativeHdg, fPitch, 0));
+      CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+      ELaunchProjectile eLaunch;
+      eLaunch.penLauncher = this;
+      eLaunch.prtType = PRT_GRUNTBOMB;
+      eLaunch.fSpeed = fLaunchSpeed;
+      penProjectile->Initialize(eLaunch);
+
+    autowait(FRnd()*0.5f);
+    return EReturn();
   };
     
-  // Soldier attack
+  // Sniper attack
   SniperAttack(EVoid) {
     StandingAnimFight();
     autowait(0.2f + FRnd()*0.25f);
 
-    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+    StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
     ShootProjectile(PRT_GRUNT_PROJECTILE_SNIPER, FIREPOS_SNIPER, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire1, SOUND_SNIPERFIRE, SOF_3D);
     
@@ -398,6 +539,101 @@ procedures:
     autowait(FRnd()*0.333f);
     MaybeSwitchToAnotherPlayer();
     return EEnd();
+  };
+    
+  // Heavy attack
+  HeavyAttack(EVoid) {
+    StandingAnimFight();
+    autowait(0.2f + FRnd()*0.25f);
+
+      if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+        m_iLoopCounter = 8;
+      } else {
+        m_iLoopCounter = 16;
+      }
+
+      while(m_iLoopCounter>0) {
+        INDEX iChannel = m_iLoopCounter%4;
+        if (iChannel==0) {
+          PlaySound(m_soFire1, SOUND_HEAVYFIRE, SOF_3D);
+          StartModelAnim(ZORGPRO_ANIM_FIRE_HEAVY, AOF_LOOPING);
+          CModelObject *pmoGun = &GetModelObject()->GetAttachmentModel(ZORGPRO_ATTACHMENT_BARREL3)->
+              amo_moModelObject;
+            pmoGun->PlayAnim(GUNBARREL_ANIM_FIRE, 0);
+          ShootProjectile(PRT_CYBORG_LASER, FIREPOS_HEAVY1, ANGLE3D(0, 0, 0));
+        } else if (iChannel==1) {
+          PlaySound(m_soFire2, SOUND_HEAVYFIRE, SOF_3D);
+          StartModelAnim(ZORGPRO_ANIM_FIRE_HEAVY, AOF_LOOPING);
+          CModelObject *pmoGun = &GetModelObject()->GetAttachmentModel(ZORGPRO_ATTACHMENT_BARREL2)->
+              amo_moModelObject;
+            pmoGun->PlayAnim(GUNBARREL_ANIM_FIRE, 0);
+          ShootProjectile(PRT_CYBORG_LASER, FIREPOS_HEAVY2, ANGLE3D(0, 0, 0));
+        } else if (iChannel==2) {
+          PlaySound(m_soFire3, SOUND_HEAVYFIRE, SOF_3D);
+          StartModelAnim(ZORGPRO_ANIM_FIRE_HEAVY, AOF_LOOPING);
+          CModelObject *pmoGun = &GetModelObject()->GetAttachmentModel(ZORGPRO_ATTACHMENT_BARREL4)->
+              amo_moModelObject;
+            pmoGun->PlayAnim(GUNBARREL_ANIM_FIRE, 0);
+          ShootProjectile(PRT_CYBORG_LASER, FIREPOS_HEAVY3, ANGLE3D(0, 0, 0));
+        } else if (iChannel==3) {
+          PlaySound(m_soFire4, SOUND_HEAVYFIRE, SOF_3D);
+          StartModelAnim(ZORGPRO_ANIM_FIRE_HEAVY, AOF_LOOPING);
+          CModelObject *pmoGun = &GetModelObject()->GetAttachmentModel(ZORGPRO_ATTACHMENT_BARREL1)->
+              amo_moModelObject;
+            pmoGun->PlayAnim(GUNBARREL_ANIM_FIRE, 0);
+          ShootProjectile(PRT_CYBORG_LASER, FIREPOS_HEAVY4, ANGLE3D(0, 0, 0));
+        }
+        if (m_iLoopCounter>1) {
+          if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+            m_fLockOnEnemyTime = 0.4f;
+          } else {
+            m_fLockOnEnemyTime = 0.1f;
+          }
+          autocall CEnemyBase::LockOnEnemy() EReturn;
+        }
+        m_iLoopCounter--;
+      }
+    
+
+    autowait(FRnd()*0.333f);
+    MaybeSwitchToAnotherPlayer();
+    return EEnd();
+  };
+
+
+  // hit enemy
+  Hit(EVoid) : CEnemyBase::Hit {
+    // close attack
+      if (m_gtType == GT_HEAVY) {
+        StartModelAnim(ZORGPRO_ANIM_MELEE_HEAVY, 0);
+	  } else {
+        StartModelAnim(ZORGPRO_ANIM_MELEE, 0);
+	  }
+    CModelObject *pmoBlade = &GetModelObject()->GetAttachmentModel(ZORGPRO_ATTACHMENT_BLADE)->
+      amo_moModelObject;
+    pmoBlade->PlayAnim(BLADE_ANIM_PHASE1, 0);
+    PlaySound(m_soSound, SOUND_SHEATH, SOF_3D);
+    autowait(0.4f);
+    if (CalcDist(m_penEnemy) < m_fCloseDistance) {
+      FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
+      vDirection.Normalize();
+      if (m_gtType == GT_SOLDIER) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 10.0f, FLOAT3D(0, 0, 0), vDirection);
+      } else if (m_gtType == GT_COMMANDER) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 15.0f, FLOAT3D(0, 0, 0), vDirection);
+      } else if (m_gtType == GT_SNIPER) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection);
+      } else if (m_gtType == GT_HEAVY) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 25.0f, FLOAT3D(0, 0, 0), vDirection);
+      }
+      PlaySound(m_soSound, SOUND_HIT, SOF_3D);
+    }
+    CModelObject *pmoBlade = &GetModelObject()->GetAttachmentModel(ZORGPRO_ATTACHMENT_BLADE)->
+      amo_moModelObject;
+    pmoBlade->PlayAnim(BLADE_ANIM_PHASE2, 0);
+    autowait(0.45f);
+    MaybeSwitchToAnotherPlayer();
+    return EReturn();
   };
 
 /************************************************************
@@ -418,7 +654,9 @@ procedures:
       case GT_SOLDIER:
         // set your texture
         SetModelMainTexture(TEXTURE_SOLDIER);
-        AddAttachment(GRUNT_ATTACHMENT_GUN_SMALL, MODEL_GUN_SOLDIER, TEXTURE_GUN_SOLDIER);
+        SetModelSpecularTexture(TEXTURE_SPECULAR);
+        AddAttachment(ZORGPRO_ATTACHMENT_GUN_SOLDIER, MODEL_GUN_SOLDIER, TEXTURE_GUN_SOLDIER);
+        AddAttachment(ZORGPRO_ATTACHMENT_BLADE, MODEL_BLADE, TEXTURE_BLADE);
         // setup moving speed
         m_fWalkSpeed = FRnd() + 2.5f;
         m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
@@ -428,8 +666,8 @@ procedures:
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
         m_fAttackDistance = 80.0f;
-        m_fCloseDistance = 0.0f;
-        m_fStopDistance = 8.0f;
+        m_fCloseDistance = 3.0f;
+        m_fStopDistance = 3.0f;
         m_fAttackFireTime = 2.0f;
         m_fCloseFireTime = 1.0f;
         m_fIgnoreRange = 200.0f;
@@ -439,7 +677,7 @@ procedures:
 	    m_fBlowUpSize = 2.0f;
 		m_fgibTexture = TEXTURE_SOLDIER;
         m_fDamageWounded = 0.0f;
-        m_iScore = 500;
+        m_iScore = 600;
         SetHealth(40.0f);
         m_fMaxHealth = 40.0f;
         // set stretch factors for height and width
@@ -449,9 +687,11 @@ procedures:
       case GT_COMMANDER:
         // set your texture
         SetModelMainTexture(TEXTURE_COMMANDER);
-        AddAttachment(GRUNT_ATTACHMENT_GUN_COMMANDER, MODEL_GUN_COMMANDER, TEXTURE_GUN_COMMANDER);
+        SetModelSpecularTexture(TEXTURE_SPECULAR);
+        AddAttachment(ZORGPRO_ATTACHMENT_GUN_COMMANDER, MODEL_GUN_COMMANDER, TEXTURE_GUN_COMMANDER);
+        AddAttachment(ZORGPRO_ATTACHMENT_BLADE, MODEL_BLADE, TEXTURE_BLADE);
         // setup moving speed
-        m_fWalkSpeed = FRnd() + 2.5f;
+        m_fWalkSpeed = FRnd() + 3.0f;
         m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
         m_fAttackRunSpeed = FRnd() + 8.0f;
         m_aAttackRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
@@ -459,8 +699,8 @@ procedures:
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
         m_fAttackDistance = 90.0f;
-        m_fCloseDistance = 0.0f;
-        m_fStopDistance = 15.0f;
+        m_fCloseDistance = 3.5f;
+        m_fStopDistance = 3.0f;
         m_fAttackFireTime = 4.0f;
         m_fCloseFireTime = 2.0f;
         m_fBlowUpAmount = 120.0f;
@@ -470,7 +710,7 @@ procedures:
 	    m_fBlowUpSize = 2.4f;
 		m_fgibTexture = TEXTURE_COMMANDER;
         m_fDamageWounded = 0.0f;
-        m_iScore = 800;
+        m_iScore = 1000;
         SetHealth(60.0f);
         m_fMaxHealth = 60.0f;
         // set stretch factors for height and width
@@ -480,9 +720,11 @@ procedures:
       case GT_SNIPER:
         // set your texture
         SetModelMainTexture(TEXTURE_SNIPER);
-        AddAttachment(GRUNT_ATTACHMENT_GUN_SNIPER, MODEL_GUN_SNIPER, TEXTURE_GUN_SNIPER);
+        SetModelSpecularTexture(TEXTURE_SPECULAR);
+        AddAttachment(ZORGPRO_ATTACHMENT_GUN_SNIPER, MODEL_GUN_SNIPER, TEXTURE_GUN_SNIPER);
+        AddAttachment(ZORGPRO_ATTACHMENT_BLADE, MODEL_BLADE, TEXTURE_BLADE);
         // setup moving speed
-        m_fWalkSpeed = FRnd() + 2.5f;
+        m_fWalkSpeed = FRnd() + 3.5f;
         m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
         m_fAttackRunSpeed = FRnd() + 9.5f;
         m_aAttackRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
@@ -490,8 +732,8 @@ procedures:
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
         m_fAttackDistance = 500.0f;
-        m_fCloseDistance = 0.0f;
-        m_fStopDistance = 30.0f;
+        m_fCloseDistance = 4.0f;
+        m_fStopDistance = 4.0f;
         m_fAttackFireTime = 4.0f;
         m_fCloseFireTime = 2.0f;
         m_fBlowUpAmount = 160.0f;
@@ -501,11 +743,48 @@ procedures:
 	    m_fBlowUpSize = 2.8f;
 		m_fgibTexture = TEXTURE_SNIPER;
         m_fDamageWounded = 0.0f;
-        m_iScore = 1100;
+        m_iScore = 1500;
         SetHealth(80.0f);
         m_fMaxHealth = 80.0f;
         // set stretch factors for height and width
         GetModelObject()->StretchModel(FLOAT3D(STRETCH_SNIPER, STRETCH_SNIPER, STRETCH_SNIPER));
+        break;;
+  
+      case GT_HEAVY:
+        // set your texture
+        SetModelMainTexture(TEXTURE_HEAVY);
+        SetModelSpecularTexture(TEXTURE_SPECULAR);
+        AddAttachment(ZORGPRO_ATTACHMENT_BLADE, MODEL_BLADE, TEXTURE_BLADE);
+        AddAttachment(ZORGPRO_ATTACHMENT_GUNBODY , MODEL_GUN_HEAVY_BODY, TEXTURE_GUN_HEAVY);
+        AddAttachment(ZORGPRO_ATTACHMENT_BARREL1 , MODEL_GUN_HEAVY_BARREL, TEXTURE_GUN_HEAVY_BARREL);
+        AddAttachment(ZORGPRO_ATTACHMENT_BARREL2 , MODEL_GUN_HEAVY_BARREL, TEXTURE_GUN_HEAVY_BARREL);
+        AddAttachment(ZORGPRO_ATTACHMENT_BARREL3 , MODEL_GUN_HEAVY_BARREL, TEXTURE_GUN_HEAVY_BARREL);
+        AddAttachment(ZORGPRO_ATTACHMENT_BARREL4 , MODEL_GUN_HEAVY_BARREL, TEXTURE_GUN_HEAVY_BARREL);
+        // setup moving speed
+        m_fWalkSpeed = FRnd() + 4.0f;
+        m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
+        m_fAttackRunSpeed = FRnd() + 5.0f;
+        m_aAttackRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
+        m_fCloseRunSpeed = FRnd() + 5.0f;
+        m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
+        // setup attack distances
+        m_fAttackDistance = 300.0f;
+        m_fCloseDistance = 4.5f;
+        m_fStopDistance = 4.0f;
+        m_fAttackFireTime = 4.0f;
+        m_fCloseFireTime = 2.0f;
+        m_fBlowUpAmount = 200.0f;
+        m_fIgnoreRange = 200.0f;
+        // damage/explode properties
+        m_fBodyParts = 4;
+	    m_fBlowUpSize = 3.0f;
+		m_fgibTexture = TEXTURE_HEAVY;
+        m_fDamageWounded = 20.0f;
+        m_iScore = 2000;
+        SetHealth(100.0f);
+        m_fMaxHealth = 100.0f;
+        // set stretch factors for height and width
+        GetModelObject()->StretchModel(FLOAT3D(STRETCH_HEAVY, STRETCH_HEAVY, STRETCH_HEAVY));
         break;
     }
 

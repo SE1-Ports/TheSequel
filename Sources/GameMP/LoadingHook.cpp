@@ -136,10 +136,10 @@ static void LoadingHook_t(CProgressHookInfo *pphi)
 
   PIX pixBarSizeJ = 17;//*pixSizeJ/480;
 
-  COLOR colBcg = LerpColor(C_BLACK, SE_COL_BLUE_LIGHT, 0.30f)|0xff;
-  COLOR colBar = LerpColor(C_BLACK, SE_COL_BLUE_LIGHT, 0.45f)|0xff;
+  COLOR colBcg = LerpColor(C_BLACK, SE_COL_PISSGREEN, 0.30f)|0xff;
+  COLOR colBar = LerpColor(C_BLACK, SE_COL_PISSGREEN, 0.45f)|0xff;
   COLOR colLines = colBar; //C_vdGREEN|0xff;
-  COLOR colText = LerpColor(C_BLACK, SE_COL_BLUE_LIGHT, 0.95f)|0xff;
+  COLOR colText = LerpColor(C_BLACK, SE_COL_PISSGREEN, 0.95f)|0xff;
   COLOR colEsc = C_WHITE|0xFF;
 
   dpHook.Fill(0, pixSizeJ-pixBarSizeJ, pixSizeI, pixBarSizeJ, colBcg);

@@ -1419,7 +1419,7 @@ functions:
     CModelObject &moHole = *GetModelObject();
     moHole.StretchModel(FLOAT3D(1.5f, 1.5f, 1.5f));
     ModelChangeNotify();
-    moHole.mo_colBlendColor = 0xFF0000FF;
+    moHole.mo_colBlendColor = 0xFFFFFFFF;
 
     SetNormalWithRandomBanking();
     m_fWaitTime = 2.0f;
