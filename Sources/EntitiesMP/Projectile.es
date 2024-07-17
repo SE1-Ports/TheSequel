@@ -127,6 +127,7 @@ enum ProjectileType {
  131 PRT_GRENADE_SHOTGUN        "Shotgun Grenade",   // grenade
  132 PRT_GHOUL                  "Ghoul",   // ghoul
  133 PRT_GRUNTBOMB              "Grunt bomb",   // Grunt bomb
+ 134 PRT_HUANMAN2_FIRE          "Huanman new",   // huanman fire
 };
 
 enum ProjectileMovingType {
@@ -358,10 +359,12 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     break;
 
   case PRT_HUANMAN_FIRE:
+  case PRT_HUANMAN2_FIRE:
     pdec->PrecacheModel(MODEL_HUANMAN_FIRE      );
     pdec->PrecacheTexture(TEXTURE_HUANMAN_FIRE  );
     pdec->PrecacheModel(MODEL_HUANMAN_FLARE     );
     pdec->PrecacheTexture(TEXTURE_HUANMAN_FLARE );
+    pdec->PrecacheSound(SOUND_FLYING02  );
     break;
 
   case PRT_FISHMAN_FIRE:
@@ -1188,6 +1191,11 @@ functions:
         lsNew.ls_rFallOff = 5.0f;
         lsNew.ls_plftLensFlare = NULL;
         break;
+      case PRT_HUANMAN2_FIRE:
+        lsNew.ls_colColor = C_BLUE;
+        lsNew.ls_rFallOff = 3.5f;
+        lsNew.ls_plftLensFlare = &_lftCatmanFireGlow;
+        break;
       default:
         ASSERTALWAYS("Unknown light source");
     }
@@ -1390,6 +1398,7 @@ functions:
       case PRT_FISHMAN_FIRE_STRONG: Particles_BeastProjectileDebrisTrail(this, 0.20f); break;
       case PRT_GHOUL: Particles_BeastProjectileTrail( this, 0.25f, 0.1f, 6); break;
       case PRT_GRUNTBOMB: Particles_GrenadeTrail(this); break;
+      case PRT_HUANMAN2_FIRE: Particles_RocketTrail(this, 1.0f); break;
     }
   }
 
@@ -2548,6 +2557,41 @@ void HuanmanProjectile(void) {
   m_bCanBeDestroyed = FALSE;
   m_fWaitAfterDeath = 0.0f;
   m_pmtMove = PMT_FLYING;
+};
+
+void Huanman2Projectile(void) {
+  // we need target for guied misile
+  if (IsDerivedFromClass(m_penLauncher, "Enemy Base")) {
+    m_penTarget = ((CEnemyBase *) &*m_penLauncher)->m_penEnemy;
+  }
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetComponents(this, *GetModelObject(), MODEL_HUANMAN_FIRE, TEXTURE_HUANMAN_FIRE,
+                TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0);
+  AddAttachmentToModel(this, *GetModelObject(), PROJECTILE_ATTACHMENT_FLARE,
+                       MODEL_HUANMAN_FLARE, TEXTURE_HUANMAN_FLARE, 0, 0, 0);
+  GetModelObject()->StretchModel(FLOAT3D(0.75f, 0.75f, 0.75f));
+  ModelChangeNotify();
+  // play the flying sound
+  m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_FLYING02, SOF_3D|SOF_LOOP);
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -15.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 10.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_GUIDED_FAST;
+  m_fGuidedMaxSpeedFactor = 30.0f;
+  m_aRotateSpeed = 270.0f;
 };
 
 /************************************************************
@@ -4314,7 +4358,7 @@ void AlbinoProjectile(void) {
   m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
   PlaySound(m_soEffect, SOUND_DEMON_FLYING, SOF_3D|SOF_LOOP);
   // start moving
-  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   m_fFlyTime = 10.0f;
   m_fDamageAmount = 20.0f;
@@ -4325,8 +4369,8 @@ void AlbinoProjectile(void) {
   m_bCanBeDestroyed = TRUE;
   m_fWaitAfterDeath = 0.0f;
   m_pmtMove = PMT_GUIDED;
-  m_fGuidedMaxSpeedFactor = 50.0f;
-  m_aRotateSpeed = 90.0f;
+  m_fGuidedMaxSpeedFactor = 30.0f;
+  m_aRotateSpeed = 80.0f;
   SetHealth(15.0f);
 };
 
@@ -6023,6 +6067,7 @@ procedures:
          break;
       case PRT_SHOOTER_FIREBALL: Particles_Fireball01Trail_Prepare(this); break;
       case PRT_GRUNTBOMB: Particles_GrenadeTrail_Prepare(this); break;
+      case PRT_HUANMAN2_FIRE: Particles_RocketTrail_Prepare(this); break;
     }
     // projectile initialization
     switch (m_prtType)
@@ -6109,6 +6154,7 @@ procedures:
       case PRT_GRENADE_SHOTGUN: ShotgunGrenade(); break;
       case PRT_GHOUL: Ghoul(); break;
       case PRT_GRUNTBOMB: GruntBomb(); break;
+      case PRT_HUANMAN2_FIRE: Huanman2Projectile(); break;
       default: ASSERTALWAYS("Unknown projectile type");
     }
 

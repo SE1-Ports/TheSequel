@@ -20,6 +20,8 @@
 #include "Models/Weapons/GhostBuster/GhostBusterItem.h"
 #include "ModelsF/Weapons/Devastator/DevastatorItem.h"
 #include "ModelsF/Weapons/HydroGun/LaserItem.h"
+#include "ModelsF/Weapons/XM8/XM8Item.h"
+#include "ModelsF/Weapons/XM8/Body.h"
 
 #include "EntitiesMP/PlayerWeapons.h"
 
@@ -96,10 +98,13 @@ components:
  58 texture TEXTURE_DS_SWITCH           "Models\\Weapons\\DoubleShotgun\\Switch.tex",
 
 // ************** TOMMYGUN **************
- 70 model   MODEL_TOMMYGUN              "Models\\Weapons\\TommyGun\\TommyGunItem.mdl",
- 71 model   MODEL_TG_BODY               "Models\\Weapons\\TommyGun\\Body.mdl",
- 72 model   MODEL_TG_SLIDER             "Models\\Weapons\\TommyGun\\Slider.mdl",
- 73 texture TEXTURE_TG_BODY             "Models\\Weapons\\TommyGun\\Body.tex",
+ 70 model   MODEL_TOMMYGUN              "ModelsF\\Weapons\\XM8\\XM8Item.mdl",
+ 71 model   MODEL_TG_BODY               "ModelsF\\Weapons\\XM8\\Body.mdl",
+ 72 model   MODEL_TG_SCOPE              "ModelsF\\Weapons\\XM8\\Scope.mdl",
+ 74 model   MODEL_TG_MAG                "ModelsF\\Weapons\\XM8\\Magazine.mdl",
+ 73 texture TEXTURE_TG_BODY             "ModelsF\\Weapons\\XM8\\Body.tex",
+ 75 texture TEXTURE_TG_SCOPE            "ModelsF\\Weapons\\XM8\\Scope.tex",
+ 76 texture TEXTURE_TG_MAG              "ModelsF\\Weapons\\XM8\\Magazine.tex",
 
 // ************** MINIGUN **************
  80 model   MODEL_MINIGUN               "Models\\Weapons\\MiniGun\\MiniGunItem.mdl",
@@ -323,9 +328,10 @@ functions:
         m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 10.0f; 
         m_strDescription.PrintF("Tommygun");
         AddItem(MODEL_TOMMYGUN, TEXTURE_TG_BODY, 0, 0, 0);
-        AddItemAttachment(TOMMYGUNITEM_ATTACHMENT_BODY, MODEL_TG_BODY, TEXTURE_TG_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        AddItemAttachment(TOMMYGUNITEM_ATTACHMENT_SLIDER, MODEL_TG_SLIDER, TEXTURE_TG_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        StretchItem( bDM ? vDMStretch : (FLOAT3D(3.0f, 3.0f, 3.0f)));
+        AddItemAttachment(XM8ITEM_ATTACHMENT_BODY, MODEL_TG_BODY, TEXTURE_TG_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddItemAttachment(XM8ITEM_ATTACHMENT_SCOPE, MODEL_TG_SCOPE, TEXTURE_TG_SCOPE, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0);
+        AddItemAttachment(XM8ITEM_ATTACHMENT_MAGAZINE, MODEL_TG_MAG, TEXTURE_TG_MAG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        StretchItem( bDM ? vDMStretch : (FLOAT3D(2.5f, 2.5f, 2.5f)));
         break;
 
     // *********** MINIGUN ***********

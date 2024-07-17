@@ -53,9 +53,6 @@
 #include "AREP/Models/Dragonman2/Dragonman.h"
 #include "ModelsF/Enemies/Fishman/Fishman2.h"
 #include "ModelsF/Enemies/Fishman/Spear.h"
-#include "AREP/Models/Huanman2/Huanman.h"
-#include "AREP/Models/Mamut2/MAMUT.h"
-#include "AREP/Models/MamutMan2/Mamutman.h"
 #include "AREP/Models/Mantaman2/Mantaman.h"
 #include "AREP/Models/Sentry/DrivingWheel/Robot.h"
 #include "AREP/Models/Sentry/FlyingFighter/FlyingFighter.h"
@@ -110,11 +107,20 @@
 #include "ModelsF/Enemies/ZorgPro/ZorgPro.h"
 #include "ModelsF/Enemies/ZorgPro/Gun.h"
 #include "ModelsF/t3dgm/Cyclops/Cyclop.h"
+#include "ModelsF/Enemies/Huanman/Huanman.h"
+#include "ModelsF/Enemies/Huanman/Spear.h"
+#include "ModelsF/Enemies/Mamut/Mamut.h"
+#include "ModelsF/Enemies/Mamut/Cannon.h"
+#include "ModelsF/Enemies/Mamut/Gun.h"
+#include "ModelsF/Enemies/Mamutman/Mamutman.h"
+#include "ModelsF/Enemies/Mamutman/Gun.h"
 
 #include "ModelsMP/Weapons/PlasmaThrower/LaserItem.h"
 #include "Models/Weapons/GhostBuster/GhostBusterItem.h"
 #include "ModelsF/Weapons/Devastator/DevastatorItem.h"
 #include "ModelsF/Weapons/HydroGun/LaserItem.h"
+#include "ModelsF/Weapons/XM8/XM8Item.h"
+#include "ModelsF/Weapons/XM8/Body.h"
 
 #define PARTICLES_NONE            (0L)
 #define PARTICLES_AIR_ELEMENTAL   (1L<<1)
@@ -483,18 +489,24 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="Huanman") {
-    pmo->SetData_t(CTFILENAME("AREP\\Models\\Huanman2\\Huanman.mdl"));
-    pmo->PlayAnim(HUANMAN_ANIM_STAND, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\Huanman2\\HuanmanBlack.tex"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Huanman\\Huanman.mdl"));
+    pmo->PlayAnim(HUANMAN_ANIM_IDLE, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Huanman\\Black.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-1.0f,-3.0), ANGLE3D(210,0,0));
+    AddAttachment_t(pmo, HUANMAN_ATTACHMENT_SPEAR, 
+      CTFILENAME("ModelsF\\Enemies\\Huanman\\Spear.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Huanman\\SpearBlack.tex"));
     pmo->StretchModel(FLOAT3D(1,1,1));
     _bHasFloor = TRUE;
 
   } else if (strName=="HuanmanBig") {
-    pmo->SetData_t(CTFILENAME("AREP\\Models\\Huanman2\\Huanman.mdl"));
-    pmo->PlayAnim(HUANMAN_ANIM_STAND, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\Huanman2\\HuanmanRed.tex"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Huanman\\Huanman.mdl"));
+    pmo->PlayAnim(HUANMAN_ANIM_IDLE, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Huanman\\Red.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-4.0f,-12.0), ANGLE3D(210,0,0));
+    AddAttachment_t(pmo, HUANMAN_ATTACHMENT_SPEAR, 
+      CTFILENAME("ModelsF\\Enemies\\Huanman\\Spear.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Huanman\\Spear.tex"));
     pmo->StretchModel(FLOAT3D(4,4,4));
     _bHasFloor = TRUE;
 
@@ -531,51 +543,59 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="MamutNormal") {
-    pmo->SetData_t(CTFILENAME("AREP\\Models\\Mamut2\\Mamut.mdl"));
-    pmo->PlayAnim(MAMUT_ANIM_STAND, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\Mamut2\\MamutSummer.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-7.0), ANGLE3D(-150,0,0));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamut\\Mamut.mdl"));
+    pmo->PlayAnim(MAMUT_ANIM_WALK, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamut\\MamutSummer.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-9.0), ANGLE3D(-140,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
     _bHasFloor = TRUE;
 
   } else if (strName=="MamutCannon") {
-    pmo->SetData_t(CTFILENAME("AREP\\Models\\Mamut2\\Mamut.mdl"));
-    pmo->PlayAnim(MAMUT_ANIM_STAND, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\Mamut2\\MamutSummer.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-7.0), ANGLE3D(-150,0,0));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamut\\Mamut.mdl"));
+    pmo->PlayAnim(MAMUT_ANIM_WALK, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamut\\MamutSummer.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-9.0), ANGLE3D(-140,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
 
-    AddAttachment_t(pmo, MAMUT_ATTACHMENT_MAN_FRONT, 
-      CTFILENAME("ModelsMP\\Enemies\\CannonStatic\\Cannon.mdl"), 0,
-      CTFILENAME("ModelsMP\\Enemies\\CannonStatic\\Cannon.tex"));
+    AddAttachment_t(pmo, MAMUT_ATTACHMENT_CANNON, 
+      CTFILENAME("ModelsF\\Enemies\\Mamut\\Cannon.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Mamut\\Cannon.tex"));
     _bHasFloor = TRUE;
 
   } else if (strName=="MamutSummon") {
-    pmo->SetData_t(CTFILENAME("AREP\\Models\\Mamut2\\Mamut.mdl"));
-    pmo->PlayAnim(MAMUT_ANIM_STAND, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\Mamut2\\MamutSummer.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-7.0), ANGLE3D(-150,0,0));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamut\\Mamut.mdl"));
+    pmo->PlayAnim(MAMUT_ANIM_WALK, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamut\\MamutSummer.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-9.0), ANGLE3D(-140,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
 
-    AddAttachment_t(pmo, MAMUT_ATTACHMENT_MAN_FRONT, 
-      CTFILENAME("Models\\Enemies\\Devil\\Weapons\\ElectricityGun.mdl"), 0,
-      CTFILENAME("Models\\Enemies\\Devil\\Weapons\\ElectricityGun.tex"));
+    AddAttachment_t(pmo, MAMUT_ATTACHMENT_GUN, 
+      CTFILENAME("ModelsF\\Enemies\\Mamut\\Gun.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Mamut\\Gun.tex"));
     _bHasFloor = TRUE;
 
   } else if (strName=="MamutmanSmall") {
-    pmo->SetData_t(CTFILENAME("AREP\\Models\\MamutMan2\\MamutMan.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamutman\\Mamutman.mdl"));
     pmo->PlayAnim(MAMUTMAN_ANIM_WALK, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\MamutMan2\\MamutManMonk.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,-1.2f,-3.0), ANGLE3D(210,0,0));
-    pmo->StretchModel(FLOAT3D(2.0,2.0,2.0));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamutman\\Mamutman3.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-1.2f,-2.0), ANGLE3D(210,0,0));
+    pmo->StretchModel(FLOAT3D(1.0,1.0,1.0));
+
+    AddAttachment_t(pmo, MAMUTMAN_ATTACHMENT_GUN, 
+      CTFILENAME("ModelsF\\Enemies\\Mamutman\\Gun.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Mamutman\\Gun.tex"));
     _bHasFloor = TRUE;
 
   } else if (strName=="MamutmanBig") {
-    pmo->SetData_t(CTFILENAME("AREP\\Models\\MamutMan2\\MamutMan.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamutman\\Mamutman.mdl"));
     pmo->PlayAnim(MAMUTMAN_ANIM_WALK, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\MamutMan2\\MamutManCardinal.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,-1.4f,-3.5), ANGLE3D(210,0,0));
-    pmo->StretchModel(FLOAT3D(2.5f,2.5f,2.5f));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Mamutman\\Mamutman4.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-1.4f,-2.5), ANGLE3D(210,0,0));
+
+    AddAttachment_t(pmo, MAMUTMAN_ATTACHMENT_GUN, 
+      CTFILENAME("ModelsF\\Enemies\\Mamutman\\Gun.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Mamutman\\Gun.tex"));
+    pmo->StretchModel(FLOAT3D(1.5f,1.5f,1.5f));
     _bHasFloor = TRUE;
 
   } else if (strName=="Centaur") {
@@ -2041,11 +2061,10 @@ extern void SetupCompModel_t(const CTString &strName)
   } else if (strName=="Knife") {
     pmo->SetData_t(CTFILENAME("Models\\Weapons\\Knife\\KnifeItem.mdl"));
     pmo->mo_toTexture.SetData_t(CTFILENAME("Models\\Weapons\\Knife\\KnifeItem.tex"));
-    pmo->PlayAnim(KNIFEITEM_ANIM_COMPUTER, AOF_LOOPING);
-    _plModel = CPlacement3D(FLOAT3D(0,-0.5f,-2.0), ANGLE3D(0,10,0));
+    _plModel = CPlacement3D(FLOAT3D(0,-0.5f,-2.0), ANGLE3D(0,60,0));
     _aRotation = ANGLE3D(100,0,0);
 
-    pmo->StretchModel(FLOAT3D(4,4,4));
+    pmo->StretchModel(FLOAT3D(3,3,3));
     _bHasFloor = TRUE;
     _fFloorY = -1.0f;
 
@@ -2125,22 +2144,27 @@ extern void SetupCompModel_t(const CTString &strName)
     _fFloorY = -1.0f;
 
   } else if (strName=="Tommygun") {
-    pmo->SetData_t(CTFILENAME("Models\\Weapons\\Tommygun\\TommygunItem.mdl"));
-    pmo->mo_toTexture.SetData_t(CTFILENAME("Models\\Weapons\\Tommygun\\Body.tex"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Weapons\\XM8\\XM8Item.mdl"));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Weapons\\XM8\\Body.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-0.8f,-1.8f), ANGLE3D(0,10,0));
     _aRotation = ANGLE3D(100,0,0);
 
-    AddAttachment_t(pmo, TOMMYGUNITEM_ATTACHMENT_BODY, 
-      CTFILENAME("Models\\Weapons\\Tommygun\\Body.mdl"), 0,
-      CTFILENAME("Models\\Weapons\\Tommygun\\Body.tex"),
+    AddAttachment_t(pmo, XM8ITEM_ATTACHMENT_BODY, 
+      CTFILENAME("ModelsF\\Weapons\\XM8\\Body.mdl"), 0,
+      CTFILENAME("ModelsF\\Weapons\\XM8\\Body.tex"),
       CTFILENAME("Models\\ReflectionTextures\\LightMetal01.tex"),
       CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-    AddAttachment_t(pmo, TOMMYGUNITEM_ATTACHMENT_SLIDER, 
-      CTFILENAME("Models\\Weapons\\Tommygun\\Slider.mdl"), 0,
-      CTFILENAME("Models\\Weapons\\Tommygun\\Body.tex"),
+    AddAttachment_t(pmo, XM8ITEM_ATTACHMENT_SCOPE, 
+      CTFILENAME("ModelsF\\Weapons\\XM8\\Scope.mdl"), 0,
+      CTFILENAME("ModelsF\\Weapons\\XM8\\Scope.tex"),
+      CTFILENAME("Models\\ReflectionTextures\\LightMetal01.tex"),
+      CTFILENAME("Models\\SpecularTextures\\Strong.tex"));
+    AddAttachment_t(pmo, XM8ITEM_ATTACHMENT_MAGAZINE, 
+      CTFILENAME("ModelsF\\Weapons\\XM8\\Magazine.mdl"), 0,
+      CTFILENAME("ModelsF\\Weapons\\XM8\\Magazine.tex"),
       CTFILENAME("Models\\ReflectionTextures\\LightMetal01.tex"),
       CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-    pmo->StretchModel(FLOAT3D(2.0,2.0,2.0));
+    pmo->StretchModel(FLOAT3D(1.5,1.5,1.5));
     _bHasFloor = TRUE;
     _fFloorY = -0.5f;
 

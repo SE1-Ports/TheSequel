@@ -1,7 +1,7 @@
 343
 %{
 #include "StdH.h"
-#include "AREP/Models/MamutMan2/Mamutman.h"
+#include "ModelsF/Enemies/Mamutman/Mamutman.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -18,25 +18,25 @@ enum mmType {
 };
 
 %{
-#define STRETCH_MONK   2.0f
-#define STRETCH_CARDINAL 2.5f
+#define STRETCH_MONK   1.25f
+#define STRETCH_CARDINAL 1.5f
   
 // info structure
 static EntityInfo eiMamutmanMonk = {
   EIBT_FLESH, 250.0f,
-  0.0f, 2.0f*STRETCH_MONK, 0.0f,     // source (eyes)
-  0.0f, 1.5f*STRETCH_MONK, 0.0f,     // target (body)
+  0.0f, 1.0f*STRETCH_MONK, 0.0f,     // source (eyes)
+  0.0f, 0.75f*STRETCH_MONK, 0.0f,     // target (body)
 };
 
 static EntityInfo eiMamutmanCardinal = {
   EIBT_FLESH, 500.0f,
-  0.0f, 2.0f*STRETCH_CARDINAL, 0.0f,     // source (eyes)
-  0.0f, 1.5f*STRETCH_CARDINAL, 0.0f,     // target (body)
+  0.0f, 1.5f*STRETCH_CARDINAL, 0.0f,     // source (eyes)
+  0.0f, 1.25f*STRETCH_CARDINAL, 0.0f,     // target (body)
 };
 
-#define FIREPOS_MONK      FLOAT3D(0.0f, 0.8f, 0.0f)*STRETCH_MONK
-#define FIREPOS_CARDINAL_UP  FLOAT3D(0.0f, 0.8f, 0.0f)*STRETCH_CARDINAL
-#define FIREPOS_CARDINAL_DN  FLOAT3D(0.0f, 0.8f, 0.0f)*STRETCH_CARDINAL
+#define FIREPOS_MONK      FLOAT3D(0.2f, 1.5f, 0.0f)*STRETCH_MONK
+#define FIREPOS_CARDINAL_UP  FLOAT3D(0.2f, 1.4f, 0.0f)*STRETCH_CARDINAL
+#define FIREPOS_CARDINAL_DN  FLOAT3D(0.2f, 1.4f, 0.0f)*STRETCH_CARDINAL
 %}
 
 
@@ -72,16 +72,23 @@ components:
   3 class   CLASS_PROJECTILE      "Classes\\Projectile.ecl",
   4 class   CLASS_BASIC_EFFECT       "Classes\\BasicEffect.ecl",
 
- 10 model   MODEL_MAMUTMAN           "AREP\\Models\\MamutMan2\\MamutMan.mdl",
+ 10 model   MODEL_MAMUTMAN           "ModelsF\\Enemies\\Mamutman\\Mamutman.mdl",
  
- 20 texture TEXTURE_MONK       "AREP\\Models\\MamutMan2\\MamutmanMonk.tex",
- 21 texture TEXTURE_CARDINAL     "AREP\\Models\\MamutMan2\\MamutmanCardinal.tex",
+ 20 texture TEXTURE_MONK       "ModelsF\\Enemies\\Mamutman\\Mamutman3.tex",
+ 21 texture TEXTURE_CARDINAL     "ModelsF\\Enemies\\Mamutman\\Mamutman4.tex",
 
- 30 model   MODEL_DEBRIS_BODY           "AREP\\Models\\MamutMan2\\Debris\\bod.mdl",
- 31 model   MODEL_DEBRIS_LEG           "AREP\\Models\\MamutMan2\\Debris\\leg.mdl",
+ 30 model   MODEL_DEBRIS_CHEST           "ModelsF\\Enemies\\Mamutman\\Debris\\Chest.mdl",
+ 31 model   MODEL_DEBRIS_LEG           "ModelsF\\Enemies\\Mamutman\\Debris\\Leg.mdl",
+ 32 model   MODEL_DEBRIS_ARM           "ModelsF\\Enemies\\Mamutman\\Debris\\Arm.mdl",
+ 35 model   MODEL_DEBRIS_PELVIS           "ModelsF\\Enemies\\Mamutman\\Debris\\Pelvis.mdl",
+ 36 model   MODEL_DEBRIS_FACE           "ModelsF\\Enemies\\Mamutman\\Debris\\Face.mdl",
+ 37 model   MODEL_DEBRIS_HOOD           "ModelsF\\Enemies\\Mamutman\\Debris\\Hood.mdl",
 
  33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
+ 
+ 38 model   MODEL_GUN          "ModelsF\\Enemies\\Mamutman\\Gun.mdl",
+ 39 texture TEXTURE_GUN        "ModelsF\\Enemies\\Mamutman\\Gun.tex",
  
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE            "ModelsF\\Enemies\\MamutMan\\Sounds\\Idle.wav",
@@ -191,8 +198,12 @@ functions:
     PrecacheSound(SOUND_MATERIALIZE );
     PrecacheSound(SOUND_TELEPORT    );
 
-    PrecacheModel(MODEL_DEBRIS_BODY);
+    PrecacheModel(MODEL_DEBRIS_CHEST);
     PrecacheModel(MODEL_DEBRIS_LEG);
+    PrecacheModel(MODEL_DEBRIS_ARM);
+    PrecacheModel(MODEL_DEBRIS_PELVIS);
+    PrecacheModel(MODEL_DEBRIS_FACE);
+    PrecacheModel(MODEL_DEBRIS_HOOD);
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
@@ -321,13 +332,13 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(MAMUTMAN_COLLISION_BOX_DEATH);
+    ChangeCollisionBoxIndexWhenPossible(MAMUTMAN_COLLISION_BOX_PART_NAME);
     en_fDensity = 500.0f;
   };
 
   // virtual anim functions
   void StandingAnim(void) {
-    StartModelAnim(MAMUTMAN_ANIM_STAND, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(MAMUTMAN_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
   };
   void WalkingAnim(void) {
     StartModelAnim(MAMUTMAN_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
@@ -385,11 +396,21 @@ functions:
     // spawn debris
     Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 5.0f, 2.0f);
     
-    Debris_Spawn(this, this, MODEL_DEBRIS_BODY, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+    Debris_Spawn(this, this, MODEL_DEBRIS_CHEST, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_DEBRIS_LEG, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_DEBRIS_LEG, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_ARM, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_ARM, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_PELVIS, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_FACE, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_HOOD, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
@@ -450,12 +471,14 @@ procedures:
     StandingAnim();
     autowait(0.2f + FRnd()*0.25f);
 
-    StartModelAnim(MAMUTMAN_ANIM_ATTACK02, 0);
+    StartModelAnim(MAMUTMAN_ANIM_FIRE, 0);
     autowait(0.51f);
     ShootProjectile(PRT_MAMUTMAN, FIREPOS_MONK, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
     
 
+    autowait(0.5f);
+    StartModelAnim(MAMUTMAN_ANIM_TELEPORT, 0);
     autowait(0.5f);
     DisappearEffect();
     EMmTeleport est;
@@ -478,7 +501,8 @@ procedures:
       vEnemyPos, fLaserSpeed, vEnemySpeed, GetPlacement().pl_PositionVector(2) );
     ShootPredictedProjectile(PRT_SHOOTER_FIREBALL, vPredictedEnemyPosition, FLOAT3D(0.0f, 1.0f, 0.0f), ANGLE3D(0, 0, 0));*/
 
-    StartModelAnim(MAMUTMAN_ANIM_ATTACK02, 0);
+    StartModelAnim(MAMUTMAN_ANIM_FIRE, 0);
+    autowait(0.49f);
     ShootProjectile(PRT_MAMUTMAN, FIREPOS_CARDINAL_DN, ANGLE3D(-10, 0, 0));
     PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
 
@@ -498,7 +522,9 @@ procedures:
     ShootProjectile(PRT_MAMUTMAN, FIREPOS_CARDINAL_DN, ANGLE3D(10, 0, 0));
     PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
 
+    autowait(0.5f);
     MaybeSwitchToAnotherPlayer();
+    StartModelAnim(MAMUTMAN_ANIM_TELEPORT, 0);
     autowait(0.5f);
     DisappearEffect();
     EMmTeleport est;
@@ -511,10 +537,10 @@ procedures:
   // hit enemy
   Hit(EVoid) : CEnemyBase::Hit {
     // close attack
-    StartModelAnim(MAMUTMAN_ANIM_ATTACK01, 0);
+    StartModelAnim(MAMUTMAN_ANIM_MELEE, 0);
     autowait(0.45f);
     /*
-    StartModelAnim(MAMUTMAN_ANIM_ATTACK01, 0);
+    StartModelAnim(MAMUTMAN_ANIM_MELEE, 0);
     autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
     */
     PlaySound(m_soSound, SOUND_KICK, SOF_3D);
@@ -662,6 +688,7 @@ procedures:
 
     // set your appearance
     SetModel(MODEL_MAMUTMAN);
+    AddAttachment(MAMUTMAN_ATTACHMENT_GUN, MODEL_GUN, TEXTURE_GUN);
     switch (m_mmType) {
       case MM_MONK:
         // set your texture
@@ -676,7 +703,7 @@ procedures:
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
         m_fAttackDistance = 300.0f;
-        m_fCloseDistance = 5.0f;
+        m_fCloseDistance = 3.0f;
         m_fStopDistance = 5.0f;
         m_fAttackFireTime = 4.0f;
         m_fCloseFireTime = 1.0f;
@@ -684,7 +711,7 @@ procedures:
         //m_fBlowUpAmount = 65.0f;
         m_fBlowUpAmount = 130.0f;
         m_fBodyParts = 3;
-	    m_fBlowUpSize = 4.0f;
+	    m_fBlowUpSize = 2.5f;
         m_fDamageWounded = 40.0f;
         m_iScore = 1000;
         SetHealth(70.0f);
@@ -706,7 +733,7 @@ procedures:
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
         m_fAttackDistance = 300.0f;
-        m_fCloseDistance = 5.0f;
+        m_fCloseDistance = 3.0f;
         m_fStopDistance = 5.0f;
         m_fAttackFireTime = 3.0f;
         m_fCloseFireTime = 2.0f;
@@ -715,7 +742,7 @@ procedures:
         // damage/explode properties
         m_fBlowUpAmount = 400.0f;
         m_fBodyParts = 4;
-	    m_fBlowUpSize = 5.0f;
+	    m_fBlowUpSize = 3.0f;
         m_fDamageWounded = 80.0f;
         m_iScore = 3000;
         SetHealth(180.0f);
