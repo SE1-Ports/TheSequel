@@ -123,6 +123,7 @@ enum ProjectileType {
  127 PRT_HYDROGUN               "Hydrogun",
  128 PRT_MAMUTMAN               "Mamutman Bullet", // mamutman bullet
  129 PRT_FISHMAN_FIRE_STRONG    "Fishman strong",   // fishman fire strong
+ 130 PRT_GRENADE_WEAK           "Weaker Grenade",   // grenade
 };
 
 enum ProjectileMovingType {
@@ -174,6 +175,15 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   pdec->PrecacheTexture(TEX_SPEC_MEDIUM);
   pdec->PrecacheTexture(TEX_SPEC_STRONG);
 
+  pdec->PrecacheSound(SOUND_ELECTRIC_FLYING);
+  pdec->PrecacheModel(MODEL_SPIDER_WEB     );
+  pdec->PrecacheTexture(TEXTURE_SPIDER_WEB );
+  pdec->PrecacheSound(SOUND_SLIME_FLYING   );
+  pdec->PrecacheTexture(TEXTURE_GREEN_PLASMA_BALL);
+  pdec->PrecacheTexture(TEXTURE_RED_LASER  );
+  pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_PLASMA_EXPLOSION);
+  pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION  );
+
   switch ((ProjectileType)iUser) {
   case PRT_ROCKET                :
   case PRT_WALKER_ROCKET         :
@@ -189,6 +199,7 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     break;
   case PRT_GRENADE:
   case PRT_GRENADE_CLUSTERED:
+  case PRT_GRENADE_WEAK:
     pdec->PrecacheModel(MODEL_GRENADE);
     pdec->PrecacheTexture(TEXTURE_GRENADE);
     pdec->PrecacheSound(SOUND_GRENADE_BOUNCE);
@@ -205,6 +216,7 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_SHOCKWAVE);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE_PLANE);
+    pdec->PrecacheModel(MODEL_GRENADE);
     break;
   case PRT_GRENADE_NEW:
     pdec->PrecacheModel(MODEL_GRENADE_NEW);
@@ -456,8 +468,8 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheTexture(TEXTURE_GREEN_LASER          );
     break;
   case PRT_SCORP_PROJECTILE:
-    pdec->PrecacheModel(MODEL_BEAST_FIRE);
-    pdec->PrecacheTexture(TEXTURE_BEAST_FIRE);
+    pdec->PrecacheModel(MODEL_SPIDER_PROJECTILE);
+    pdec->PrecacheTexture(TEXTURE_SPIDER_PROJECTILE);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_LASERWAVE);
     break;
   case PRT_SCORP_BIG_PROJECTILE:
@@ -472,7 +484,6 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheTexture(TEXTURE_EYEMAN_ACID);
     break;
   case PRT_BEAST_E_PROJECTILE:
-    pdec->PrecacheSound(SOUND_ELECTRIC_FLYING  );
     pdec->PrecacheModel(MODEL_LARVA_PLASMA);
     pdec->PrecacheTexture(TEXTURE_LARVA_PLASMA);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_LIGHT_CANNON);    
@@ -498,8 +509,8 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheTexture(TEXTURE_SPIDER_PROJECTILE    );
     break;
   case PRT_CATMAN_BOMB:
-    pdec->PrecacheModel(MODEL_CYBORG_BOMB     );
-    pdec->PrecacheTexture(TEXTURE_CYBORG_BOMB );
+    pdec->PrecacheModel(MODEL_HEADMAN_FIRECRACKER     );
+    pdec->PrecacheTexture(TEXTURE_HEADMAN_FIRECRACKER );
     break;
   case PRT_LASER_GREEN:
     pdec->PrecacheModel(MODEL_LASER                   );
@@ -555,9 +566,6 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   case PRT_PLASMABOLT:
   case PRT_MAMUTMAN:
     pdec->PrecacheModel(MODEL_CYBORG_LASER                   );
-    pdec->PrecacheTexture(TEXTURE_RED_LASER         );
-    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_PLASMA_EXPLOSION);
-    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION  );
     break;
   default:
     ASSERT(FALSE);
@@ -946,6 +954,12 @@ functions:
         lsNew.ls_rHotSpot = 0.2f;
         lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
         break;
+      case PRT_GRENADE_WEAK:
+        lsNew.ls_colColor = 0x2F1F0F00;
+        lsNew.ls_rFallOff = 4.0f;
+        lsNew.ls_rHotSpot = 1.0f;
+        lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
+        break;
       case PRT_BOMB:
         lsNew.ls_colColor = 0x2F1F0F00;
         lsNew.ls_rFallOff = 5.0f;
@@ -1178,6 +1192,12 @@ functions:
         //Particles_GrenadeTrail(this);
         FLOAT fSpeedRatio = en_vCurrentTranslationAbsolute.Length()/140.0f;
         Particles_CannonBall(this, fSpeedRatio);
+        break;
+                        }
+      case PRT_GRENADE_WEAK: {
+        //Particles_GrenadeTrail(this);
+        FLOAT fSpeedRatio = en_vCurrentTranslationAbsolute.Length()/140.0f;
+        Particles_LavaTrail(this);
         break;
                         }
       case PRT_BOMB: {
@@ -1809,6 +1829,40 @@ void ClusterGrenadeExplosion(void) {
     eLaunch.fSpeed = fSpeed;
     penProjectile->Initialize(eLaunch);
   }
+};
+
+
+void WeakGrenade(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_GRENADE);
+  SetModelMainTexture(TEXTURE_GRENADE);
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 5.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, FRnd()*120.0f+120.0f, FRnd()*250.0f-125.0f));
+  en_fBounceDampNormal   = 0.75f;
+  en_fBounceDampParallel = 0.6f;
+  en_fJumpControlMultiplier = 0.0f;
+  en_fCollisionSpeedLimit = 45.0f;
+  en_fCollisionDamageFactor = 10.0f;
+  m_fFlyTime = 3.0f;
+  m_fDamageAmount = 25.0f;
+  m_fRangeDamageAmount = 25.0f;
+  m_fDamageHotSpotRange = 4.0f;
+  m_fDamageFallOffRange = 8.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  en_fDeceleration = 25.0f;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_SLIDING;
+  m_tmInvisibility = 0.05f;
+  m_tmExpandBox = 0.1f;
 };
 
 
@@ -2776,8 +2830,8 @@ void MantamanProjectile(void) {
   m_fFlyTime = 30.0f;
   m_fDamageAmount = 5.0f;
   m_fRangeDamageAmount = 10.0f;
-  m_fDamageHotSpotRange = 2.0f;
-  m_fDamageFallOffRange = 6.0f;
+  m_fDamageHotSpotRange = 1.0f;
+  m_fDamageFallOffRange = 5.0f;
   m_fSoundRange = 0.0f;
   m_bExplode = TRUE;
   m_bLightSource = TRUE;
@@ -3232,7 +3286,7 @@ void GruntSniperLaser(void) {
   m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
   PlaySound(m_soEffect, SOUND_FLYING02, SOF_3D|SOF_LOOP);
   // start moving
-  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -45.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -40.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   m_fFlyTime = 5.0f;
   m_fDamageAmount = 10.0f;
@@ -3246,8 +3300,8 @@ void GruntSniperLaser(void) {
   // time when laser ray becomes visible
   m_tmInvisibility = 0.025f;
   m_pmtMove = PMT_GUIDED;
-  m_fGuidedMaxSpeedFactor = 45.0f;
-  m_aRotateSpeed = 90.0f;
+  m_fGuidedMaxSpeedFactor = 40.0f;
+  m_aRotateSpeed = 80.0f;
   SetHealth(10.0f);
 };
 
@@ -3605,10 +3659,10 @@ void MeteorSmall() {
   m_soEffect.Set3DParameters(70.0f, 5.0f, 1.0f, 1.0f);
   PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
   m_fFlyTime = 60.0f;
-  m_fDamageAmount = 50.0f;
-  m_fRangeDamageAmount = 100.0f;
-  m_fDamageHotSpotRange = 2.0f;
-  m_fDamageFallOffRange = 8.0f;
+  m_fDamageAmount = 25.0f;
+  m_fRangeDamageAmount = 30.0f;
+  m_fDamageHotSpotRange = 1.0f;
+  m_fDamageFallOffRange = 6.0f;
   m_fSoundRange = 100.0f;
   m_bExplode = TRUE;
   m_bLightSource = FALSE;
@@ -4042,9 +4096,9 @@ void ScorpBigProj(void) {
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   m_fFlyTime = 5.0f;
   m_fDamageAmount = 10.0f;
-  m_fRangeDamageAmount = 5.0f;
-  m_fDamageHotSpotRange = 5.0f;
-  m_fDamageFallOffRange = 10.0f;
+  m_fRangeDamageAmount = 10.0f;
+  m_fDamageHotSpotRange = 3.0f;
+  m_fDamageFallOffRange = 7.0f;
   m_fSoundRange = 0.0f;
   m_fFlyTime = 20.0f;
   m_fSoundRange = 50.0f;
@@ -4078,7 +4132,7 @@ void ScorpBigProjExplosion(void) {
   // shock wave
   ese.colMuliplier = C_GREEN|CT_OPAQUE;
   ese.betType = BET_CANNON;
-  ese.vStretch = FLOAT3D(4,4,4);
+  ese.vStretch = FLOAT3D(2,2,2);
   SpawnEffect(GetPlacement(), ese);
 
   // spawn particle debris
@@ -4182,7 +4236,7 @@ void AlbinoProjectile(void) {
   m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
   PlaySound(m_soEffect, SOUND_DEMON_FLYING, SOF_3D|SOF_LOOP);
   // start moving
-  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -60.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   m_fFlyTime = 10.0f;
   m_fDamageAmount = 20.0f;
@@ -4193,9 +4247,9 @@ void AlbinoProjectile(void) {
   m_bCanBeDestroyed = TRUE;
   m_fWaitAfterDeath = 0.0f;
   m_pmtMove = PMT_GUIDED;
-  m_fGuidedMaxSpeedFactor = 60.0f;
+  m_fGuidedMaxSpeedFactor = 50.0f;
   m_aRotateSpeed = 90.0f;
-  SetHealth(30.0f);
+  SetHealth(15.0f);
 };
 
 void AlbinoExplosion(void) {
@@ -5834,6 +5888,7 @@ procedures:
       case PRT_GRENADE_CLUSTERED: ClusteredGrenade(); break;
       case PRT_HYDROGUN: Hydrogun(); break;
       case PRT_MAMUTMAN: MamutmanBullet(); break;
+      case PRT_GRENADE_WEAK: WeakGrenade(); break;
       default: ASSERTALWAYS("Unknown projectile type");
     }
 
@@ -5909,6 +5964,7 @@ procedures:
       case PRT_SCORPION_LASER: ScorpionLaserExplosion(); break;
       case PRT_GRENADE_CLUSTERED: PlayerGrenadeExplosion(); break;
       case PRT_HYDROGUN: HydroExplosion(); break;
+      case PRT_GRENADE_WEAK: PlayerGrenadeExplosion(); break;
     }
 
     // wait after death

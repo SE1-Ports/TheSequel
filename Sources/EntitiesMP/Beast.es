@@ -72,6 +72,8 @@ components:
 
  15 model   MODEL_PLASMAGUN           "ModelsMP\\Enemies\\ExotechLarva\\Weapons\\PlasmaGun.mdl",
  16 texture TEXTURE_PLASMAGUN         "ModelsMP\\Enemies\\ExotechLarva\\Weapons\\PlasmaGun.tex",
+ 17 model   MODEL_LARVA_PLASMA        "ModelsMP\\Enemies\\ExotechLarva\\Projectile\\Projectile.mdl",
+ 18 texture TEXTURE_LARVA_PLASMA      "ModelsMP\\Enemies\\ExotechLarva\\Projectile\\Projectile.tex",
 
  20 model   MODEL_BEAST_ARM           "ModelsF\\Enemies\\Beast\\Debris\\arm.mdl",
  21 model   MODEL_BEAST_LEGS           "ModelsF\\Enemies\\Beast\\Debris\\legs.mdl",
@@ -145,6 +147,8 @@ functions:
     }
 	PrecacheModel(MODEL_PLASMAGUN);
 	PrecacheTexture(TEXTURE_PLASMAGUN);
+	PrecacheModel(MODEL_LARVA_PLASMA);
+	PrecacheTexture(TEXTURE_LARVA_PLASMA);
 	PrecacheSound(SOUND_ROCKET);
   };
 
@@ -193,7 +197,7 @@ functions:
 
   BOOL ForcesCannonballToExplode(void)
   {
-    if (m_bcVer == BTV_FE | BTV_MIX) {
+    if (m_bcVer == BTV_FE || m_bcVer == BTV_MIX) {
       return FALSE;
 	  }
     if (m_bcVer == BTV_SE) {
@@ -207,7 +211,7 @@ functions:
   {
 
     // cannonballs inflict less damage then the default
-    if (m_bcVer == BTV_FE | BTV_MIX) {
+    if (m_bcVer == BTV_FE || m_bcVer == BTV_MIX) {
       if(m_bcType==BT_BIG && dmtType==DMT_CANNONBALL)
       {
         fDamageAmmount *= 1.0f;
