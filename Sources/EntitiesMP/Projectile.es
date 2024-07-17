@@ -1895,7 +1895,7 @@ void WeakGrenade(void) {
   SetModel(MODEL_GRENADE);
   SetModelMainTexture(TEXTURE_GRENADE);
   // start moving
-  LaunchAsFreeProjectile(FLOAT3D(0.0f, 5.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, FRnd()*120.0f+120.0f, FRnd()*250.0f-125.0f));
   en_fBounceDampNormal   = 0.75f;
   en_fBounceDampParallel = 0.6f;
