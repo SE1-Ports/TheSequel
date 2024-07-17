@@ -192,6 +192,12 @@ functions:
     // can't harm own class
     if (!IsOfClass(penInflictor, "Huanman")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+
+      // if died of chainsaw
+      if (dmtType==DMT_CHAINSAW && GetHealth()<=0 && m_HuType!=HUAN_BIG) {
+        // must always blowup
+        m_fBlowUpAmount = 0;
+      }
     }
   };
 

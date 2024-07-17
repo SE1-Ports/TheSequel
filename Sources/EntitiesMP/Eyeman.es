@@ -24,7 +24,7 @@ enum EyemanEnv {
 %{
 // info structure
 static EntityInfo eiEyemanBig = {
-  EIBT_FLESH, 140.0f,
+  EIBT_FLESH, 500.0f,
   0.0f, 1.0f, 0.0f,
   0.0f, 1.0f, 0.0f,
 };
@@ -221,7 +221,7 @@ functions:
     if (!IsOfClass(penInflictor, "Eyeman")) {
       CEnemyFly::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
       // if died of chainsaw
-      if (dmtType==DMT_CHAINSAW && GetHealth()<=0) {
+      if (dmtType==DMT_CHAINSAW && GetHealth()<=0 && m_EecChar!=EYC_B) {
         // must always blowup
         m_fBlowUpAmount = 0;
       }
@@ -779,7 +779,7 @@ procedures:
       SetHealth(100.0f);
       m_fMaxHealth = 100.0f;
       // damage/explode properties
-      m_fBlowUpAmount = 130.0f;
+      m_fBlowUpAmount = 160.0f;
       m_fBodyParts = 4;
       m_fBlowUpSize = 2.0f;
       m_fDamageWounded = 50.0f;
