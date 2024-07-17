@@ -1,8 +1,7 @@
 305
 %{
 #include "StdH.h"
-#include "ModelsF/Enemies/Catman/Catman.h"
-#include "ModelsF/Enemies/Catman/Armor.h"
+#include "ModelsF/Enemies/Catman2/Catman.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -21,14 +20,14 @@ static EntityInfo eiCatman2 = {
  0.0f, 1.9f, 0.0f,    // target (body)
 };
 
-#define BONES_HIT 2.8f
-#define FIRE_RIGHT_HAND     FLOAT3D( 0.25f, 1.5f, 0.0f)
-#define FIRE_LEFT_HAND      FLOAT3D(-0.5f, 1.5f, 0.0f)
+#define BONES_HIT 3.2f
+#define FIRE_RIGHT_HAND     FLOAT3D( 0.125f, 1.6f, 0.0f)
+#define FIRE_LEFT_HAND      FLOAT3D(-0.125f, 1.6f, 0.0f)
 #define SHOOT_ANGLE (15.0f)
-#define SHOOT_LAUNCH (FLOAT3D(-0.55f, 1.55f, 0.0f))
-#define SOLDIER_STRETCH 0.6f
-#define GENERAL_STRETCH 0.8f
-#define TERMINATOR_STRETCH 1.0f
+#define SHOOT_LAUNCH (FLOAT3D(-0.55f, 2.15f, -0.85f))
+#define SOLDIER_STRETCH 1.2f
+#define GENERAL_STRETCH 1.6f
+#define TERMINATOR_STRETCH 2.0f
 
 #define CATSOUND(soundname) ((m_CatChar==CAT_TERMINATOR)? (SOUND_BIG_##soundname) : (SOUND_##soundname))
 %}
@@ -43,35 +42,39 @@ properties:
   2 BOOL m_bFistHit = FALSE,          // used for close attack
   3 BOOL m_bTouchAnother = FALSE,     // another entity touched on far attack
   6 INDEX   m_fgibTexture = TEXTURE_CATMAN2_SOLDIER,
+  7 INDEX   m_fgibGunModel = MODEL_GUN1,
+  8 INDEX   m_fgibGunTex = TEXTURE_GUN1,
 
 components:
   0 class   CLASS_BASE        "Classes\\EnemyBase.ecl",
-  1 model   MODEL_CATMAN2     "ModelsF\\Enemies\\Catman\\Catman.mdl",
-  2 texture TEXTURE_CATMAN2_SOLDIER   "ModelsF\\Enemies\\Catman\\Body_Blue.tex",
-  3 texture TEXTURE_CATMAN2_GENERAL   "ModelsF\\Enemies\\Catman\\Body_Yellow.tex",
-  4 texture TEXTURE_CATMAN2_TERMINATOR   "ModelsF\\Enemies\\Catman\\Body_Green.tex",
+  1 model   MODEL_CATMAN2     "ModelsF\\Enemies\\Catman2\\Catman.mdl",
+  2 texture TEXTURE_CATMAN2_SOLDIER   "ModelsF\\Enemies\\Catman2\\Catman1.tex",
+  3 texture TEXTURE_CATMAN2_GENERAL   "ModelsF\\Enemies\\Catman2\\Catman.tex",
+  4 texture TEXTURE_CATMAN2_TERMINATOR   "ModelsF\\Enemies\\Catman2\\Catman3.tex",
   5 class   CLASS_PROJECTILE  "Classes\\Projectile.ecl",
   6 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
 
- 30 model   MODEL_DEBRIS_CHEST           "ModelsF\\Enemies\\Catman\\Debris\\Chest.mdl",
- 31 model   MODEL_DEBRIS_HEAD           "ModelsF\\Enemies\\Catman\\Debris\\Head.mdl",
- 32 model   MODEL_DEBRIS_GUN           "ModelsF\\Enemies\\Catman\\Debris\\Gun.mdl",
- 35 model   MODEL_DEBRIS_LEG           "ModelsF\\Enemies\\Catman\\Debris\\Leg.mdl",
+ 30 model   MODEL_DEBRIS_CHEST           "ModelsF\\Enemies\\Catman2\\Debris\\Body.mdl",
+ 31 model   MODEL_DEBRIS_HEAD           "ModelsF\\Enemies\\Catman2\\Debris\\Head.mdl",
+ 32 model   MODEL_DEBRIS_TAIL           "ModelsF\\Enemies\\Catman2\\Debris\\Tail.mdl",
+ 35 model   MODEL_DEBRIS_LEG           "ModelsF\\Enemies\\Catman2\\Debris\\Leg.mdl",
 
  33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
- 40 model   MODEL_ARMOR          "ModelsF\\Enemies\\Catman\\Armor.mdl",
- 41 texture TEXTURE_ARMOR  "ModelsF\\Enemies\\Catman\\Armor.tex",
- 42 model   MODEL_MASK          "ModelsF\\Enemies\\Catman\\Mask.mdl",
- 43 texture TEXTURE_MASK  "ModelsF\\Enemies\\Catman\\Mask.tex",
- 44 model   MODEL_FLARE          "ModelsF\\Enemies\\Catman\\Flare.mdl",
- 45 texture TEXTURE_FLARE  "ModelsF\\Enemies\\Catman\\Flare_green.tex",
- 46 model   MODEL_CLAWS          "ModelsF\\Enemies\\Catman\\Claws.mdl",
- 47 texture TEXTURE_CLAWS    "Models\\ReflectionTextures\\LightBlueMetal01.tex",
+ 40 model   MODEL_GUN1          "ModelsF\\Enemies\\Catman2\\Gun1.mdl",
+ 41 texture TEXTURE_GUN1        "ModelsF\\Enemies\\Catman2\\Gun1.tex",
+ 42 model   MODEL_GUN2          "ModelsF\\Enemies\\Catman2\\Gun2.mdl",
+ 43 texture TEXTURE_GUN2        "ModelsF\\Enemies\\Catman2\\Gun2.tex",
+ 44 model   MODEL_FLARE         "ModelsF\\Enemies\\Catman2\\Flare.mdl",
+ 45 texture TEXTURE_FLARE       "ModelsF\\Enemies\\Catman\\Flare_green.tex",
+ 46 model   MODEL_CLAWS         "ModelsF\\Enemies\\Catman2\\Claw.mdl",
+ 47 texture TEXTURE_CLAWS       "TexturesMP\\Detail\\White.tex",
+ 67 model   MODEL_GUN3          "ModelsF\\Enemies\\Catman2\\Gun3.mdl",
+ 68 texture TEXTURE_GUN3        "ModelsF\\Enemies\\Catman2\\Gun3.tex",
 
  48 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
- 49 texture TEXTURE_REFLECTION "Models\\ReflectionTextures\\Purple01.tex",
+ 49 texture TEXTURE_REFLECTION "Models\\ReflectionTextures\\DarkMetal.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "AREP\\Models\\Catman2\\Sounds\\Small\\Idle.wav",
@@ -80,9 +83,10 @@ components:
  53 sound   SOUND_FIRE_SOLDIER      "AREP\\Models\\Catman2\\Sounds\\Small\\Fire_Soldier.wav",
  54 sound   SOUND_FIRE_GENERAL      "AREP\\Models\\Catman2\\Sounds\\Small\\Fire_General.wav",
  55 sound   SOUND_KICK      "AREP\\Models\\Catman2\\Sounds\\Small\\Kick.wav",
- 56 sound   SOUND_PUNCH     "AREP\\Models\\Catman2\\Sounds\\Small\\Punch.wav",
+ 56 sound   SOUND_MELEE     "ModelsF\\Enemies\\Catman2\\Sounds\\Melee.wav",
  57 sound   SOUND_DEATH     "AREP\\Models\\Catman2\\Sounds\\Small\\Death.wav",
- 58 sound   SOUND_CLOAK       "\\ModelsF\\Enemies\\Catman\\Sounds\\Invisibility.wav",
+ 58 sound   SOUND_HITSMALL       "ModelsF\\Enemies\\Catman2\\Sounds\\SmallHit.wav",
+ 69 sound   SOUND_HITBIG       "ModelsF\\Enemies\\Catman2\\Sounds\\BigHit.wav",
  
  59 sound   SOUND_BIG_IDLE      "AREP\\Models\\Catman2\\Sounds\\Big\\Idle.wav",
  60 sound   SOUND_BIG_SIGHT     "AREP\\Models\\Catman2\\Sounds\\Big\\Sight.wav",
@@ -91,8 +95,6 @@ components:
  63 sound   SOUND_BIG_KICK      "AREP\\Models\\Catman2\\Sounds\\Big\\Kick.wav",
  64 sound   SOUND_BIG_PUNCH     "AREP\\Models\\Catman2\\Sounds\\Big\\Punch.wav",
  65 sound   SOUND_BIG_DEATH     "AREP\\Models\\Catman2\\Sounds\\Big\\Death.wav",
- 
- 66 sound   SOUND_APPEAR       "\\ModelsF\\Enemies\\Catman\\Sounds\\Shimmer.wav",
 
 functions:
   void Precache(void) {
@@ -101,21 +103,18 @@ functions:
 
     PrecacheModel(MODEL_DEBRIS_CHEST);
     PrecacheModel(MODEL_DEBRIS_HEAD);
-    PrecacheModel(MODEL_DEBRIS_GUN);
+    PrecacheModel(MODEL_DEBRIS_TAIL);
     PrecacheModel(MODEL_DEBRIS_LEG);
-
-    PrecacheTexture(TEXTURE_ARMOR);
-    PrecacheTexture(TEXTURE_MASK);
-    PrecacheTexture(TEXTURE_FLARE);
-    PrecacheTexture(TEXTURE_CLAWS);
-    PrecacheTexture(TEXTURE_SPECULAR);
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
-
-    PrecacheSound(SOUND_CLOAK  );
-    PrecacheSound(SOUND_APPEAR );
 	
+    PrecacheModel(MODEL_FLARE);
+    PrecacheTexture(TEXTURE_FLARE);
+    PrecacheTexture(TEXTURE_SPECULAR);
+    PrecacheTexture(TEXTURE_REFLECTION);
+      PrecacheSound(SOUND_MELEE);
+
     if (m_CatChar==CAT_SOLDIER)
     {
       PrecacheSound(SOUND_IDLE );
@@ -123,10 +122,12 @@ functions:
       PrecacheSound(SOUND_WOUND);
       PrecacheSound(SOUND_FIRE_SOLDIER);
       PrecacheSound(SOUND_KICK );
-      PrecacheSound(SOUND_PUNCH);
+      PrecacheSound(SOUND_HITSMALL);
       PrecacheSound(SOUND_DEATH);
 
       PrecacheTexture(TEXTURE_CATMAN2_SOLDIER);
+	  PrecacheModel(MODEL_GUN1);
+	  PrecacheTexture(TEXTURE_GUN1);
 
       PrecacheClass(CLASS_PROJECTILE, PRT_HUANMAN_FIRE);
 	}
@@ -138,10 +139,12 @@ functions:
       PrecacheSound(SOUND_WOUND);
       PrecacheSound(SOUND_FIRE_GENERAL);
       PrecacheSound(SOUND_KICK );
-      PrecacheSound(SOUND_PUNCH);
+      PrecacheSound(SOUND_HITSMALL);
       PrecacheSound(SOUND_DEATH);
 
       PrecacheTexture(TEXTURE_CATMAN2_GENERAL);
+	  PrecacheModel(MODEL_GUN2);
+	  PrecacheTexture(TEXTURE_GUN2);
 
       PrecacheClass(CLASS_PROJECTILE, PRT_CATMAN_BOMB);
 	}
@@ -153,10 +156,12 @@ functions:
       PrecacheSound(SOUND_BIG_WOUND);
       PrecacheSound(SOUND_BIG_FIRE);
       PrecacheSound(SOUND_BIG_KICK );
-      PrecacheSound(SOUND_BIG_PUNCH);
+      PrecacheSound(SOUND_HITBIG);
       PrecacheSound(SOUND_BIG_DEATH);
 
       PrecacheTexture(TEXTURE_CATMAN2_TERMINATOR);
+	  PrecacheModel(MODEL_GUN3);
+	  PrecacheTexture(TEXTURE_GUN3);
 
       PrecacheClass(CLASS_PROJECTILE, PRT_GRENADE_WEAK);
 	}
@@ -194,12 +199,6 @@ functions:
     return &eiCatman2;
   };
 
-  // get the attachment
-  CModelObject *ArmorModel(void) {
-    CAttachmentModelObject &amo0 = *GetModelObject()->GetAttachmentModel(CATMAN_ATTACHMENT_ARMOR);
-    return &(amo0.amo_moModelObject);
-  };
-
   /* Receive damage */
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
@@ -213,45 +212,39 @@ functions:
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
     INDEX iAnim;
-    INDEX iAnimA;
     switch (IRnd()%2) {
-      case 0: iAnim = CATMAN_ANIM_WOUND1; iAnimA = ARMOR_ANIM_WOUND1; break;
-      case 1: iAnim = CATMAN_ANIM_WOUND2; iAnimA = ARMOR_ANIM_WOUND2; break;
+      case 0: iAnim = CATMAN_ANIM_WOUND01; break;
+      case 1: iAnim = CATMAN_ANIM_WOUND02; break;
       default: ASSERTALWAYS("Catman unknown damage");
     }
     StartModelAnim(iAnim, 0);
-    ArmorModel()->PlayAnim(iAnimA, 0);
 
-    return iAnim | iAnimA;
+    return iAnim;
   };
 
   // death
   INDEX AnimForDeath(void) {
     INDEX iAnim;
-    INDEX iAnimA;
       FLOAT3D vFront;
       GetHeadingDirection(0, vFront);
       FLOAT fDamageDir = m_vDamage%vFront;
       if (fDamageDir<0) {
-        iAnim = CATMAN_ANIM_DEATH1;
-        iAnimA = ARMOR_ANIM_DEATH1;
+        iAnim = CATMAN_ANIM_DEATH01;
       } else {
-        iAnim = CATMAN_ANIM_DEATH2;
-        iAnimA = ARMOR_ANIM_DEATH2;
+        iAnim = CATMAN_ANIM_DEATH02;
       }
     
     StartModelAnim(iAnim, 0);
-    ArmorModel()->PlayAnim(iAnimA, 0);
-    return iAnim | iAnimA;
+    return iAnim;
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
-    if(GetModelObject()->GetAnim()==CATMAN_ANIM_DEATH1)
+    if(GetModelObject()->GetAnim()==CATMAN_ANIM_DEATH01)
     {
       vStretch=FLOAT3D(1,1,2)*1.0f;
       return 0.48f;
     }
-    else if(GetModelObject()->GetAnim()==CATMAN_ANIM_DEATH2)
+    else if(GetModelObject()->GetAnim()==CATMAN_ANIM_DEATH02)
     {
       vStretch=FLOAT3D(1,1,2)*0.75f;
       return 0.48f;
@@ -266,19 +259,15 @@ functions:
   // virtual anim functions
   void StandingAnim(void) {
     StartModelAnim(CATMAN_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
-    ArmorModel()->PlayAnim(ARMOR_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
   };
   void WalkingAnim(void) {
     StartModelAnim(CATMAN_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
-    ArmorModel()->PlayAnim(ARMOR_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
   };
   void RunningAnim(void) {
     StartModelAnim(CATMAN_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
-    ArmorModel()->PlayAnim(ARMOR_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
   };
   void RotatingAnim(void) {
     StartModelAnim(CATMAN_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
-    ArmorModel()->PlayAnim(ARMOR_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
   };
 
   // virtual sound functions
@@ -319,19 +308,21 @@ functions:
     // spawn debris
     Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 5.0f, 2.0f);
     
-    Debris_Spawn(this, this, MODEL_DEBRIS_CHEST, TEXTURE_ARMOR, 0, 0, 0, IRnd()%4, 0.5f,
+    Debris_Spawn(this, this, MODEL_DEBRIS_CHEST, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_DEBRIS_HEAD, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_DEBRIS_GUN, TEXTURE_ARMOR, 0, 0, 0, IRnd()%4, 0.5f,
+    Debris_Spawn(this, this, MODEL_DEBRIS_TAIL, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_DEBRIS_LEG, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_DEBRIS_LEG, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibGunModel, m_fgibGunTex, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
-        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.25f,
                       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 					  }
 
@@ -360,26 +351,22 @@ procedures:
   Fire(EVoid) : CEnemyBase::Fire {
     // to fire
     StartModelAnim(CATMAN_ANIM_TOFIRE, 0);
-    ArmorModel()->PlayAnim(ARMOR_ANIM_TOFIRE, 0); 
     m_fLockOnEnemyTime = GetModelObject()->GetAnimLength(CATMAN_ANIM_TOFIRE);
     autocall CEnemyBase::LockOnEnemy() EReturn;
     // fire projectile 
     autowait(0.35f);
     if (m_CatChar==CAT_SOLDIER) {
       StartModelAnim(CATMAN_ANIM_FIRE, 0);
-      ArmorModel()->PlayAnim(ARMOR_ANIM_FIRE, AOF_NORESTART); 
       PlaySound(m_soSound, SOUND_FIRE_SOLDIER, SOF_3D);
       ShootProjectile(PRT_HUANMAN_FIRE, FIRE_LEFT_HAND, ANGLE3D(6, 0, 0));
       autowait(0.1f + FRnd()*0.1f);
 
       StartModelAnim(CATMAN_ANIM_FIRE, 0);
-      ArmorModel()->PlayAnim(ARMOR_ANIM_FIRE, AOF_NORESTART); 
       PlaySound(m_soSound, SOUND_FIRE_SOLDIER, SOF_3D);
       ShootProjectile(PRT_HUANMAN_FIRE, FIRE_LEFT_HAND, ANGLE3D(0, 0, 0));
       autowait(0.1f + FRnd()*0.1f);
 
       StartModelAnim(CATMAN_ANIM_FIRE, 0);
-      ArmorModel()->PlayAnim(ARMOR_ANIM_FIRE, AOF_NORESTART); 
       PlaySound(m_soSound, SOUND_FIRE_SOLDIER, SOF_3D);
       ShootProjectile(PRT_HUANMAN_FIRE, FIRE_LEFT_HAND, ANGLE3D(-6, 0, 0));
       autowait(0.1f + FRnd()*0.1f);
@@ -387,7 +374,6 @@ procedures:
 	}
     if (m_CatChar==CAT_GENERAL) {
       StartModelAnim(CATMAN_ANIM_FIRE, 0);
-      ArmorModel()->PlayAnim(ARMOR_ANIM_FIRE, AOF_NORESTART); 
       PlaySound(m_soSound, SOUND_FIRE_GENERAL, SOF_3D);
 
 	  FLOAT fLaunchSpeed;
@@ -410,10 +396,9 @@ procedures:
     eLaunch.fSpeed = fLaunchSpeed;
     penProjectile->Initialize(eLaunch);
 
-    autowait(0.035f);
+    autowait(0.25f);
 
       StartModelAnim(CATMAN_ANIM_FIRE, 0);
-      ArmorModel()->PlayAnim(ARMOR_ANIM_FIRE, AOF_NORESTART); 
       PlaySound(m_soSound, SOUND_FIRE_GENERAL, SOF_3D);
 
 	  FLOAT fLaunchSpeed;
@@ -440,7 +425,6 @@ procedures:
 	}
     if (m_CatChar==CAT_TERMINATOR) {
       StartModelAnim(CATMAN_ANIM_FIRE, 0);
-      ArmorModel()->PlayAnim(ARMOR_ANIM_FIRE, AOF_NORESTART); 
       PlaySound(m_soSound, SOUND_BIG_FIRE, SOF_3D);
 
 	  FLOAT fLaunchSpeed;
@@ -467,7 +451,6 @@ procedures:
 
     // from fire
     StartModelAnim(CATMAN_ANIM_FROMFIRE, 0);
-    ArmorModel()->PlayAnim(ARMOR_ANIM_FROMFIRE, 0); 
     autowait(GetModelObject()->GetAnimLength(CATMAN_ANIM_FROMFIRE));
 
     MaybeSwitchToAnotherPlayer();
@@ -493,7 +476,6 @@ procedures:
   // jump on enemy
   JumpOnEnemy(EVoid) {
     StartModelAnim(CATMAN_ANIM_LEAP, 0);
-    ArmorModel()->PlayAnim(ARMOR_ANIM_LEAP, AOF_NORESTART); 
 
 
     // jump
@@ -526,13 +508,12 @@ procedures:
   HitWithBones(EVoid) {
     // attack with bones
     StartModelAnim(CATMAN_ANIM_MELEE, 0);
-    ArmorModel()->PlayAnim(ARMOR_ANIM_MELEE, AOF_NORESTART); 
 
     // right hand
     m_bFistHit = FALSE;
     autowait(0.35f);
     if (CalcDist(m_penEnemy)<BONES_HIT) { m_bFistHit = TRUE; }
-    PlaySound(m_soSound, CATSOUND(PUNCH), SOF_3D);
+    PlaySound(m_soSound, SOUND_MELEE, SOF_3D);
     autowait(0.10f);
 
     if (CalcDist(m_penEnemy)<BONES_HIT) { m_bFistHit = TRUE; }
@@ -541,11 +522,14 @@ procedures:
       vDirection.Normalize();
       // damage enemy
     if (m_CatChar==CAT_SOLDIER) {
-          InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 10.0f, FLOAT3D(0, 0, 0), vDirection); }
+          InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 10.0f, FLOAT3D(0, 0, 0), vDirection);
+          PlaySound(m_soSound, SOUND_HITSMALL, SOF_3D); }
     if (m_CatChar==CAT_GENERAL) {
-          InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection); }
+          InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection);
+          PlaySound(m_soSound, SOUND_HITSMALL, SOF_3D); }
     if (m_CatChar==CAT_TERMINATOR) {
-          InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 30.0f, FLOAT3D(0, 0, 0), vDirection); }
+          InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 30.0f, FLOAT3D(0, 0, 0), vDirection);
+          PlaySound(m_soSound, SOUND_HITBIG, SOF_3D); }
       // push target left
       FLOAT3D vSpeed;
       GetHeadingDirection(AngleDeg(0.0f), vSpeed);
@@ -583,16 +567,17 @@ procedures:
 
     // set your appearance
     SetModel(MODEL_CATMAN2);
-    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_ARMOR, MODEL_ARMOR, TEXTURE_ARMOR, TEXTURE_REFLECTION, TEXTURE_SPECULAR, 0);
-    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_MASK, MODEL_MASK, TEXTURE_MASK, 0, TEXTURE_SPECULAR, 0);
-    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_CLAWS, MODEL_CLAWS, TEXTURE_CLAWS, TEXTURE_CLAWS, TEXTURE_SPECULAR, 0);
-    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_FLAREL, MODEL_FLARE, TEXTURE_FLARE, 0, 0, 0);
-    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_FLARER, MODEL_FLARE, TEXTURE_FLARE, 0, 0, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_CLAW, MODEL_CLAWS, TEXTURE_CLAWS, TEXTURE_REFLECTION, TEXTURE_SPECULAR, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_FLARE1, MODEL_FLARE, TEXTURE_FLARE, 0, 0, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_FLARE2, MODEL_FLARE, TEXTURE_FLARE, 0, 0, 0);
 
     if (m_CatChar==CAT_SOLDIER) {
 
     SetModelMainTexture(TEXTURE_CATMAN2_SOLDIER);
 		m_fgibTexture = TEXTURE_CATMAN2_SOLDIER;
+		m_fgibGunModel = MODEL_GUN1;
+		m_fgibGunTex = TEXTURE_GUN1;
+    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_GUN1, MODEL_GUN1, TEXTURE_GUN1, 0, TEXTURE_SPECULAR, 0);
     // set stretch factor
     GetModelObject()->StretchModel(FLOAT3D(SOLDIER_STRETCH, SOLDIER_STRETCH, SOLDIER_STRETCH));
     ModelChangeNotify();
@@ -614,7 +599,7 @@ procedures:
     // damage/explode properties
     m_fBlowUpAmount = 80.0f;
     m_fBodyParts = 2;
-	m_fBlowUpSize = 1.2f;
+	m_fBlowUpSize = 2.4f;
     m_fDamageWounded = 20.0f;
     m_iScore = 1000;
     if (m_fStepHeight==-1) {
@@ -626,6 +611,9 @@ procedures:
 
     SetModelMainTexture(TEXTURE_CATMAN2_GENERAL);
 		m_fgibTexture = TEXTURE_CATMAN2_GENERAL;
+		m_fgibGunModel = MODEL_GUN2;
+		m_fgibGunTex = TEXTURE_GUN2;
+    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_GUN2, MODEL_GUN2, TEXTURE_GUN2, 0, TEXTURE_SPECULAR, 0);
     // set stretch factor
     GetModelObject()->StretchModel(FLOAT3D(GENERAL_STRETCH, GENERAL_STRETCH, GENERAL_STRETCH));
     ModelChangeNotify();
@@ -647,7 +635,7 @@ procedures:
     // damage/explode properties
     m_fBlowUpAmount = 200.0f;
     m_fBodyParts = 3;
-	m_fBlowUpSize = 1.6f;
+	m_fBlowUpSize = 3.2f;
     m_fDamageWounded = 50.0f;
     m_iScore = 3000;
     if (m_fStepHeight==-1) {
@@ -659,6 +647,9 @@ procedures:
 
     SetModelMainTexture(TEXTURE_CATMAN2_TERMINATOR);
 		m_fgibTexture = TEXTURE_CATMAN2_TERMINATOR;
+		m_fgibGunModel = MODEL_GUN3;
+		m_fgibGunTex = TEXTURE_GUN3;
+    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_GUN3, MODEL_GUN3, TEXTURE_GUN3, 0, TEXTURE_SPECULAR, 0);
     // set stretch factor
     GetModelObject()->StretchModel(FLOAT3D(TERMINATOR_STRETCH, TERMINATOR_STRETCH, TERMINATOR_STRETCH));
     ModelChangeNotify();
@@ -680,7 +671,7 @@ procedures:
     // damage/explode properties
     m_fBlowUpAmount = 600.0f;
     m_fBodyParts = 6;
-	m_fBlowUpSize = 2.0f;
+	m_fBlowUpSize = 4.0f;
     m_fDamageWounded = 100.0f;
     m_iScore = 6000;
     if (m_fStepHeight==-1) {

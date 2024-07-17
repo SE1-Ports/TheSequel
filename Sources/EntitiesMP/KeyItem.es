@@ -52,11 +52,12 @@ enum KeyItemType {
 
  39 KIT_BUDDHA            "Buddha",
  40 KIT_GARUDA            "Garuda",
- 41 KIT_JADELION          "Jade Lion",
+ 41 KIT_JADELION          "Jade Lion (male)",
  42 KIT_JADEKEY           "Jade key (stackable)",
  43 KIT_NAGAGOLD          "Naga gold",
  44 KIT_NAGAJADE          "Naga jade",
  45 KIT_NAGASILVER        "Naga silver",
+ 52 KIT_JADELION2          "Jade Lion (female)",
 
  46 KIT_CPARMOR           "CaptainPelmen_Armor (stackable)",
  47 KIT_CPGREECEKEY       "CaptainPelmen_GreeceKey (stackable)",
@@ -120,11 +121,12 @@ const char *GetKeyName(enum KeyItemType kit)
 
  case KIT_BUDDHA            :  return TRANS("Buddha"); break;
  case KIT_GARUDA            :  return TRANS("Garuda"); break;
- case KIT_JADELION          :  return TRANS("Jade lion"); break;
+ case KIT_JADELION          :  return TRANS("Jade lion male"); break;
  case KIT_JADEKEY           :  return TRANS("Jade key"); break;
  case KIT_NAGAGOLD          :  return TRANS("Gold naga"); break;
  case KIT_NAGAJADE          :  return TRANS("Jade naga"); break;
  case KIT_NAGASILVER        :  return TRANS("Silver naga"); break;
+ case KIT_JADELION2          :  return TRANS("Jade lion female"); break;
 
  case KIT_CPARMOR            :  return TRANS("Muscle cuirass"); break;
  case KIT_CPGREECEKEY        :  return TRANS("Greece key"); break;
@@ -372,6 +374,7 @@ functions:
     case KIT_NAGAGOLD            :
     case KIT_NAGAJADE            :
     case KIT_NAGASILVER          :
+    case KIT_JADELION2            :
 
     case KIT_CPARMOR            :
     case KIT_CPGREECEKEY        :
@@ -726,6 +729,14 @@ functions:
         m_iSoundComponent = SOUND_KEY;
         break;
       case KIT_JADELION:
+        // set appearance
+        AddItem(MODEL_JADELION, TEXTURE_JADELION, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+        break;
+      case KIT_JADELION2:
         // set appearance
         AddItem(MODEL_JADELION, TEXTURE_JADELION, 0, TEX_SPEC_STRONG, 0);
         // add flare
