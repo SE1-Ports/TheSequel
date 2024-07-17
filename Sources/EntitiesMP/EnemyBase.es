@@ -16,6 +16,8 @@ uses "EntitiesMP/EnemyMarker";
 uses "EntitiesMP/MusicHolder";
 uses "EntitiesMP/BloodSpray";
 
+uses "EntitiesMP/EnemyActionMarker";
+
 event ERestartAttack {
 };
 
@@ -1945,6 +1947,7 @@ functions:
   virtual void DeathNotify(void) {};
   virtual void IdleSound(void) {};
   virtual void SightSound(void) {};
+  virtual void TauntSound(void) {};
   virtual void WoundSound(void) {};
   virtual void DeathSound(void) {};
   virtual FLOAT GetLockRotationSpeed(void) { return 2000.0f;};
@@ -2650,6 +2653,10 @@ procedures:
     return EReturn(); 
   }
 
+  // this is called when enemy action marker orders enemy to taunt
+  Taunt(EVoid) {
+    return EReturn(); }
+
 //**********************************************************
 //                 COMBAT HELPERS
 //**********************************************************
@@ -3086,6 +3093,52 @@ procedures:
         //CPrintF("%s: StopAttack event is obsolete!\n", GetName());
         resume;
       }
+
+      // utilize Half-Life 1 scripted events for enemies/NPCs
+      on (EChangeSequence eChangeSequence) : {
+	    if (eChangeSequence.estSoundType) {
+         switch(eChangeSequence.estSoundType) {
+            case EST_NONE:
+            break;
+            case EST_SIGHT:
+            SightSound();
+            break;
+            case EST_WOUND:
+            WoundSound();
+            break;
+            case EST_DEATH:
+            DeathSound();
+            break;
+            case EST_IDLE:
+            IdleSound();
+            break;
+            case EST_TAUNT:
+            TauntSound();
+            break;
+			} 
+		   }
+	    if (eChangeSequence.iModelAnim) {		
+
+         INDEX iAnim = eChangeSequence.iModelAnim;
+         if(eChangeSequence.bLoopAnimation == TRUE) {
+             StartModelAnim(iAnim, AOF_LOOPING|AOF_NORESTART);
+         } else {
+             StartModelAnim(iAnim, 0);
+         }
+		}
+	    if (eChangeSequence.penEnemyMarker) {	
+           m_penMarker = eChangeSequence.penEnemyMarker;
+           call MoveThroughMarkers();
+		}
+	    if (eChangeSequence.faeAttackRadius) {	
+		   m_fAttackRadius = 0.0f;
+		}
+	    if (eChangeSequence.faeAttackRadius2) {	
+		   m_fAttackRadius = 10000.0f;
+		}
+
+        resume;
+      }
     }
   };
 
@@ -3131,6 +3184,51 @@ procedures:
           call BeWounded(eDamage);
         }
         return;
+      }
+
+      // utilize Half-Life 1 scripted events for enemies/NPCs
+      on (EChangeSequence eChangeSequence) : {
+	    if (eChangeSequence.estSoundType) {
+         switch(eChangeSequence.estSoundType) {
+            case EST_NONE:
+            break;
+            case EST_SIGHT:
+            SightSound();
+            break;
+            case EST_WOUND:
+            WoundSound();
+            break;
+            case EST_DEATH:
+            DeathSound();
+            break;
+            case EST_IDLE:
+            IdleSound();
+            break;
+            case EST_TAUNT:
+            TauntSound();
+            break;
+			} 
+		   }
+	    if (eChangeSequence.iModelAnim) {		
+
+         INDEX iAnim = eChangeSequence.iModelAnim;
+         if(eChangeSequence.bLoopAnimation == TRUE) {
+             StartModelAnim(iAnim, AOF_LOOPING|AOF_NORESTART);
+         } else {
+             StartModelAnim(iAnim, 0);
+         }
+		}
+	    if (eChangeSequence.penEnemyMarker) {	
+           m_penMarker = eChangeSequence.penEnemyMarker;
+           call MoveThroughMarkers();
+		}
+	    if (eChangeSequence.faeAttackRadius) {	
+		   m_fAttackRadius = 0.0f;
+		}
+	    if (eChangeSequence.faeAttackRadius2) {	
+		   m_fAttackRadius = 10000.0f;
+		}
+        resume;
       }
     }
   };

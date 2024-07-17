@@ -580,7 +580,7 @@ Fire(EVoid) : CEnemyBase::Fire {
     StandingAnim();
     // setup moving speed
     m_fWalkSpeed = FRnd()/1.0f + 4.0f;
-    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
     m_fCloseRunSpeed = FRnd()/1.0f + 13.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     m_fAttackRunSpeed = FRnd()/1.0f + 11.0f;

@@ -252,7 +252,7 @@ procedures:
       m_fThreatDistance = 5;
       // fly moving properties
       m_fFlyWalkSpeed = FRnd()*2.0f + 20.0f;
-      m_aFlyWalkRotateSpeed = AngleDeg(FRnd()*25.0f + 45.0f);
+      m_aFlyWalkRotateSpeed = AngleDeg(FRnd()*25.0f + 150.0f);
       m_fFlyAttackRunSpeed = m_fFlyWalkSpeed;
       m_aFlyAttackRotateSpeed = AngleDeg(FRnd()*25.0f + 150.0f);
       m_fFlyCloseRunSpeed = FRnd()*2.0f + 20.0f;

@@ -257,6 +257,9 @@ functions:
   void SightSound(void) {
     PlaySound(m_soSound, SCORPSOUND(SIGHT), SOF_3D);
   };
+  void TauntSound(void) {
+    PlaySound(m_soSound, SCORPSOUND(DEATH), SOF_3D);
+  };
   void WoundSound(void) {
     PlaySound(m_soSound, SCORPSOUND(WOUND), SOF_3D);
   };
@@ -553,7 +556,7 @@ procedures:
     StandingAnim();
     // setup moving speed
     m_fWalkSpeed = FRnd()*2 + 5.0f;
-    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
     m_fCloseRunSpeed = FRnd() + 10.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     // setup attack distances

@@ -666,7 +666,7 @@ procedures:
  	  m_bShielded = FALSE;
       // setup moving speed
       m_fWalkSpeed = FRnd()*2 + 5.0f;
-      m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+      m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
       m_fCloseRunSpeed = FRnd() + 6.0f;
       m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
       // setup attack distances
@@ -685,7 +685,7 @@ procedures:
  	  m_bShielded = TRUE;
       // setup moving speed
       m_fWalkSpeed = 0.0f;
-      m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+      m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
       m_fCloseRunSpeed = 0.0f;
       m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
       // setup attack distances
@@ -704,7 +704,7 @@ procedures:
  	  m_bShielded = FALSE;
       // setup moving speed
       m_fWalkSpeed = FRnd()*2 + 8.0f;
-      m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+      m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
       m_fCloseRunSpeed = FRnd() + 10.0f;
       m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
       // setup attack distances

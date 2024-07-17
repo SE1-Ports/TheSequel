@@ -103,6 +103,7 @@ components:
  55 sound   SOUND_DEATH     "Models\\Enemies\\Eyeman\\Sounds\\Death.wav",
  56 sound   SOUND_MUMBLE    "Models\\Enemies\\Eyeman\\Sounds\\Mumble.wav",
  57 sound   SOUND_PUKE    "AREP\\Models\\EyemanBrute\\Sounds\\Puke.wav",
+ 90 sound   SOUND_TAUNT     "Models\\Enemies\\Eyeman\\Sounds\\Sight.wav",
 
  58 sound   SOUND_MORPH    "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Morph.wav",
  
@@ -113,6 +114,7 @@ components:
  84 sound   SOUND_BUFF_PUNCH     "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Punch.wav",
  85 sound   SOUND_BUFF_DEATH     "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Death.wav",
  86 sound   SOUND_BUFF_MUMBLE    "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Mumble.wav",
+ 91 sound   SOUND_BUFF_TAUNT     "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Taunt.wav",
 
 // ************** DEBRIS **************
 
@@ -155,6 +157,7 @@ functions:
     PrecacheSound(SOUND_DEATH);
     PrecacheSound(SOUND_MUMBLE);
     PrecacheSound(SOUND_PUKE);
+    PrecacheSound(SOUND_TAUNT);
 
     PrecacheSound(SOUND_MORPH);
 
@@ -165,6 +168,7 @@ functions:
     PrecacheSound(SOUND_BUFF_PUNCH);
     PrecacheSound(SOUND_BUFF_DEATH);
     PrecacheSound(SOUND_BUFF_MUMBLE);
+    PrecacheSound(SOUND_BUFF_TAUNT);
 
     PrecacheClass(CLASS_PROJECTILE, PRT_EYEMAN_ACID);
 
@@ -400,6 +404,9 @@ functions:
   };
   void SightSound(void) {
     PlaySound(m_soSound, EYSOUND(SIGHT), SOF_3D);
+  };
+  void TauntSound(void) {
+    PlaySound(m_soSound, EYSOUND(TAUNT), SOF_3D);
   };
   void WoundSound(void) {
     PlaySound(m_soSound, EYSOUND(WOUND), SOF_3D);

@@ -335,7 +335,7 @@ procedures:
 
     // setup moving speed
     m_fWalkSpeed = FRnd() + 2.5f;
-    m_aWalkRotateSpeed = FRnd()*25.0f + 45.0f;
+    m_aWalkRotateSpeed = FRnd()*25.0f + 600.0f;
     m_fAttackRunSpeed = FRnd()*3.0f + 10.0f;
     m_aAttackRotateSpeed = FRnd()*200 + 600.0f;
     m_fCloseRunSpeed = FRnd() + 13.0f;
@@ -349,7 +349,7 @@ procedures:
     m_fIgnoreRange = 200.0f;
     // fly moving properties
     m_fFlyWalkSpeed = FRnd() + 2.5f;
-    m_aFlyWalkRotateSpeed = FRnd()*25.0f + 45.0f;
+    m_aFlyWalkRotateSpeed = FRnd()*25.0f + 600.0f;
     m_fFlyAttackRunSpeed = FRnd()*3.0f + 10.0f;
     m_aFlyAttackRotateSpeed = FRnd()*200 + 600.0f;;
     m_fFlyCloseRunSpeed = FRnd() + 13.0f;

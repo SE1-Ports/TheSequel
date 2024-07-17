@@ -230,6 +230,9 @@ functions:
   void SightSound(void) {
     PlaySound(m_soSound, SOUND_SIGHT, SOF_3D);
   };
+  void TauntSound(void) {
+    PlaySound(m_soSound, SOUND_ANGER, SOF_3D);
+  };
   void WoundSound(void) {
     if(GetHealth() <= m_fMaxHealth/2) {
       PlaySound(m_soSound, SOUND_ANGER, SOF_3D);
@@ -408,7 +411,7 @@ procedures:
     m_fAttackRunSpeed = 11.0f;//8
     m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
     m_fWalkSpeed = FRnd()*2 + 7.0f;
-    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
     m_fCloseRunSpeed = FRnd() + 25.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     // setup attack distances

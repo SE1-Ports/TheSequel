@@ -132,12 +132,6 @@ functions:
     if (m_bInvulnerable == TRUE) {
       return;
     }
-    
-    // take less damage from heavy bullets (e.g. sniper)
-    if(dmtType==DMT_BULLET && fDamageAmmount>100.0f)
-    {
-      fDamageAmmount*=0.5f;
-    }
 
     // can't harm own class
     if (!IsOfClass(penInflictor, "Guardian")) {
@@ -517,7 +511,7 @@ FireLaugh(EVoid) {
     StandingAnim();
     // setup moving speed
     m_fWalkSpeed = FRnd()/1.0f + 2.0f;
-    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
     m_fCloseRunSpeed = FRnd()/1.0f + 4.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     m_fAttackRunSpeed = FRnd()/1.0f + 5.0f;

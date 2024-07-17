@@ -452,7 +452,7 @@ procedures:
     m_iScore = 400;
     // setup moving speed
     m_fWalkSpeed = FRnd() + 2.0f;
-    m_aWalkRotateSpeed = FRnd()*25.0f + 45.0f;
+    m_aWalkRotateSpeed = FRnd()*25.0f + 600.0f;
     m_fAttackRunSpeed = FRnd() + 7.0f;
     m_aAttackRotateSpeed = FRnd()*200 + 600.0f;
     m_fCloseRunSpeed = FRnd() + 9.0f;
@@ -491,7 +491,7 @@ procedures:
     m_iScore = 1000;
     // setup moving speed
     m_fWalkSpeed = FRnd() + 3.0f;
-    m_aWalkRotateSpeed = FRnd()*25.0f + 45.0f;
+    m_aWalkRotateSpeed = FRnd()*25.0f + 600.0f;
     m_fAttackRunSpeed = FRnd() + 9.0f;
     m_aAttackRotateSpeed = FRnd()*200 + 600.0f;
     m_fCloseRunSpeed = FRnd() + 11.0f;

@@ -495,7 +495,7 @@ procedures:
       StandingAnim();
       // setup moving speed
       m_fWalkSpeed = FRnd() + 2.5f;
-      m_aWalkRotateSpeed = FRnd()*25.0f + 45.0f;
+      m_aWalkRotateSpeed = FRnd()*25.0f + 600.0f;
       m_fAttackRunSpeed = FRnd() + 8.0f;
       m_aAttackRotateSpeed = FRnd()*200 + 600.0f;
       m_fCloseRunSpeed = FRnd() + 8.0f;
@@ -526,7 +526,7 @@ procedures:
       StandingAnim();
       // setup moving speed
       m_fWalkSpeed = FRnd() + 1.5f;
-      m_aWalkRotateSpeed = FRnd()*25.0f + 45.0f;
+      m_aWalkRotateSpeed = FRnd()*25.0f + 600.0f;
       m_fAttackRunSpeed = FRnd() + 5.0f;
       m_aAttackRotateSpeed = FRnd()*200 + 600.0f;
       m_fCloseRunSpeed = FRnd() + 5.0f;
@@ -557,7 +557,7 @@ procedures:
       StandingAnim();
       // setup moving speed
       m_fWalkSpeed = FRnd() + 4.0f;
-      m_aWalkRotateSpeed = FRnd()*25.0f + 45.0f;
+      m_aWalkRotateSpeed = FRnd()*25.0f + 600.0f;
       m_fAttackRunSpeed = FRnd() + 10.0f;
       m_aAttackRotateSpeed = FRnd()*200 + 600.0f;
       m_fCloseRunSpeed = FRnd() + 10.0f;

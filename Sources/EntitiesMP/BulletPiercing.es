@@ -8,13 +8,13 @@ uses "Engine/Classes/MovableEntity";
 
 
 // input parameters for bullet
-event EBulletInit {
+event EBulletPiercingInit {
   CEntityPointer penOwner,        // who launched it
   FLOAT fDamage,                  // damage
 };
 
 %{
-void CBullet_OnPrecache(CDLLEntityClass *pdec, INDEX iUser) 
+void CBulletPiercing_OnPrecache(CDLLEntityClass *pdec, INDEX iUser) 
 {
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINSTONE);
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_BULLETSTAINSAND);
@@ -41,8 +41,8 @@ void CBullet_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
 }
 %}
 
-class export CBullet : CEntity {
-name      "Bullet";
+class export CBulletPiercing : CEntity {
+name      "BulletPiercing";
 thumbnail "";
 features "ImplementsOnPrecache";
 
@@ -143,7 +143,7 @@ functions:
     AnglesToDirectionVector(GetPlacement().pl_OrientationAngle, vHitDirection);
 
     INDEX ctCasts = 0;
-    while( ctCasts<10)
+    while( ctCasts<30)
     {
       if(ctCasts == 0)
       {
@@ -168,120 +168,6 @@ functions:
                             crRay.cr_vHit, vHitDirection);
 
       m_vHitPoint = crRay.cr_vHit;
-
-      // if brush hitted
-      if (crRay.cr_penHit->GetRenderType()==RT_BRUSH && crRay.cr_pbpoBrushPolygon!=NULL)
-      {
-        CBrushPolygon *pbpo = crRay.cr_pbpoBrushPolygon;
-        FLOAT3D vHitNormal = FLOAT3D(pbpo->bpo_pbplPlane->bpl_plAbsolute);
-        // obtain surface type
-        INDEX iSurfaceType = pbpo->bpo_bppProperties.bpp_ubSurfaceType;
-        BulletHitType bhtType = BHT_BRUSH_STONE;
-        // get content type
-        INDEX iContent = pbpo->bpo_pbscSector->GetContentType();
-        CContentType &ct = GetWorld()->wo_actContentTypes[iContent];
-        
-        bhtType=(BulletHitType) GetBulletHitTypeForSurface(iSurfaceType);
-        // if this is under water polygon
-        if( ct.ct_ulFlags&CTF_BREATHABLE_GILLS)
-        {
-          // if we hit water surface
-          if( iSurfaceType==SURFACE_WATER) 
-          {
-            vHitNormal = -vHitNormal;
-
-            bhtType=BHT_BRUSH_WATER;
-          }   
-          // if we hit stone under water
-          else
-          {
-            bhtType=BHT_BRUSH_UNDER_WATER;
-          }
-        }
-        // spawn hit effect
-        BOOL bPassable = pbpo->bpo_ulFlags & (BPOF_PASSABLE|BPOF_SHOOTTHRU);
-        if (!bPassable || iSurfaceType==SURFACE_WATER) {
-          SpawnHitTypeEffect(this, bhtType, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, FLOAT3D(0.0f, 0.0f, 0.0f));
-        }
-        if(!bPassable) {
-          break;
-        }
-      // if not brush
-      } else {
-
-        // if flesh entity
-        if (crRay.cr_penHit->GetEntityInfo()!=NULL) {
-          if( ((EntityInfo*)crRay.cr_penHit->GetEntityInfo())->Eeibt == EIBT_FLESH)
-          {
-            CEntity *penOfFlesh = crRay.cr_penHit;
-            FLOAT3D vHitNormal = (GetPlacement().pl_PositionVector-m_vTarget).Normalize();
-            FLOAT3D vOldHitPos = crRay.cr_vHit;
-            FLOAT3D vDistance;
-
-            // look behind the entity (for back-stains)
-            GetWorld()->ContinueCast(crRay);
-            if( crRay.cr_penHit!=NULL && crRay.cr_pbpoBrushPolygon!=NULL && 
-                crRay.cr_penHit->GetRenderType()==RT_BRUSH)
-            {
-              vDistance = crRay.cr_vHit-vOldHitPos;
-              vHitNormal = FLOAT3D(crRay.cr_pbpoBrushPolygon->bpo_pbplPlane->bpl_plAbsolute);
-            }
-            else
-            {
-              vDistance = FLOAT3D(0.0f, 0.0f, 0.0f);
-              vHitNormal = FLOAT3D(0,0,0);
-            }
-
-            if(IsOfClass(penOfFlesh, "Gizmo") ||
-               IsOfClass(penOfFlesh, "Beast") ||
-               IsOfClass(penOfFlesh, "DumDum") ||
-               IsOfClass(penOfFlesh, "Fishman") ||
-               IsOfClass(penOfFlesh, "Lizard") ||
-               IsOfClass(penOfFlesh, "Lurker") ||
-               IsOfClass(penOfFlesh, "Neptune") ||
-               IsOfClass(penOfFlesh, "Mantaman") ||
-               IsOfClass(penOfFlesh, "WitchBride"))
-            {
-              // spawn green blood hit spill effect
-              SpawnHitTypeEffect(this, BHT_ACID, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
-            }
-            else if(IsOfClass(penOfFlesh, "Ant") ||
-               IsOfClass(penOfFlesh, "Crabman") ||
-               IsOfClass(penOfFlesh, "Spider") ||
-               IsOfClass(penOfFlesh, "Ghoul") ||
-               IsOfClass(penOfFlesh, "SpiderMech"))
-            {
-              // spawn yellow blood hit spill effect
-              SpawnHitTypeEffect(this, BHT_GOO, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
-            }
-            else if(IsOfClass(penOfFlesh, "Guardian") ||
-               IsOfClass(penOfFlesh, "Ram"))
-            {
-              // spawn hit spill effect
-              SpawnHitTypeEffect(this, BHT_BRUSH_STONE, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
-            }
-            else if(IsOfClass(penOfFlesh, "Waterman"))
-            {
-              // spawn hit spill effect
-              SpawnHitTypeEffect(this, BHT_BRUSH_WATER, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
-            }
-            else
-            {
-              // spawn red blood hit spill effect
-              SpawnHitTypeEffect(this, BHT_FLESH, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, vDistance);
-            }
-            break;
-          }
-        }
-
-        // stop casting ray if not brush
-        break;
-      }
-    }
-
-    if( bTrail)
-    {
-      SpawnTrail();
     }
   };
 
@@ -340,7 +226,7 @@ functions:
 
 procedures:
 
-  Main(EBulletInit eInit)
+  Main(EBulletPiercingInit eInit)
   {
     // remember the initial parameters
     ASSERT(eInit.penOwner!=NULL);

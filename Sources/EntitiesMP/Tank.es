@@ -318,6 +318,20 @@ functions:
     }
     PlaySound(m_soSound, iSightSound, SOF_3D);
   };
+
+  // virtual sound functions
+  void TauntSound(void) {
+    INDEX iTauntSound;
+    switch (IRnd()%6) {
+      case 0: iTauntSound = SOUND_SIGHT1; break;
+      case 1: iTauntSound = SOUND_SIGHT2; break;
+      case 2: iTauntSound = SOUND_SIGHT3; break;
+      case 3: iTauntSound = SOUND_SIGHT4; break;
+      case 4: iTauntSound = SOUND_SIGHT5; break;
+      case 5: iTauntSound = SOUND_SIGHT6; break;
+    }
+    PlaySound(m_soSound, iTauntSound, SOF_3D);
+  };
   void WoundSound(void) {
     INDEX iWoundSound;
     switch (IRnd()%4) {

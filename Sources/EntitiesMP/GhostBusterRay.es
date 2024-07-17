@@ -4,7 +4,7 @@
 %}
 
 uses "EntitiesMP/Light";
-uses "EntitiesMP/Bullet";
+uses "EntitiesMP/BulletPiercing";
 uses "EntitiesMP/PlayerWeapons";
 uses "Engine/Classes/MovableEntity";
 
@@ -50,7 +50,7 @@ properties:
 
 components:
   1 class   CLASS_LIGHT         "Classes\\Light.ecl",
-  2 class   CLASS_BULLET        "Classes\\Bullet.ecl",
+  2 class   CLASS_BULLET        "Classes\\BulletPiercing.ecl",
 
 // ********* RAY *********
  10 model   MODEL_RAY           "Models\\Weapons\\GhostBuster\\Projectile\\Ray.mdl",
@@ -132,7 +132,7 @@ functions:
     m_vSrcOld = m_vSrc;
     m_vSrc = plSource.pl_PositionVector;
     crRay.cr_bHitTranslucentPortals = FALSE;
-    crRay.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
+    crRay.cr_ttHitModels = CCastRay::TT_NONE;
     GetWorld()->CastRay(crRay);
 
     // if hit anything set new position
@@ -166,11 +166,11 @@ functions:
     // create bullet
     penBullet = CreateEntity(plBullet, CLASS_BULLET);
     // init bullet
-    EBulletInit eInit;
+    EBulletPiercingInit eInit;
     eInit.penOwner = ((CPlayerWeapons&)*m_penOwner).m_penPlayer;
     eInit.fDamage = HIT_DAMAGE;
     penBullet->Initialize(eInit);
-    ((CBullet&)*penBullet).m_EdtDamage = DMT_EXPLOSION;
+    ((CBulletPiercing&)*penBullet).m_EdtDamage = DMT_EXPLOSION;
   };
 
   // fire
@@ -179,12 +179,12 @@ functions:
 
     // fire lerped bullets
     PrepareBullet(plSource);
-    ((CBullet&)*penBullet).m_EdtDamage = DMT_EXPLOSION;
-    ((CBullet&)*penBullet).CalcTarget(HIT_DISTANCE);
-    ((CBullet&)*penBullet).m_fBulletSize = 0.5f;
-    ((CBullet&)*penBullet).CalcJitterTarget(0.02f*HIT_DISTANCE);
-    ((CBullet&)*penBullet).LaunchBullet(TRUE, FALSE, TRUE);
-    ((CBullet&)*penBullet).DestroyBullet();
+    ((CBulletPiercing&)*penBullet).m_EdtDamage = DMT_EXPLOSION;
+    ((CBulletPiercing&)*penBullet).CalcTarget(HIT_DISTANCE);
+    ((CBulletPiercing&)*penBullet).m_fBulletSize = 0.5f;
+    ((CBulletPiercing&)*penBullet).CalcJitterTarget(0.02f*HIT_DISTANCE);
+    ((CBulletPiercing&)*penBullet).LaunchBullet(TRUE, FALSE, TRUE);
+    ((CBulletPiercing&)*penBullet).DestroyBullet();
   };
 
   // destroy yourself

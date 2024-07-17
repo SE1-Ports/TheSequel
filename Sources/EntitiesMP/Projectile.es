@@ -124,7 +124,8 @@ enum ProjectileType {
  128 PRT_MAMUTMAN               "Mamutman Bullet", // mamutman bullet
  129 PRT_FISHMAN_FIRE_STRONG    "Fishman strong",   // fishman fire strong
  130 PRT_GRENADE_WEAK           "Weaker Grenade",   // grenade
- 131 PRT_GRENADE_SHOTGUN           "Weaker Grenade",   // grenade
+ 131 PRT_GRENADE_SHOTGUN        "Shotgun Grenade",   // grenade
+ 132 PRT_GHOUL                  "Ghoul",   // grenade
 };
 
 enum ProjectileMovingType {
@@ -563,6 +564,12 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON_NOLIGHT);
     pdec->PrecacheClass(CLASS_BLOOD_SPRAY);
     pdec->PrecacheSound(SOUND_HYDROGUN  );
+    break;
+  case PRT_GHOUL:
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GIZMO_SPLASH_FX);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GASCLOUD);
+    pdec->PrecacheModel(MODEL_ELEM_LAVA_BOMB);
+    pdec->PrecacheTexture(TEXTURE_BEAST_FIRE);
     break;
 
   case PRT_PLASMABOLT:
@@ -1363,6 +1370,7 @@ functions:
       case PRT_MAMUTMAN: Particles_RocketTrail(this, 0.5f); break;
       case PRT_FISHMAN_FIRE: Particles_BeastProjectileDebrisTrail(this, 0.10f); break;
       case PRT_FISHMAN_FIRE_STRONG: Particles_BeastProjectileDebrisTrail(this, 0.20f); break;
+      case PRT_GHOUL: Particles_BeastProjectileTrail( this, 0.25f, 0.1f, 6); break;
     }
   }
 
@@ -1899,8 +1907,8 @@ void ShotgunGrenade(void) {
   LaunchAsFreeProjectile(FLOAT3D(0.0f, 5.0f, -125.0f), (CMovableEntity*)&*m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, FRnd()*120.0f+120.0f, FRnd()*250.0f-125.0f));
   m_fFlyTime = 3.0f;
-  m_fDamageAmount = 30.0f;
-  m_fRangeDamageAmount = 100.0f;
+  m_fDamageAmount = 65.0f;
+  m_fRangeDamageAmount = 65.0f;
   m_fDamageHotSpotRange = 5.0f;
   m_fDamageFallOffRange = 10.0f;
   m_fSoundRange = 50.0f;
@@ -5001,6 +5009,71 @@ void MamutmanBullet(void) {
   m_pmtMove = PMT_FLYING;
 };
 
+void Ghoul(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetModel(MODEL_ELEM_LAVA_BOMB);
+  SetModelMainTexture(TEXTURE_BEAST_FIRE);
+  GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
+
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  m_fFlyTime = 2.5f;
+  m_fDamageAmount = 0.0f;
+  m_fRangeDamageAmount = 10.0f;
+  m_fDamageHotSpotRange = 4.0f;
+  m_fDamageFallOffRange = 5.0f;
+  m_fSoundRange = 25.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_FLYING;
+};
+
+void GhoulExplosion(void) {
+  ESpawnEffect ese;
+  ESpawnEffect eseSound;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // shock wave
+      eseSound.colMuliplier = C_dRED|CT_OPAQUE;
+      eseSound.betType = BET_GIZMO_SPLASH_FX;
+      eseSound.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), eseSound);
+    }
+  }
+
+  // shock wave
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
+  ese.betType = BET_GASCLOUD;
+  ese.vStretch = FLOAT3D(0.5f,0.5f,0.5f);
+  SpawnEffect(GetPlacement(), ese);
+
+  // particles
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 2.0f;
+  eSpawnSpray.fSizeMultiplier = 1.0f;
+  eSpawnSpray.sptType = SPT_SLIME;
+  eSpawnSpray.vDirection = FLOAT3D(0.0f, 1.5f, 0.0f);
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+};
+
 
 /************************************************************
  *             C O M M O N   F U N C T I O N S              *
@@ -5941,6 +6014,7 @@ procedures:
       case PRT_MAMUTMAN: MamutmanBullet(); break;
       case PRT_GRENADE_WEAK: WeakGrenade(); break;
       case PRT_GRENADE_SHOTGUN: ShotgunGrenade(); break;
+      case PRT_GHOUL: Ghoul(); break;
       default: ASSERTALWAYS("Unknown projectile type");
     }
 
@@ -6018,6 +6092,7 @@ procedures:
       case PRT_HYDROGUN: HydroExplosion(); break;
       case PRT_GRENADE_WEAK: PlayerGrenadeExplosion(); break;
       case PRT_GRENADE_SHOTGUN: HeadmanBombermanExplosion(); break;
+      case PRT_GHOUL: GhoulExplosion(); break;
     }
 
     // wait after death

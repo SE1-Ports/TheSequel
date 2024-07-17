@@ -684,7 +684,7 @@ procedures:
     StandingAnim();
     // setup moving speed
     m_fWalkSpeed = FRnd()*2 + 5.0f;
-    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
     m_fCloseRunSpeed = FRnd() + 10.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     // setup attack distances
@@ -698,7 +698,7 @@ procedures:
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
     // fly moving properties
     m_fDiveWalkSpeed = FRnd()*2 + 5.0f;
-    m_aDiveWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 50.0f);
+    m_aDiveWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
     m_fDiveCloseRunSpeed = FRnd() + 10.0f;;
     m_aDiveCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     // attack properties

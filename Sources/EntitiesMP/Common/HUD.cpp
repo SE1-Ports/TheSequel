@@ -589,7 +589,7 @@ static void HUD_DrawSniperMask( void )
   _pDP->Fill( 0, 0, fBlackStrip+1, fSizeJ, C_BLACK|CT_OPAQUE);
   _pDP->Fill( fSizeI-fBlackStrip-1, 0, fBlackStrip+1, fSizeJ, C_BLACK|CT_OPAQUE);
 
-  colMask = LerpColor(SE_COL_BLUE_LIGHT, C_WHITE, 0.25f);
+  colMask = LerpColor(0x64b4ff00, C_WHITE, 0.25f);
 
   FLOAT _fYResolutionScaling = (FLOAT)_pixDPHeight/480.0f;
 
@@ -675,14 +675,19 @@ static void HUD_DrawTommyGunMask( void )
   const FLOAT fSizeJ = _pixDPHeight;
   const FLOAT fCenterI = fSizeI/2;  
   const FLOAT fCenterJ = fSizeJ/2; 
+  const FLOAT fBlackStrip = (fSizeI-fSizeJ)/2;
 
   COLOR colMask = C_WHITE|CT_OPAQUE;
 
   // crosshair lines
   _pDP->InitTexture( &_toSniperLine);
-  _pDP->AddTexture( 0, fSizeJ/2-1, fSizeI, fSizeJ/2, 1.0f, 0.0f, 0.0f, 1.0f, C_WHITE|50); // horiz line
-  _pDP->AddTexture( fSizeI/2-1, 0, fSizeI/2, fSizeJ, 1.0f, 0.0f, 0.0f, 1.0f, C_WHITE|50); // vert line
+  _pDP->AddTexture( fBlackStrip, 0, fCenterI, fCenterJ, 0.98f, 0.02f, 0, 1.0f, colMask);
+  _pDP->AddTexture( fCenterI, 0, fSizeI-fBlackStrip, fCenterJ, 0, 0.02f, 0.98f, 1.0f, colMask);
+  _pDP->AddTexture( fBlackStrip, fCenterJ, fCenterI, fSizeJ, 0.98f, 1.0f, 0, 0.02f, colMask);
+  _pDP->AddTexture( fCenterI, fCenterJ, fSizeI-fBlackStrip, fSizeJ, 0, 1, 0.98f, 0.02f, colMask);
   _pDP->FlushRenderingQueue();
+  _pDP->Fill( 0, 0, fBlackStrip+1, fSizeJ, C_BLACK|CT_OPAQUE);
+  _pDP->Fill( fSizeI-fBlackStrip-1, 0, fBlackStrip+1, fSizeJ, C_BLACK|CT_OPAQUE);
 
   // prepare for output of distance
   CTString strTmp;
@@ -826,7 +831,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   _pixDPHeight  = _pDP->GetHeight();
   _fCustomScaling     = hud_fScaling;
   _fResolutionScaling = (FLOAT)_pixDPWidth /640.0f;
-  _colHUD     = 0x4C80BB00;
+  _colHUD     = 0x676d8600;
   _colHUDText = SE_COL_ORANGE_LIGHT;
   _ulAlphaHUD = NormFloatToByte(hud_fOpacity);
   _tmNow = _pTimer->CurrentTick();
