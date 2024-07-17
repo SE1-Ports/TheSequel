@@ -80,8 +80,9 @@ components:
 
  14 model   MODEL_SCORPMAN_TAIL1           "ModelsF\\Enemies\\Scorpman\\Debris\\Tail1.mdl",
  15 model   MODEL_SCORPMAN_TAIL2           "ModelsF\\Enemies\\Scorpman\\Debris\\Tail2.mdl",
- 16 model   MODEL_SCORPMAN_BODY1         "ModelsF\\Enemies\\Scorpman\\Debris\\Body1.mdl",
+ 16 model   MODEL_SCORPMAN_BODY1         "ModelsF\\Enemies\\Scorpman\\Debris\\Abdomen.mdl",
  17 model   MODEL_SCORPMAN_BODY2         "ModelsF\\Enemies\\Scorpman\\Debris\\Body2.mdl",
+ 18 model   MODEL_SCORPMAN_LEG           "ModelsF\\Enemies\\Scorpman\\Debris\\Leg.mdl",
 
  33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
@@ -119,6 +120,7 @@ functions:
 	PrecacheModel(MODEL_SCORPMAN_TAIL2);
 	PrecacheModel(MODEL_SCORPMAN_BODY1);
 	PrecacheModel(MODEL_SCORPMAN_BODY2);
+	PrecacheModel(MODEL_SCORPMAN_LEG);
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
@@ -424,6 +426,18 @@ functions:
     Debris_Spawn(this, this, MODEL_SCORPMAN_TAIL1, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_SCORPMAN_TAIL2, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_LEG, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_LEG, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_LEG, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_LEG, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_LEG, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_SCORPMAN_LEG, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {

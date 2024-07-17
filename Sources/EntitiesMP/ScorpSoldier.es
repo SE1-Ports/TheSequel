@@ -76,6 +76,8 @@ components:
  16 model     MODEL_GUN           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpGun.mdl",
  17 texture   TEXTURE_GUN           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Gun.tex",
 
+ 30 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Strong.tex",
+
 // ************** BODY PARTS **************
  18 model   MODEL_DEBRIS_BODY           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Debris\\Bod.mdl",
  19 model   MODEL_DEBRIS_GUN           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Debris\\Gun.mdl",
@@ -572,9 +574,11 @@ procedures:
       SetHealth(70.0f);
       if (m_ssSkin == SS_OG) {
         SetModelMainTexture(TEXTURE_SMALL_OG);
+         SetModelSpecularTexture(TEXTURE_SPECULAR);
 	     m_fgibTexture = TEXTURE_SMALL_OG;
       } else {
         SetModelMainTexture(TEXTURE_SMALL);
+         SetModelSpecularTexture(TEXTURE_SPECULAR);
 	     m_fgibTexture = TEXTURE_SMALL;
       }
       m_fBlowUpAmount = 140.0f;
@@ -594,6 +598,7 @@ procedures:
       m_aAttackRotateSpeed = AngleDeg(600.0f);
       SetHealth(140.0f);//500
       SetModelMainTexture(TEXTURE_MEDIUM);
+      SetModelSpecularTexture(TEXTURE_SPECULAR);
 	  m_fgibTexture = TEXTURE_MEDIUM;
       m_fBlowUpAmount = 280.0f;//500
       m_fBodyParts = 12;
@@ -615,9 +620,11 @@ procedures:
       SetHealth(600.0f);//500
       if (m_ssSkin == SS_OG) {
         SetModelMainTexture(TEXTURE_BIG_OG);
+          SetModelSpecularTexture(TEXTURE_SPECULAR);
 	     m_fgibTexture = TEXTURE_BIG_OG;
       } else {
         SetModelMainTexture(TEXTURE_BIG);
+          SetModelSpecularTexture(TEXTURE_SPECULAR);
 	     m_fgibTexture = TEXTURE_BIG;
       }
       m_fBlowUpAmount = 750.0f;//500

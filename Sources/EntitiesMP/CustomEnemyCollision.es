@@ -302,7 +302,7 @@ procedures:
     // declare yourself as a model
     InitAsModel();
     SetPhysicsFlags(EPF_MODEL_WALKING);
-    SetCollisionFlags(ECF_MODEL_HOLDER);
+    SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
     en_fDensity = 1000;
     m_fBlowUpSize = 2.0f;

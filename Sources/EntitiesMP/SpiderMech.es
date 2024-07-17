@@ -81,6 +81,8 @@ components:
  22 texture TEXTURE_BODY_SOLDIER       "ModelsMP\\Enemies\\SS2\\MechaSpider\\body_small.tex",
  23 texture TEXTURE_BODY_MUM           "ModelsMP\\Enemies\\SS2\\MechaSpider\\body.tex",
 
+ 30 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Strong.tex",
+
  24 model   MODEL_PLASMAGUN           "ModelsMP\\Enemies\\ExotechLarva\\Weapons\\PlasmaGun.mdl",
  25 texture TEXTURE_PLASMAGUN         "ModelsMP\\Enemies\\ExotechLarva\\Weapons\\PlasmaGun.tex",
  
@@ -705,6 +707,7 @@ procedures:
 
     // set your appearance
     SetModel(MODEL_LEGS);
+    SetModelSpecularTexture(TEXTURE_SPECULAR);
     switch (m_spmType) {
       case SPM_SOLDIER:
         en_fDensity = 2000.0f;

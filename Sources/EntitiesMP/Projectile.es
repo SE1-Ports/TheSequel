@@ -124,6 +124,7 @@ enum ProjectileType {
  128 PRT_MAMUTMAN               "Mamutman Bullet", // mamutman bullet
  129 PRT_FISHMAN_FIRE_STRONG    "Fishman strong",   // fishman fire strong
  130 PRT_GRENADE_WEAK           "Weaker Grenade",   // grenade
+ 131 PRT_GRENADE_SHOTGUN           "Weaker Grenade",   // grenade
 };
 
 enum ProjectileMovingType {
@@ -200,6 +201,7 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   case PRT_GRENADE:
   case PRT_GRENADE_CLUSTERED:
   case PRT_GRENADE_WEAK:
+  case PRT_GRENADE_SHOTGUN:
     pdec->PrecacheModel(MODEL_GRENADE);
     pdec->PrecacheTexture(TEXTURE_GRENADE);
     pdec->PrecacheSound(SOUND_GRENADE_BOUNCE);
@@ -606,6 +608,7 @@ properties:
  26 FLOAT m_tmInvisibility = 0.0f,           // don't render before given time
  27 INDEX m_iRebounds = 0,                   // how many times to rebound
  28 FLOAT m_fStretch=1.0f,                   // stretch
+ 29 BOOL m_bClusterGrenadeFound = FALSE,
 
  30 CSoundObject m_soEffect,          // sound channel
  31 CSoundObject m_soExplosion,       // sound channel
@@ -960,6 +963,12 @@ functions:
         lsNew.ls_rHotSpot = 1.0f;
         lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
         break;
+      case PRT_GRENADE_SHOTGUN:
+        lsNew.ls_colColor = 0x2F1F0F00;
+        lsNew.ls_rFallOff = 3.0f;
+        lsNew.ls_rHotSpot = 1.0f;
+        lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
+        break;
       case PRT_BOMB:
         lsNew.ls_colColor = 0x2F1F0F00;
         lsNew.ls_rFallOff = 5.0f;
@@ -1198,6 +1207,11 @@ functions:
         //Particles_GrenadeTrail(this);
         FLOAT fSpeedRatio = en_vCurrentTranslationAbsolute.Length()/140.0f;
         Particles_LavaTrail(this);
+        break;
+                        }
+      case PRT_GRENADE_SHOTGUN: {
+        //Particles_GrenadeTrail(this);
+        Particles_RocketTrail(this, 1.0f);
         break;
                         }
       case PRT_BOMB: {
@@ -1606,7 +1620,7 @@ void ClusteredGrenade(void) {
   en_fJumpControlMultiplier = 0.0f;
   m_fFlyTime = 6.0f;
   m_fDamageAmount = 0.0f;
-  m_fRangeDamageAmount = 100.0f;
+  m_fRangeDamageAmount = 125.0f;
   m_fDamageHotSpotRange = 6.0f;
   m_fDamageFallOffRange = 10.0f;
   m_fSoundRange = 50.0f;
@@ -1679,7 +1693,7 @@ void ClusterGrenade(void) {
   en_fCollisionDamageFactor = 10.0f;
   m_fFlyTime = 1.0f;
   m_fDamageAmount = 50.0f;
-  m_fRangeDamageAmount = 50.0f;
+  m_fRangeDamageAmount = 100.0f;
   m_fDamageHotSpotRange = 5.0f;
   m_fDamageFallOffRange = 10.0f;
   m_fSoundRange = 50.0f;
@@ -1733,7 +1747,7 @@ void ClusterGrenadeExplosion(void) {
   {
     FLOAT fHeading = 0.0f;
     FLOAT fPitch = 30.0f;
-    FLOAT fSpeed = 10.0f;
+    FLOAT fSpeed = 12.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -1747,13 +1761,14 @@ void ClusterGrenadeExplosion(void) {
     eLaunch.penLauncher = this;
     eLaunch.prtType = PRT_GRENADE_CLUSTERED;
     eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
     penProjectile->Initialize(eLaunch);
   }
   for( INDEX iDebris2=0; iDebris2<1; iDebris2++)
   {
     FLOAT fHeading = 75.0f;
     FLOAT fPitch = 30.0f;
-    FLOAT fSpeed = 10.0f;
+    FLOAT fSpeed = 12.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -1767,13 +1782,14 @@ void ClusterGrenadeExplosion(void) {
     eLaunch.penLauncher = this;
     eLaunch.prtType = PRT_GRENADE_CLUSTERED;
     eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
     penProjectile->Initialize(eLaunch);
   }
   for( INDEX iDebris3=0; iDebris3<1; iDebris3++)
   {
     FLOAT fHeading = -75.0f;
     FLOAT fPitch = 30.0f;
-    FLOAT fSpeed = 10.0f;
+    FLOAT fSpeed = 12.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -1787,13 +1803,14 @@ void ClusterGrenadeExplosion(void) {
     eLaunch.penLauncher = this;
     eLaunch.prtType = PRT_GRENADE_CLUSTERED;
     eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
     penProjectile->Initialize(eLaunch);
   }
   for( INDEX iDebris4=0; iDebris4<1; iDebris4++)
   {
     FLOAT fHeading = 150.0f;
     FLOAT fPitch = 30.0f;
-    FLOAT fSpeed = 10.0f;
+    FLOAT fSpeed = 12.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -1807,13 +1824,14 @@ void ClusterGrenadeExplosion(void) {
     eLaunch.penLauncher = this;
     eLaunch.prtType = PRT_GRENADE_CLUSTERED;
     eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
     penProjectile->Initialize(eLaunch);
   }
   for( INDEX iDebris5=0; iDebris5<1; iDebris5++)
   {
     FLOAT fHeading = -150.0f;
     FLOAT fPitch = 30.0f;
-    FLOAT fSpeed = 10.0f;
+    FLOAT fSpeed = 12.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
@@ -1827,6 +1845,7 @@ void ClusterGrenadeExplosion(void) {
     eLaunch.penLauncher = this;
     eLaunch.prtType = PRT_GRENADE_CLUSTERED;
     eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
     penProjectile->Initialize(eLaunch);
   }
 };
@@ -1861,6 +1880,38 @@ void WeakGrenade(void) {
   m_fWaitAfterDeath = 0.0f;
   SetHealth(5.0f);
   m_pmtMove = PMT_SLIDING;
+  m_tmInvisibility = 0.05f;
+  m_tmExpandBox = 0.1f;
+};
+
+
+void ShotgunGrenade(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_GRENADE);
+  SetModelMainTexture(TEXTURE_GRENADE);
+  GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
+  // start moving
+
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 5.0f, -125.0f), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, FRnd()*120.0f+120.0f, FRnd()*250.0f-125.0f));
+  m_fFlyTime = 3.0f;
+  m_fDamageAmount = 30.0f;
+  m_fRangeDamageAmount = 100.0f;
+  m_fDamageHotSpotRange = 5.0f;
+  m_fDamageFallOffRange = 10.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  en_fDeceleration = 25.0f;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_FLYING;
   m_tmInvisibility = 0.05f;
   m_tmExpandBox = 0.1f;
 };
@@ -5889,6 +5940,7 @@ procedures:
       case PRT_HYDROGUN: Hydrogun(); break;
       case PRT_MAMUTMAN: MamutmanBullet(); break;
       case PRT_GRENADE_WEAK: WeakGrenade(); break;
+      case PRT_GRENADE_SHOTGUN: ShotgunGrenade(); break;
       default: ASSERTALWAYS("Unknown projectile type");
     }
 
@@ -5965,6 +6017,7 @@ procedures:
       case PRT_GRENADE_CLUSTERED: PlayerGrenadeExplosion(); break;
       case PRT_HYDROGUN: HydroExplosion(); break;
       case PRT_GRENADE_WEAK: PlayerGrenadeExplosion(); break;
+      case PRT_GRENADE_SHOTGUN: HeadmanBombermanExplosion(); break;
     }
 
     // wait after death

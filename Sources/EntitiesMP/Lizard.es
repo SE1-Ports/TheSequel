@@ -52,6 +52,7 @@ components:
   6 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
   7 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
   8 texture TEXTURE_FLESH_GREEN  "Models\\Effects\\Debris\\Flesh\\FleshGreen.tex",
+ 20 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
 
  10 model   MODEL_BODY           "ModelsMP\\Enemies\\SS2\\Lizard\\Debris\\bod.mdl",
  11 model   MODEL_LEG            "ModelsMP\\Enemies\\SS2\\Lizard\\Debris\\leg.mdl",
@@ -487,6 +488,7 @@ procedures:
       GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
       ModelChangeNotify();
       SetModelMainTexture(TEXTURE_LIZARD);
+      SetModelSpecularTexture(TEXTURE_SPECULAR);
 		m_fgibTexture = TEXTURE_LIZARD;
       SetHealth(60.0f);
       m_fMaxHealth = 60.0f;
@@ -517,6 +519,7 @@ procedures:
       GetModelObject()->StretchModel(FLOAT3D(0.8f, 0.8f, 0.8f));
       ModelChangeNotify();
       SetModelMainTexture(TEXTURE_LIZARD_BLUE);
+      SetModelSpecularTexture(TEXTURE_SPECULAR);
 		m_fgibTexture = TEXTURE_LIZARD_BLUE;
       SetHealth(30.0f);
       m_fMaxHealth = 30.0f;
@@ -547,6 +550,7 @@ procedures:
       GetModelObject()->StretchModel(FLOAT3D(1.5f, 1.5f, 1.5f));
       ModelChangeNotify();
       SetModelMainTexture(TEXTURE_LIZARD_RED);
+      SetModelSpecularTexture(TEXTURE_SPECULAR);
 		m_fgibTexture = TEXTURE_LIZARD_RED;
       SetHealth(140.0f);
       m_fMaxHealth = 140.0f;
