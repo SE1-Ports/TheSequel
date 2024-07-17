@@ -35,8 +35,8 @@ FLOAT3D vSummPos = (FLOAT3D(0.0f, 5.3f, -6.0f)*MAMUT_STRETCH);
 // info structure
 static EntityInfo eiMamut2 = {
   EIBT_FLESH, 1600.0f,
-  0.0f, 2.0f, 0.0f,     // source (eyes)
-  0.0f, 1.5f, 0.0f,     // target (body)
+  0.0f, 4.0f, 0.0f,     // source (eyes)
+  0.0f, 4.5f, 0.0f,     // target (body)
 };
 %}
 
@@ -268,6 +268,9 @@ functions:
   };
   void SightSound(void) {
     PlaySound(m_soSound, SOUND_SIGHT, SOF_3D);
+  };
+  void TauntSound(void) {
+    PlaySound(m_soSound, SOUND_ATTACK, SOF_3D);
   };
   void WoundSound(void) {
     PlaySound(m_soSound, SOUND_WOUND, SOF_3D);

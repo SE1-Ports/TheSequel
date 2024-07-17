@@ -3353,7 +3353,10 @@ functions:
       EKey &eKey = (EKey&)ee;
       if(eKey.kitType == KIT_HAWKWINGS01DUMMY || eKey.kitType == KIT_HAWKWINGS02DUMMY
         || eKey.kitType == KIT_TABLESDUMMY || eKey.kitType ==KIT_JAGUARGOLDDUMMY 
-		|| eKey.kitType ==KIT_SCARAB || eKey.kitType ==KIT_JADEKEY)
+		|| eKey.kitType ==KIT_SCARAB || eKey.kitType ==KIT_JADEKEY
+		|| eKey.kitType ==KIT_CPARMOR || eKey.kitType ==KIT_CPGREECEKEY
+		|| eKey.kitType ==KIT_CPHELMET1 || eKey.kitType ==KIT_CPSHIELD
+		|| eKey.kitType ==KIT_CPSWORD || eKey.kitType ==KIT_CPHELMET2)
       {
         ulKey = 0;
       }

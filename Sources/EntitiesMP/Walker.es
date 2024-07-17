@@ -838,10 +838,11 @@ procedures:
       ModelChangeNotify();
       CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(WALKER_ATTACHMENT_ROCKETLAUNCHER_RT)->amo_moModelObject;
       pmoRight->StretchModel(FLOAT3D(-1,1,1));
-      m_fBlowUpAmount = 1000;
+      m_fBlowUpAmount = 2000;
 	  m_fBlowUpSize = 2.0f;
       m_iScore = 7500;
       m_fThreatDistance = 15;
+      m_fAttackFireTime = 3.0f;
     } else if (m_EwcChar==WLC_SOLDIER) {
       SetModel(MODEL_WALKER);
 	  m_fSize = 0.5f;
@@ -859,6 +860,7 @@ procedures:
       //m_bRobotBlowup = TRUE;
       m_iScore = 2000;
       m_fThreatDistance = 5;
+      m_fAttackFireTime = 3.0f;
     } else if (m_EwcChar==WLC_MG) {
       SetModel(MODEL_WALKER_MG);
 	  m_fSize = 0.8f;
@@ -884,6 +886,7 @@ procedures:
       //m_bRobotBlowup = TRUE;
       m_iScore = 5000;
       m_fThreatDistance = 5;
+      m_fAttackFireTime = 3.0f;
     } else if (m_EwcChar==WLC_CANNON) {
       SetModel(MODEL_WALKERCANNON);
 	  m_fSize = 1.5f;
@@ -899,6 +902,7 @@ procedures:
       //m_bRobotBlowup = TRUE;
       m_iScore = 10000;
       m_fThreatDistance = 25;
+      m_fAttackFireTime = 6.0f;
     }
     if (m_fStepHeight==-1) {
       m_fStepHeight = 4.0f;
@@ -917,7 +921,6 @@ procedures:
     m_fAttackDistance = 150.0f;
     m_fCloseDistance = 0.0f;
     m_fStopDistance = 15.0f;
-    m_fAttackFireTime = 3.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 300.0f;
     // damage/explode properties

@@ -12,11 +12,11 @@ enum KeyItemType {
   1 KIT_CROSSWOODEN       "Wooden cross",
   2 KIT_CROSSMETAL        "Silver cross",
   3 KIT_CROSSGOLD         "Gold cross",
-  4 KIT_JAGUARGOLDDUMMY   "Gold jaguar",
-  5 KIT_HAWKWINGS01DUMMY  "Hawk wings - part 1",
-  6 KIT_HAWKWINGS02DUMMY  "Hawk wings - part 2",
+  4 KIT_JAGUARGOLDDUMMY   "Gold jaguar (stackable)",
+  5 KIT_HAWKWINGS01DUMMY  "Hawk wings - part 1 (stackable)",
+  6 KIT_HAWKWINGS02DUMMY  "Hawk wings - part 2 (stackable)",
   7 KIT_HOLYGRAIL         "Holy grail",
-  8 KIT_TABLESDUMMY       "Tablet of wisdom",
+  8 KIT_TABLESDUMMY       "Tablet of wisdom (stackable)",
   9 KIT_WINGEDLION        "Winged lion",
  10 KIT_ELEPHANTGOLD      "Gold elephant",
  11 KIT_STATUEHEAD01      "Seriously scary ceremonial mask",
@@ -38,7 +38,7 @@ enum KeyItemType {
  26 KIT_GOLDHEART         "Gold heart",
  27 KIT_RAKEY             "Ra key",
  28 KIT_RASIGN            "Moon key",
- 29 KIT_SCARAB            "Scarab",
+ 29 KIT_SCARAB            "Scarab (stackable)",
  30 KIT_UASET             "Uaset",
  
  31 KIT_KEYGENERIC        "Generic key",
@@ -53,10 +53,17 @@ enum KeyItemType {
  39 KIT_BUDDHA            "Buddha",
  40 KIT_GARUDA            "Garuda",
  41 KIT_JADELION          "Jade Lion",
- 42 KIT_JADEKEY           "Jade key",
+ 42 KIT_JADEKEY           "Jade key (stackable)",
  43 KIT_NAGAGOLD          "Naga gold",
  44 KIT_NAGAJADE          "Naga jade",
  45 KIT_NAGASILVER        "Naga silver",
+
+ 46 KIT_CPARMOR           "CaptainPelmen_Armor (stackable)",
+ 47 KIT_CPGREECEKEY       "CaptainPelmen_GreeceKey (stackable)",
+ 48 KIT_CPHELMET2         "CaptainPelmen_Helmet2 (stackable)",
+ 49 KIT_CPSHIELD          "CaptainPelmen_Shield (stackable)",
+ 50 KIT_CPSWORD           "CaptainPelmen_Sword (stackable)",
+ 51 KIT_CPHELMET1         "CaptainPelmen_Helmet1 (stackable)",
 };
 
 // event for sending through receive item
@@ -118,6 +125,13 @@ const char *GetKeyName(enum KeyItemType kit)
  case KIT_NAGAGOLD          :  return TRANS("Gold naga"); break;
  case KIT_NAGAJADE          :  return TRANS("Jade naga"); break;
  case KIT_NAGASILVER        :  return TRANS("Silver naga"); break;
+
+ case KIT_CPARMOR            :  return TRANS("Muscle cuirass"); break;
+ case KIT_CPGREECEKEY        :  return TRANS("Greece key"); break;
+ case KIT_CPHELMET2          :  return TRANS("Attic helmet"); break;
+ case KIT_CPSHIELD           :  return TRANS("Sarpedon Aspis"); break;
+ case KIT_CPSWORD            :  return TRANS("Aegean sword"); break;
+ case KIT_CPHELMET1          :  return TRANS("Chalcidian helmet"); break;
 
   default: return TRANS("unknown item"); break;
   };
@@ -254,6 +268,24 @@ components:
 114 texture TEXTURE_NAGAJADE            "ModelsF\\Items\\Keys\\Naga\\NagaJade.tex",
 115 texture TEXTURE_NAGASILVER          "ModelsF\\Items\\Keys\\Naga\\NagaSilver.tex",
 
+116 model   MODEL_CPARMOR              "ModelsF\\Items\\Keys\\CaptainPelmen_Armor\\Armor.mdl",
+117 texture TEXTURE_CPARMOR            "ModelsF\\Items\\Keys\\CaptainPelmen_Armor\\Armor.tex",
+
+118 model   MODEL_CPGREECEKEY              "ModelsF\\Items\\Keys\\CaptainPelmen_GreeceKey\\GreeceKey.mdl",
+119 texture TEXTURE_CPGREECEKEY            "ModelsF\\Items\\Keys\\CaptainPelmen_GreeceKey\\Key.tex",
+
+120 model   MODEL_CPHELMET2              "ModelsF\\Items\\Keys\\CaptainPelmen_Helmet2\\HelmetT02.mdl",
+121 texture TEXTURE_CPHELMET2            "ModelsF\\Items\\Keys\\CaptainPelmen_Helmet2\\HelmetT02.tex",
+
+122 model   MODEL_CPSHIELD              "ModelsF\\Items\\Keys\\CaptainPelmen_Shield\\Shield.mdl",
+123 texture TEXTURE_CPSHIELD            "ModelsF\\Items\\Keys\\CaptainPelmen_Shield\\Shield.tex",
+
+124 model   MODEL_CPSWORD              "ModelsF\\Items\\Keys\\CaptainPelmen_Sword\\Sword.mdl",
+125 texture TEXTURE_CPSWORD            "ModelsF\\Items\\Keys\\CaptainPelmen_Sword\\Sword.tex",
+
+126 model   MODEL_CPHELMET1              "ModelsF\\Items\\Keys\\CaptainPelmen_Helmet1\\ShlemT01.mdl",
+127 texture TEXTURE_CPHELMET1            "ModelsF\\Items\\Keys\\CaptainPelmen_Helmet1\\T01.tex",
+
  // ********* MISC *********
 250 texture TEXTURE_FLARE       "ModelsMP\\Items\\Flares\\Flare.tex",
 251 model   MODEL_FLARE         "ModelsMP\\Items\\Flares\\Flare.mdl",
@@ -340,6 +372,13 @@ functions:
     case KIT_NAGAGOLD            :
     case KIT_NAGAJADE            :
     case KIT_NAGASILVER          :
+
+    case KIT_CPARMOR            :
+    case KIT_CPGREECEKEY        :
+    case KIT_CPHELMET2          :
+    case KIT_CPSHIELD           :
+    case KIT_CPSWORD            :
+    case KIT_CPHELMET1          :
 
     default:
       Particles_Stardust(this, 1.5f, 1.1f, PT_STAR08, 64);
@@ -721,6 +760,54 @@ functions:
       case KIT_NAGASILVER:
         // set appearance
         AddItem(MODEL_NAGA, TEXTURE_NAGASILVER, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_CPARMOR:
+        // set appearance
+        AddItem(MODEL_CPARMOR, TEXTURE_CPARMOR, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_CPGREECEKEY:
+        // set appearance
+        AddItem(MODEL_CPGREECEKEY, TEXTURE_CPGREECEKEY, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_CPHELMET2:
+        // set appearance
+        AddItem(MODEL_CPHELMET2, TEXTURE_CPHELMET2, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_CPSHIELD:
+        // set appearance
+        AddItem(MODEL_CPSHIELD, TEXTURE_CPSHIELD, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_CPSWORD:
+        // set appearance
+        AddItem(MODEL_CPSWORD, TEXTURE_CPSWORD, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_CPHELMET1:
+        // set appearance
+        AddItem(MODEL_CPHELMET1, TEXTURE_CPHELMET1, 0, TEX_SPEC_MEDIUM, 0);
         // add flare
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
         StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
