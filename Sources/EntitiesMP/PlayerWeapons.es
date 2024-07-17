@@ -1,7 +1,7 @@
 402
 %{
 #include "StdH.h"
-#include "Game/SEColors.h"
+#include "GameMP/SEColors.h"
   
 #include <Engine/Build.h>
 

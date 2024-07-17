@@ -2,7 +2,7 @@
 %{
 
 #include "StdH.h"
-#include "Game/SEColors.h"
+#include "GameMP/SEColors.h"
 
 #include <Engine/Build.h>
 #include <Engine/Network/Network.h>

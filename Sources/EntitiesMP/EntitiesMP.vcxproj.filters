@@ -566,9 +566,6 @@
     <ClInclude Include="StdH\StdH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StdH\EntitiesAPI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Global.es">

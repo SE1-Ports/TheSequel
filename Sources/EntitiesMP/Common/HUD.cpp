@@ -1,6 +1,6 @@
  
 #include "StdH.h"
-#include "Game/SEColors.h"
+#include "GameMP/SEColors.h"
 
 #include <Engine/Graphics/DrawPort.h>
 
