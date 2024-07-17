@@ -1,3 +1,3 @@
 @echo off
-start ..\..\..\Bin\SeriousSam.exe +game MyMod
+start ..\..\..\Bin\SeriousSam.exe +game TheSequel
 exit
