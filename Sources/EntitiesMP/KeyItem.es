@@ -49,6 +49,14 @@ enum KeyItemType {
  36 KIT_MONKEY            "Golden monkey",
  37 KIT_MIAB              "Monkey-in-a-barrel",
  38 KIT_SUZANNE           "Suzanne",
+
+ 39 KIT_BUDDHA            "Buddha",
+ 40 KIT_GARUDA            "Garuda",
+ 41 KIT_JADELION          "Jade Lion",
+ 42 KIT_JADEKEY           "Jade key",
+ 43 KIT_NAGAGOLD          "Naga gold",
+ 44 KIT_NAGAJADE          "Naga jade",
+ 45 KIT_NAGASILVER        "Naga silver",
 };
 
 // event for sending through receive item
@@ -102,6 +110,14 @@ const char *GetKeyName(enum KeyItemType kit)
  case KIT_MONKEY              :  return TRANS("Golden monkey"); break;
  case KIT_MIAB                :  return TRANS("Monkey-in-a-barrel"); break;
  case KIT_SUZANNE             :  return TRANS("Suzanne"); break;
+
+ case KIT_BUDDHA            :  return TRANS("Buddha"); break;
+ case KIT_GARUDA            :  return TRANS("Garuda"); break;
+ case KIT_JADELION          :  return TRANS("Jade lion"); break;
+ case KIT_JADEKEY           :  return TRANS("Jade key"); break;
+ case KIT_NAGAGOLD          :  return TRANS("Gold naga"); break;
+ case KIT_NAGAJADE          :  return TRANS("Jade naga"); break;
+ case KIT_NAGASILVER        :  return TRANS("Silver naga"); break;
 
   default: return TRANS("unknown item"); break;
   };
@@ -222,6 +238,22 @@ components:
 103 model   MODEL_MIAB                "ModelsF\\Items\\Keys\\Monkey-in-a-barrel\\Monkey-in-a-barrel.mdl",
 104 model   MODEL_SUZANNE             "ModelsF\\Items\\Keys\\Suzanne\\Suzanne.mdl",
 
+105 model   MODEL_BUDDHA              "ModelsF\\Items\\Keys\\Buddha\\Buddha.mdl",
+106 texture TEXTURE_BUDDHA            "TexturesF\\AI\\Misc\\Jade4.tex",
+
+107 model   MODEL_GARUDA              "ModelsF\\Items\\Keys\\Garuda\\Garuda.mdl",
+108 texture TEXTURE_GARUDA            "ModelsF\\Items\\Keys\\Garuda\\Garuda.tex",
+
+109 model   MODEL_JADELION              "ModelsF\\Items\\Keys\\JadeLion\\JadeLion.mdl",
+110 texture TEXTURE_JADELION            "ModelsF\\Items\\Keys\\JadeLion\\JadeLion.tex",
+
+111 texture TEXTURE_JADEKEY            "ModelsF\\Items\\Keys\\Key_China\\Key_Jade.tex",
+
+112 model   MODEL_NAGA              "ModelsF\\Items\\Keys\\Naga\\Naga.mdl",
+113 texture TEXTURE_NAGAGOLD            "ModelsF\\Items\\Keys\\Naga\\NagaGold.tex",
+114 texture TEXTURE_NAGAJADE            "ModelsF\\Items\\Keys\\Naga\\NagaJade.tex",
+115 texture TEXTURE_NAGASILVER          "ModelsF\\Items\\Keys\\Naga\\NagaSilver.tex",
+
  // ********* MISC *********
 250 texture TEXTURE_FLARE       "ModelsMP\\Items\\Flares\\Flare.tex",
 251 model   MODEL_FLARE         "ModelsMP\\Items\\Flares\\Flare.mdl",
@@ -300,6 +332,14 @@ functions:
     case KIT_MONKEY              :
     case KIT_MIAB                :
     case KIT_SUZANNE             :
+ 
+    case KIT_BUDDHA              :
+    case KIT_GARUDA              :
+    case KIT_JADELION            :
+    case KIT_JADEKEY             :
+    case KIT_NAGAGOLD            :
+    case KIT_NAGAJADE            :
+    case KIT_NAGASILVER          :
 
     default:
       Particles_Stardust(this, 1.5f, 1.1f, PT_STAR08, 64);
@@ -630,6 +670,62 @@ functions:
         StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
         m_iSoundComponent = SOUND_KEY;
         break;
+      case KIT_BUDDHA:
+        // set appearance
+        AddItem(MODEL_BUDDHA, TEXTURE_BUDDHA, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+        break;
+      case KIT_GARUDA:
+        // set appearance
+        AddItem(MODEL_GARUDA, TEXTURE_GARUDA, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+        break;
+      case KIT_JADELION:
+        // set appearance
+        AddItem(MODEL_JADELION, TEXTURE_JADELION, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+        break;
+      case KIT_JADEKEY:
+        // set appearance
+        AddItem(MODEL_CHINA, TEXTURE_JADEKEY, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_NAGAGOLD:
+        // set appearance
+        AddItem(MODEL_NAGA, TEXTURE_NAGAGOLD, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_NAGAJADE:
+        // set appearance
+        AddItem(MODEL_NAGA, TEXTURE_NAGAJADE, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_NAGASILVER:
+        // set appearance
+        AddItem(MODEL_NAGA, TEXTURE_NAGASILVER, 0, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
     }
     GetModelObject()->StretchModel(FLOAT3D(m_fSize, m_fSize, m_fSize));
   };

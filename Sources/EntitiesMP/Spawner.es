@@ -52,6 +52,8 @@ components:
  12 model   MODEL_TORSO         "ModelsMP\\Enemies\\SS2\\Spawner\\Debris\\Torso.mdl",
  13 model   MODEL_LEG           "ModelsMP\\Enemies\\SS2\\Spawner\\Debris\\Leg.mdl",
 
+ 15 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
+
  // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "ModelsMP\\Enemies\\SS2\\Spawner\\Sounds\\Idle.wav",
  51 sound   SOUND_SIGHT     "ModelsMP\\Enemies\\SS2\\Spawner\\Sounds\\Sight.wav",
@@ -558,6 +560,7 @@ procedures:
     m_sptType = SPT_ELECTRICITY_SPARKS_NO_BLOOD;
     // set your appearance
     SetModel(MODEL_BALL);
+    SetModelSpecularTexture(TEXTURE_SPECULAR);
     StandingAnim();
     // setup moving speed
     m_fWalkSpeed = 4.0f;

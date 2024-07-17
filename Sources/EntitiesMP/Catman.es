@@ -71,6 +71,7 @@ components:
  47 texture TEXTURE_CLAWS    "Models\\ReflectionTextures\\LightBlueMetal01.tex",
 
  48 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
+ 49 texture TEXTURE_REFLECTION "Models\\ReflectionTextures\\Purple01.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "AREP\\Models\\Catman2\\Sounds\\Small\\Idle.wav",
@@ -582,7 +583,7 @@ procedures:
 
     // set your appearance
     SetModel(MODEL_CATMAN2);
-    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_ARMOR, MODEL_ARMOR, TEXTURE_ARMOR, 0, TEXTURE_SPECULAR, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_ARMOR, MODEL_ARMOR, TEXTURE_ARMOR, TEXTURE_REFLECTION, TEXTURE_SPECULAR, 0);
     AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_MASK, MODEL_MASK, TEXTURE_MASK, 0, TEXTURE_SPECULAR, 0);
     AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_CLAWS, MODEL_CLAWS, TEXTURE_CLAWS, TEXTURE_CLAWS, TEXTURE_SPECULAR, 0);
     AddAttachmentToModel(this, *GetModelObject(), CATMAN_ATTACHMENT_FLAREL, MODEL_FLARE, TEXTURE_FLARE, 0, 0, 0);

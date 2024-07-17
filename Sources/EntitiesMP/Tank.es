@@ -77,6 +77,8 @@ components:
  25 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  26 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
+ 28 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
+
 // ************** BODY PARTS **************
  30 model   MODEL_DEBRIS_HEAD    "ModelsMP\\Enemies\\SS2\\Tank\\Debris\\Head.mdl",
  31 model   MODEL_DEBRIS_CANNON    "ModelsMP\\Enemies\\SS2\\Tank\\Debris\\Cannon.mdl",

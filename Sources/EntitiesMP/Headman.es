@@ -112,6 +112,7 @@ components:
 
  61 model     MODEL_HEADMAN_HAND   "ModelsF\\Enemies\\Headman\\Debris\\Arm.mdl",
  62 model     MODEL_HEADMAN_LEGS   "ModelsF\\Enemies\\Headman\\Debris\\Leg.mdl",
+ 63 model     MODEL_HEADMAN_CHEST  "ModelsF\\Enemies\\Headman\\Debris\\Chest.mdl",
 
  73 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  74 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
@@ -163,6 +164,7 @@ functions:
 
 	PrecacheModel(MODEL_HEADMAN_HAND);
 	PrecacheModel(MODEL_HEADMAN_LEGS);
+	PrecacheModel(MODEL_HEADMAN_CHEST);
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
@@ -424,6 +426,8 @@ functions:
       Debris_Spawn(this, this, MODEL_HEADMAN_LEGS, m_fgibTexture, 0, 0, 0, 0, 0.72f,
         FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  Debris_Spawn(this, this, MODEL_HEADMAN_LEGS, m_fgibTexture, 0, 0, 0, 0, 0.72f,
+        FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  Debris_Spawn(this, this, MODEL_HEADMAN_CHEST, m_fgibTexture, 0, 0, 0, 0, 0.72f,
         FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
@@ -745,7 +749,7 @@ procedures:
         m_fCloseRunSpeed = FRnd()*2.0f + 6.0f;
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
-        m_fAttackDistance = 80.0f;
+        m_fAttackDistance = 150.0f;
         m_fCloseDistance = 0.0f;
         m_fStopDistance = 8.0f;
         m_fAttackFireTime = 2.0f;

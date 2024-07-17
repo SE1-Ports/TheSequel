@@ -76,6 +76,7 @@ properties:
   11 INDEX   m_fgibLeg = MODEL_EYEMAN_LEG,
   12 INDEX   m_fgibForehead = MODEL_EYEMAN_FOREHEAD,
   13 INDEX   m_fgibJaw = MODEL_EYEMAN_JAW,
+  14 INDEX   m_fgibThigh = MODEL_EYEMAN_THIGH,
 
 components:
   0 class   CLASS_BASE        "Classes\\EnemyFly.ecl",
@@ -117,12 +118,14 @@ components:
 
  60 model   MODEL_EYEMAN_ARM   "ModelsF\\Enemies\\Eyeman\\Debris\\Arm.mdl",
  62 model   MODEL_EYEMAN_LEG   "ModelsF\\Enemies\\Eyeman\\Debris\\Leg.mdl",
+ 76 model   MODEL_EYEMAN_THIGH "ModelsF\\Enemies\\Eyeman\\Debris\\Thigh.mdl",
 
  63 model   MODEL_EYEMAN_FOREHEAD   "ModelsF\\Enemies\\Eyeman\\Debris\\Forehead.mdl",
  64 model   MODEL_EYEMAN_JAW   "ModelsF\\Enemies\\Eyeman\\Debris\\Jaw.mdl",
 
  70 model   MODEL_BUFF_ARM   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Arm.mdl",
  72 model   MODEL_BUFF_LEG   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Leg.mdl",
+ 77 model   MODEL_BUFF_BELLY   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Belly.mdl",
 
  73 model   MODEL_BUFF_FOREHEAD   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Forehead.mdl",
  74 model   MODEL_BUFF_JAW   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Jaw.mdl",
@@ -171,10 +174,12 @@ functions:
     PrecacheModel(MODEL_EYEMAN_LEG);
     PrecacheModel(MODEL_EYEMAN_FOREHEAD);
     PrecacheModel(MODEL_EYEMAN_JAW);
+    PrecacheModel(MODEL_EYEMAN_THIGH);
     PrecacheModel(MODEL_BUFF_ARM);
     PrecacheModel(MODEL_BUFF_LEG);
     PrecacheModel(MODEL_BUFF_FOREHEAD);
     PrecacheModel(MODEL_BUFF_JAW);
+    PrecacheModel(MODEL_BUFF_BELLY);
   };
 
   /* Entity info */
@@ -411,41 +416,6 @@ functions:
       Explode();
     }
   };
-  void Explode(void) {
-    if (!m_bExploded) {
-      m_bExploded = TRUE;
-
-      // inflict damage
-      if (m_EecChar==EYC_X) {
-        FLOAT3D vSource;
-        GetEntityInfoPosition(this, eiEyemanBoom.vTargetCenter, vSource);
-        InflictDirectDamage(this, this, DMT_EXPLOSION, 1000.0f, vSource, 
-          -en_vGravityDir);
-        InflictRangeDamage(this, DMT_EXPLOSION, 20.0f, vSource, 1.0f, 6.0f);
-      }
-
-      // spawn explosion
-      CPlacement3D plExplosion = GetPlacement();
-      CEntityPointer penExplosion = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
-      ESpawnEffect eSpawnEffect;
-      eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
-      eSpawnEffect.betType = BET_BOMB;
-      eSpawnEffect.vStretch = FLOAT3D(1.0f,1.0f,1.0f);
-      penExplosion->Initialize(eSpawnEffect);
-
-      // explosion debris
-      eSpawnEffect.betType = BET_EXPLOSION_DEBRIS;
-      CEntityPointer penExplosionDebris = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
-      penExplosionDebris->Initialize(eSpawnEffect);
-
-      // explosion smoke
-      eSpawnEffect.betType = BET_EXPLOSION_SMOKE;
-      CEntityPointer penExplosionSmoke = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
-      penExplosionSmoke->Initialize(eSpawnEffect);
-	  
-      CEnemyBase::BlowUp();
-    }
-  };
 
   // spawn body parts
   void BlowUp(void) {
@@ -482,6 +452,10 @@ functions:
     Debris_Spawn(this, this, m_fgibLeg, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, m_fgibLeg, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibThigh, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibThigh, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
@@ -522,6 +496,10 @@ functions:
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, m_fgibLeg, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibThigh, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibThigh, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
         Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
@@ -543,6 +521,42 @@ functions:
     SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
     SetCollisionFlags(ECF_IMMATERIAL);
   }
+  };
+  void Explode(void) {
+    if (!m_bExploded) {
+      m_bExploded = TRUE;
+
+      // inflict damage
+      if (m_EecChar==EYC_X) {
+        FLOAT3D vSource;
+        GetEntityInfoPosition(this, eiEyemanBoom.vTargetCenter, vSource);
+        InflictDirectDamage(this, this, DMT_EXPLOSION, 1000.0f, vSource, 
+          -en_vGravityDir);
+        InflictRangeDamage(this, DMT_EXPLOSION, 20.0f, vSource, 1.0f, 6.0f);
+      }
+
+      // spawn explosion
+      CPlacement3D plExplosion = GetPlacement();
+      CEntityPointer penExplosion = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
+      ESpawnEffect eSpawnEffect;
+      eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
+      eSpawnEffect.betType = BET_BOMB;
+      eSpawnEffect.vStretch = FLOAT3D(1.0f,1.0f,1.0f);
+      penExplosion->Initialize(eSpawnEffect);
+
+      // explosion debris
+      eSpawnEffect.betType = BET_EXPLOSION_DEBRIS;
+      CEntityPointer penExplosionDebris = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
+      penExplosionDebris->Initialize(eSpawnEffect);
+
+      // explosion smoke
+      eSpawnEffect.betType = BET_EXPLOSION_SMOKE;
+      CEntityPointer penExplosionSmoke = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
+      penExplosionSmoke->Initialize(eSpawnEffect);
+
+      CEnemyBase::BlowUp();
+	  
+    }
   };
 
 /************************************************************
@@ -776,7 +790,12 @@ procedures:
 	  m_fgibLeg = MODEL_BUFF_LEG;
 	  m_fgibForehead = MODEL_BUFF_FOREHEAD;
 	  m_fgibJaw = MODEL_BUFF_JAW;
-      SetModelMainTexture(TEXTURE_EYEMAN_BRUTE);
+	  m_fgibThigh = MODEL_BUFF_BELLY;
+       if (m_eeEnv == EYE_LAVA) {
+        SetModelMainTexture(TEXTURE_EYEMAN_LAVA);
+		m_fgibTexture = TEXTURE_EYEMAN_LAVA; }
+	   else {
+        SetModelMainTexture(TEXTURE_EYEMAN_BRUTE); }
 		m_fgibTexture = TEXTURE_EYEMAN_BRUTE;
       GetModelObject()->StretchModel(FLOAT3D(1.9f, 1.9f, 1.9f));
       ModelChangeNotify();
@@ -788,6 +807,7 @@ procedures:
 	  m_fgibLeg = MODEL_EYEMAN_LEG;
 	  m_fgibForehead = MODEL_EYEMAN_FOREHEAD;
 	  m_fgibJaw = MODEL_EYEMAN_JAW;
+	  m_fgibThigh = MODEL_EYEMAN_THIGH;
       SetModelMainTexture(TEXTURE_EYEMAN_BOOM);
 		m_fgibTexture = TEXTURE_EYEMAN_BOOM;
       GetModelObject()->StretchModel(FLOAT3D(0.9f, 0.9f, 0.9f));
@@ -799,6 +819,7 @@ procedures:
 	  m_fgibLeg = MODEL_EYEMAN_LEG;
 	  m_fgibForehead = MODEL_EYEMAN_FOREHEAD;
 	  m_fgibJaw = MODEL_EYEMAN_JAW;
+	  m_fgibThigh = MODEL_EYEMAN_THIGH;
       SetModelMainTexture(TEXTURE_EYEMAN_PUKE);
 		m_fgibTexture = TEXTURE_EYEMAN_PUKE;
       GetModelObject()->StretchModel(FLOAT3D(1.2f, 1.2f, 1.2f));
@@ -809,6 +830,7 @@ procedures:
 	  m_fgibLeg = MODEL_BUFF_LEG;
 	  m_fgibForehead = MODEL_BUFF_FOREHEAD;
 	  m_fgibJaw = MODEL_BUFF_JAW;
+	  m_fgibThigh = MODEL_BUFF_BELLY;
       m_iScore = 1000;
        if (m_eeEnv == EYE_LAVA) {
         SetModelMainTexture(TEXTURE_EYEMAN_LAVA);
@@ -829,6 +851,7 @@ procedures:
 	  m_fgibLeg = MODEL_EYEMAN_LEG;
 	  m_fgibForehead = MODEL_EYEMAN_FOREHEAD;
 	  m_fgibJaw = MODEL_EYEMAN_JAW;
+	  m_fgibThigh = MODEL_EYEMAN_THIGH;
        if (m_eeEnv == EYE_LAVA) {
         SetModelMainTexture(TEXTURE_EYEMAN_LAVA);
 		m_fgibTexture = TEXTURE_EYEMAN_LAVA;

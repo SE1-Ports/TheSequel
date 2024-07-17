@@ -523,7 +523,7 @@ FireLaugh(EVoid) {
     m_fAttackRunSpeed = FRnd()/1.0f + 5.0f;
     m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
     // setup attack distances
-    m_fAttackDistance = 100.0f;
+    m_fAttackDistance = 300.0f;
     m_fCloseDistance = 0.0f;
     m_fStopDistance = 15.0f;
     m_fAttackFireTime = 5.0f;

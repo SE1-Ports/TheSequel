@@ -35,6 +35,8 @@ components:
   3 class   CLASS_PROJECTILE  "Classes\\Projectile.ecl",
   4 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
 
+ 10 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
+
 // ************** FLESH PARTS **************
   6 model   MODEL_WING         "ModelsMP\\Enemies\\SS2\\Floater\\Debris\\Wing.mdl",
 
@@ -281,6 +283,7 @@ procedures:
     // set your appearance
     SetModel(MODEL_FLOATER);
     SetModelMainTexture(TEXTURE_FLOATER);
+    SetModelSpecularTexture(TEXTURE_SPECULAR);
     // setup moving speed
     // fly moving properties
       m_fFlyWalkSpeed = FRnd()*2.0f + 20.0f;

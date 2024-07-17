@@ -124,6 +124,10 @@ event EHomingRocketStop {};
 event ENukeBall {};
 // nukeball stop
 event ENukeBallStop {};
+// grenadeSG
+event EGrenadeSG {};
+// grenadeSG stop
+event EGrenadeSGStop {};
 
 // weapons (do not change order! - needed by HUD.cpp)
 enum WeaponType {
@@ -339,6 +343,8 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
     pdec->PrecacheTexture(TEXTURE_DS_AMMO          );    
     pdec->PrecacheSound(SOUND_DOUBLESHOTGUN_FIRE   ); 
     pdec->PrecacheSound(SOUND_DOUBLESHOTGUN_RELOAD ); 
+    pdec->PrecacheSound(SOUND_DOUBLESHOTGUN_GRENADE); 
+    pdec->PrecacheClass(CLASS_PROJECTILE, PRT_GRENADE_SHOTGUN);
   }
 
   if ( ulAvailable&(1<<(WEAPON_TOMMYGUN-1)) ) {
@@ -775,6 +781,7 @@ components:
  58 texture TEXTURE_DS_AMMO             "Models\\Weapons\\DoubleShotgun\\Ammo.tex",
  60 sound   SOUND_DOUBLESHOTGUN_FIRE    "Models\\Weapons\\DoubleShotgun\\Sounds\\Fire.wav",
  61 sound   SOUND_DOUBLESHOTGUN_RELOAD  "Models\\Weapons\\DoubleShotgun\\Sounds\\Reload.wav",
+ 62 sound   SOUND_DOUBLESHOTGUN_GRENADE "Models\\Weapons\\DoubleShotgun\\Sounds\\Grenade.wav",
 
 // ************** TOMMYGUN **************
  70 model   MODEL_TOMMYGUN              "Models\\Weapons\\TommyGun\\TommyGun.mdl",
@@ -2365,6 +2372,22 @@ functions:
     ((CBullet&)*penBullet).LaunchBullet(TRUE, FALSE, TRUE);
     ((CBullet&)*penBullet).DestroyBullet();
   }
+
+  // fire grenade shotgun
+  void FireGrenadeSG(void) {
+    // rocket start position
+    CPlacement3D plGrenadeSG;
+    CalcWeaponPosition(
+      FLOAT3D(wpn_fFX[WEAPON_DOUBLESHOTGUN],wpn_fFY[WEAPON_DOUBLESHOTGUN], 0), 
+      plGrenadeSG, TRUE);
+    // create rocket
+    CEntityPointer penGrenadeSG= CreateEntity(plGrenadeSG, CLASS_PROJECTILE);
+    // init and launch rocket
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = m_penPlayer;
+    eLaunch.prtType = PRT_GRENADE_SHOTGUN;
+    penGrenadeSG->Initialize(eLaunch);
+  };
 
   // fire grenade
   void FireGrenade(INDEX iPower) {
@@ -4708,6 +4731,61 @@ procedures:
      }
   };
 
+  GrenadeSG()
+  {
+    CPlayer &pl = (CPlayer&)*m_penPlayer;
+    PlaySound(pl.m_soWeapon0, SOUND_SILENCE, SOF_3D|SOF_VOLUMETRIC);      // stop possible sounds
+    // force ending of weapon change
+    m_tmWeaponChangeRequired = 0;
+
+    m_bFireWeapon = TRUE;
+    m_bHasAmmo = HasAmmo(m_iCurrentWeapon);
+
+    // if has no ammo select new weapon
+    if (!m_bHasAmmo) {
+      SelectNewWeapon();
+      jump Idle();
+    }
+
+    // setup 3D sound parameters
+    Setup3DSoundParameters();
+
+    // start weapon firing animation for continuous firing
+      GetAnimator()->FireAnimation(BODY_ANIM_SHOTGUN_FIRELONG, AOF_LOOPING);
+
+    // reset laser barrel (to start shooting always from left up barrel)
+    m_iLaserBarrel = 0;
+    m_iPlasmaBarrel = 0;
+    m_iHydroBarrel = 0;
+
+    while (HoldingFire() && m_bHasAmmo) {
+      // boring animation
+      ((CPlayerAnimator&)*((CPlayer&)*m_penPlayer).m_penAnimator).m_fLastActionTime = _pTimer->CurrentTick();
+      wait() {
+        on (EBegin) : {
+          // fire one shot
+          switch (m_iCurrentWeapon) {
+            case WEAPON_DOUBLESHOTGUN: call FireGrenadeShotgun(); break;
+            default: ASSERTALWAYS("Unknown weapon.");
+          }
+          resume;
+        }
+        on (EEnd) : {
+          stop;
+        }
+      }
+   }
+
+    // stop weapon firing animation for continuous firing
+    switch (m_iCurrentWeapon) {
+      case WEAPON_PLASMA: { 
+        GetAnimator()->FireAnimationOff();
+        jump Idle();
+                         }
+      default: { jump Idle(); }
+     }
+  };
+
     
   // ***************** SWING KNIFE *****************
   SwingKnife() {
@@ -5032,6 +5110,93 @@ procedures:
       CPlayer &pl = (CPlayer&)*m_penPlayer;
       pl.m_soWeapon0.Set3DParameters(50.0f, 5.0f, 1.5f, 1.0f);      // fire
       PlaySound(pl.m_soWeapon0, SOUND_DOUBLESHOTGUN_FIRE, SOF_3D|SOF_VOLUMETRIC);
+
+      if( hud_bShowWeapon)
+      {
+        if( pl.m_pstState==PST_DIVE)
+        {
+          // bubble (pipe 1)
+          ShellLaunchData &sldBubble1 = pl.m_asldData[pl.m_iFirstEmptySLD];
+          CPlacement3D plShell;
+          CalcWeaponPosition(FLOAT3D(-0.11f, 0.1f, -0.3f), plShell, FALSE);
+          /*CalcWeaponPosition(FLOAT3D(afDoubleShotgunShellPos[0], 
+            afDoubleShotgunShellPos[1], afDoubleShotgunShellPos[2]), plShell, FALSE);*/
+          FLOATmatrix3D m;
+          MakeRotationMatrixFast(m, plShell.pl_OrientationAngle);
+          FLOAT3D vUp( m(1,2), m(2,2), m(3,2));
+          sldBubble1.sld_vPos = plShell.pl_PositionVector;
+          sldBubble1.sld_vUp = vUp;
+          sldBubble1.sld_tmLaunch = _pTimer->CurrentTick();
+          sldBubble1.sld_estType = ESL_BUBBLE;  
+          FLOAT3D vSpeedRelative = FLOAT3D(-0.1f, 0.0f, 0.01f);
+          sldBubble1.sld_vSpeed = vSpeedRelative*m;
+          pl.m_iFirstEmptySLD = (pl.m_iFirstEmptySLD+1) % MAX_FLYING_SHELLS;
+          ShellLaunchData &sldBubble2 = pl.m_asldData[pl.m_iFirstEmptySLD];
+          // bubble (pipe 2)
+          sldBubble2 = sldBubble1;
+          vSpeedRelative = FLOAT3D(0.1f, 0.0f, -0.2f);
+          sldBubble2.sld_vSpeed = vSpeedRelative*m;
+          pl.m_iFirstEmptySLD = (pl.m_iFirstEmptySLD+1) % MAX_FLYING_SHELLS;
+        }
+        else
+        {
+          // smoke (pipe 1)
+          ShellLaunchData &sldPipe1 = pl.m_asldData[pl.m_iFirstEmptySLD];
+          CPlacement3D plPipe;
+          CalcWeaponPosition(FLOAT3D(afDoubleShotgunPipe[0], afDoubleShotgunPipe[1], afDoubleShotgunPipe[2]), plPipe, FALSE);
+          FLOATmatrix3D m;
+          MakeRotationMatrixFast(m, plPipe.pl_OrientationAngle);
+          FLOAT3D vUp( m(1,2), m(2,2), m(3,2));
+          sldPipe1.sld_vPos = plPipe.pl_PositionVector;
+          sldPipe1.sld_vUp = vUp;
+          sldPipe1.sld_tmLaunch = _pTimer->CurrentTick();
+          sldPipe1.sld_estType = ESL_SHOTGUN_SMOKE;
+          FLOAT3D vSpeedRelative = FLOAT3D(-1, 0.0f, -12.5f);
+          sldPipe1.sld_vSpeed = vSpeedRelative*m;
+          pl.m_iFirstEmptySLD = (pl.m_iFirstEmptySLD+1) % MAX_FLYING_SHELLS;
+          // smoke (pipe 2)
+          ShellLaunchData &sldPipe2 = pl.m_asldData[pl.m_iFirstEmptySLD];
+          sldPipe2 = sldPipe1;
+          vSpeedRelative = FLOAT3D(1, 0.0f, -12.5f);
+          sldPipe2.sld_vSpeed = vSpeedRelative*m;
+          pl.m_iFirstEmptySLD = (pl.m_iFirstEmptySLD+1) % MAX_FLYING_SHELLS;
+        }
+      }
+
+      autowait(GetSP()->sp_bCooperative ? 0.25f : 0.15f);
+      if (m_iShells>=2) {
+        CPlayer &pl = (CPlayer&)*m_penPlayer;
+        PlaySound(pl.m_soWeapon1, SOUND_DOUBLESHOTGUN_RELOAD, SOF_3D|SOF_VOLUMETRIC);
+      }
+      autowait( m_moWeapon.GetAnimLength(
+        (GetSP()->sp_bCooperative ? DOUBLESHOTGUN_ANIM_FIRE : DOUBLESHOTGUN_ANIM_FIREFAST)) -
+        (GetSP()->sp_bCooperative ? 0.25f : 0.15f) );
+      // no ammo -> change weapon
+      if (m_iShells<=1) { SelectNewWeapon(); }
+    } else {
+      ASSERTALWAYS("DoubleShotgun - Auto weapon change not working.");
+      m_bFireWeapon = m_bHasAmmo = FALSE;
+    }
+    return EEnd();
+  };
+
+  FireGrenadeShotgun() {
+    // fire two shell
+    if (m_iShells>2) {
+      GetAnimator()->FireAnimation(BODY_ANIM_SHOTGUN_FIRELONG, 0);
+      FireGrenadeSG();
+      DoRecoil();
+      SpawnRangeSound(70.0f);
+      if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("Dblshotgun_fire");}
+      DecAmmo(m_iShells, 3);
+      SetFlare(0, FLARE_ADD);
+      PlayLightAnim(LIGHT_ANIM_COLT_SHOTGUN, 0);
+      m_moWeapon.PlayAnim(GetSP()->sp_bCooperative ? DOUBLESHOTGUN_ANIM_FIRE : DOUBLESHOTGUN_ANIM_FIREFAST, 0);
+      m_moWeaponSecond.PlayAnim(GetSP()->sp_bCooperative ? HANDWITHAMMO_ANIM_FIRE : HANDWITHAMMO_ANIM_FIREFAST, 0);
+      // sound
+      CPlayer &pl = (CPlayer&)*m_penPlayer;
+      pl.m_soWeapon0.Set3DParameters(50.0f, 5.0f, 1.5f, 1.0f);      // fire
+      PlaySound(pl.m_soWeapon0, SOUND_DOUBLESHOTGUN_GRENADE, SOF_3D|SOF_VOLUMETRIC);
 
       if( hud_bShowWeapon)
       {
@@ -5742,14 +5907,14 @@ procedures:
 
 
     // release spring and fire one grenade
-    if (m_iGrenades>4)
+    if (m_iGrenades>2)
     {
       // fire grenade
       INDEX iPower = INDEX((_pTimer->CurrentTick()-F_TEMP)/_pTimer->TickQuantum);
       FireClusterGrenade( iPower);
       SpawnRangeSound(10.0f);
       if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("Gnadelauncher");}
-      DecAmmo(m_iGrenades, 5);
+      DecAmmo(m_iGrenades, 3);
       // sound
       CPlayer &pl = (CPlayer&)*m_penPlayer;
       PlaySound(pl.m_soWeapon0, SOUND_GRENADELAUNCHER_ALT, SOF_3D|SOF_VOLUMETRIC);
@@ -6593,6 +6758,10 @@ procedures:
       // plasmablast pressed
       on (EPlasmaBlast) : {
         jump PlasmaBlast();
+      }
+      // grenade shotgun pressed
+      on (EGrenadeSG) : {
+        jump GrenadeSG();
       }
       // clustergrenade pressed
       on (EClusterGrenade) : {

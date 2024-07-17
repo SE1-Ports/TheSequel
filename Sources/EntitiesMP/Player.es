@@ -652,6 +652,8 @@ void CPlayer_Precache(void)
   pdec->PrecacheSound(SOUND_F_WALK_SNOW_L        );
   pdec->PrecacheSound(SOUND_F_WALK_SNOW_R        );
 //pdec->PrecacheSound(SOUND_F_HIGHSCORE          );
+  pdec->PrecacheSound(SOUND_F_WALK_METAL_L             );
+  pdec->PrecacheSound(SOUND_F_WALK_METAL_R             );
   pdec->PrecacheSound(SOUND_BLOWUP               );
 
   pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_TELEPORT);
@@ -1216,6 +1218,8 @@ components:
  90 sound SOUND_WALK_SNOW_L     "SoundsMP\\Player\\WalkSnowL.wav",
  91 sound SOUND_WALK_SNOW_R     "SoundsMP\\Player\\WalkSnowR.wav",
  92 sound SOUND_BLOWUP          "SoundsMP\\Player\\BlowUp.wav",
+192 sound SOUND_WALK_METAL_L   "SoundsF\\Player\\WalkMetalL.wav",
+193 sound SOUND_WALK_METAL_R   "SoundsF\\Player\\WalkMetalR.wav",
  
 
 150 sound SOUND_F_WATER_ENTER   "SoundsMP\\Player\\Female\\WaterEnter.wav",
@@ -1251,8 +1255,8 @@ components:
 189 sound SOUND_F_WALK_WOOD_R   "SoundsMP\\Player\\Female\\WalkWoodR.wav",
 190 sound SOUND_F_WALK_SNOW_L   "SoundsMP\\Player\\Female\\WalkSnowL.wav",
 191 sound SOUND_F_WALK_SNOW_R   "SoundsMP\\Player\\Female\\WalkSnowR.wav",
-192 sound SOUND_WALK_METAL_L   "SoundsF\\Player\\WalkMetalL.wav",
-193 sound SOUND_WALK_METAL_R   "SoundsF\\Player\\WalkMetalR.wav",
+194 sound SOUND_F_WALK_METAL_L   "SoundsF\\Player\\WalkMetalL.wav",
+195 sound SOUND_F_WALK_METAL_R   "SoundsF\\Player\\WalkMetalR.wav",
 
 // gender-independent sounds
 200 sound SOUND_SILENCE         "Sounds\\Misc\\Silence.wav",
@@ -3348,7 +3352,8 @@ functions:
       ULONG ulKey = 1<<INDEX(((EKey&)ee).kitType);
       EKey &eKey = (EKey&)ee;
       if(eKey.kitType == KIT_HAWKWINGS01DUMMY || eKey.kitType == KIT_HAWKWINGS02DUMMY
-        || eKey.kitType == KIT_TABLESDUMMY || eKey.kitType ==KIT_JAGUARGOLDDUMMY)
+        || eKey.kitType == KIT_TABLESDUMMY || eKey.kitType ==KIT_JAGUARGOLDDUMMY 
+		|| eKey.kitType ==KIT_SCARAB || eKey.kitType ==KIT_JADEKEY)
       {
         ulKey = 0;
       }
@@ -4323,8 +4328,6 @@ functions:
       }
       else {
       }
-      iSoundWalkL+=m_iGender*GENDEROFFSET;
-      iSoundWalkR+=m_iGender*GENDEROFFSET;
       if (bRunning) {
         if (tmNow>m_tmMoveSound+plr_fRunSoundDelay) {
           m_tmMoveSound = tmNow;

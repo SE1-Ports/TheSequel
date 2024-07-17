@@ -39,6 +39,8 @@ components:
   7 model   MODEL_DEBRIS_BODY           "AREP\\Models\\Mantaman2\\Debris\\bod.mdl",
   8 model   MODEL_DEBRIS_WING           "AREP\\Models\\Mantaman2\\Debris\\wing.mdl",
 
+ 10 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Strong.tex",
+
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "AREP\\Models\\Mantaman2\\Sounds\\Idle.wav",
  51 sound   SOUND_SIGHT     "AREP\\Models\\Mantaman2\\Sounds\\Sight.wav",
@@ -378,6 +380,7 @@ procedures:
     // set your appearance
     SetModel(MODEL_MANTA);
     SetModelMainTexture(TEXTURE_MANTA);
+    SetModelSpecularTexture(TEXTURE_SPECULAR);
     // setup moving speed
     m_fWalkSpeed = FRnd() + 1.2f;
     m_aWalkRotateSpeed = FRnd()*10.0f + 25.0f;
