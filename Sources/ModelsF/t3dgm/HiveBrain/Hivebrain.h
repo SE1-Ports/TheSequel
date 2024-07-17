@@ -1,0 +1,23 @@
+// Animation names
+#define HIVEBRAIN_ANIM_DEFAULT 0
+#define HIVEBRAIN_ANIM_GROUNDIDLE 1
+#define HIVEBRAIN_ANIM_GROUNDWALK 2
+#define HIVEBRAIN_ANIM_GROUNDFIRE 3
+#define HIVEBRAIN_ANIM_GROUNDMELEE 4
+#define HIVEBRAIN_ANIM_AIRIDLE 5
+#define HIVEBRAIN_ANIM_AIRFIRE 6
+#define HIVEBRAIN_ANIM_AIRMELEE 7
+#define HIVEBRAIN_ANIM_PLANTED 8
+#define HIVEBRAIN_ANIM_PLANTEDFIRE 9
+
+// Color names
+
+// Patch names
+
+// Names of collision boxes
+#define HIVEBRAIN_COLLISION_BOX_GROUND 0
+#define HIVEBRAIN_COLLISION_BOX_AIR 1
+
+// Attaching position names
+
+// Sound names
