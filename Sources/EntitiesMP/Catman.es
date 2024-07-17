@@ -44,6 +44,8 @@ properties:
   6 INDEX   m_fgibTexture = TEXTURE_CATMAN2_SOLDIER,
   7 INDEX   m_fgibGunModel = MODEL_GUN1,
   8 INDEX   m_fgibGunTex = TEXTURE_GUN1,
+  9 CSoundObject m_soBlade,
+  10 CSoundObject m_soCut,
 
 components:
   0 class   CLASS_BASE        "Classes\\EnemyBase.ecl",
@@ -206,6 +208,12 @@ functions:
     // cat can't harm cat
     if (!IsOfClass(penInflictor, "Catman")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+
+      // if died of chainsaw
+      if (dmtType==DMT_CHAINSAW && GetHealth()<=0 && m_CatChar!=CAT_TERMINATOR) {
+        // must always blowup
+        m_fBlowUpAmount = 0;
+      }
     }
   }
 
@@ -511,9 +519,9 @@ procedures:
 
     // right hand
     m_bFistHit = FALSE;
-    autowait(0.35f);
+    autowait(0.2f);
     if (CalcDist(m_penEnemy)<BONES_HIT) { m_bFistHit = TRUE; }
-    PlaySound(m_soSound, SOUND_MELEE, SOF_3D);
+    PlaySound(m_soBlade, SOUND_MELEE, SOF_3D);
     autowait(0.10f);
 
     if (CalcDist(m_penEnemy)<BONES_HIT) { m_bFistHit = TRUE; }
@@ -523,20 +531,20 @@ procedures:
       // damage enemy
     if (m_CatChar==CAT_SOLDIER) {
           InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 10.0f, FLOAT3D(0, 0, 0), vDirection);
-          PlaySound(m_soSound, SOUND_HITSMALL, SOF_3D); }
+          PlaySound(m_soCut, SOUND_HITSMALL, SOF_3D); }
     if (m_CatChar==CAT_GENERAL) {
           InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection);
-          PlaySound(m_soSound, SOUND_HITSMALL, SOF_3D); }
+          PlaySound(m_soCut, SOUND_HITSMALL, SOF_3D); }
     if (m_CatChar==CAT_TERMINATOR) {
           InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 30.0f, FLOAT3D(0, 0, 0), vDirection);
-          PlaySound(m_soSound, SOUND_HITBIG, SOF_3D); }
+          PlaySound(m_soCut, SOUND_HITBIG, SOF_3D); }
       // push target left
       FLOAT3D vSpeed;
       GetHeadingDirection(AngleDeg(0.0f), vSpeed);
       vSpeed = vSpeed * 5.0f;
       KickEntity(m_penEnemy, vSpeed);
     }
-    autowait(0.05f);
+    autowait(GetModelObject()->GetAnimLength(CATMAN_ANIM_MELEE)-0.30f);
     return EReturn();
   };
 
@@ -678,6 +686,9 @@ procedures:
       m_fStepHeight = 4.0f;
     }
    }
+
+    m_soBlade.Set3DParameters(25.0f, 2.0f, 1.0f, 1.0f);
+    m_soCut.Set3DParameters(25.0f, 2.0f, 1.0f, 1.0f);
 
 
     // continue behavior in base class
