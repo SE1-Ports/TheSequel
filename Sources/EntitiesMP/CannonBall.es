@@ -39,7 +39,7 @@ event EForceExplode {
 
 #define IRON_LIFE_TIME  10.0f
 #define NUKE_LIFE_TIME  5.0f
-#define WEAK_LIFE_TIME  2.0f
+#define WEAK_LIFE_TIME  5.0f
 
 //#define CANNONBALL_STRETCH 3.0f
 
@@ -56,8 +56,8 @@ event EForceExplode {
 #define NUKE_RANGE_HOTSPOT 20.0f
 #define NUKE_RANGE_FALLOFF 40.0f
 
-#define WEAK_DAMAGE_MIN 20.0f
-#define WEAK_DAMAGE_MAX 50.0f
+#define WEAK_DAMAGE_MIN 30.0f
+#define WEAK_DAMAGE_MAX 60.0f
 #define WEAK_RANGE_DAMAGE (50.0f)
 #define WEAK_RANGE_HOTSPOT 4.0f
 #define WEAK_RANGE_FALLOFF 8.0f
@@ -65,8 +65,8 @@ event EForceExplode {
 #define DEV_DAMAGE_MIN 0.0f
 #define DEV_DAMAGE_MAX 140.0f
 #define DEV_RANGE_DAMAGE (20.0f)
-#define DEV_RANGE_HOTSPOT 2.0f
-#define DEV_RANGE_FALLOFF 6.0f
+#define DEV_RANGE_HOTSPOT 3.0f
+#define DEV_RANGE_FALLOFF 4.0f
 
 #define NUKE2_DAMAGE_MIN 400.0f
 #define NUKE2_DAMAGE_MAX 400.0f
@@ -636,6 +636,12 @@ procedures:
     m_tmExpandBox = 0.0001f;
     // setup time for forced expolding
     m_tmForceExplode=_pTimer->CurrentTick()+30.0f;
+
+    // force precache
+    PrecacheModel(MODEL_BALL);
+    PrecacheTexture(TEXTURE_NUKE_BALL);
+    PrecacheModel(MODEL_DEV);
+    PrecacheTexture(TEXTURE_DEV);
 
     // initialization
     Initialize();
