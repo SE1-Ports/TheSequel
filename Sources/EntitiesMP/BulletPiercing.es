@@ -168,6 +168,45 @@ functions:
                             crRay.cr_vHit, vHitDirection);
 
       m_vHitPoint = crRay.cr_vHit;
+
+      // if brush hitted
+      if (crRay.cr_penHit->GetRenderType()==RT_BRUSH && crRay.cr_pbpoBrushPolygon!=NULL)
+      {
+        CBrushPolygon *pbpo = crRay.cr_pbpoBrushPolygon;
+        FLOAT3D vHitNormal = FLOAT3D(pbpo->bpo_pbplPlane->bpl_plAbsolute);
+        // obtain surface type
+        INDEX iSurfaceType = pbpo->bpo_bppProperties.bpp_ubSurfaceType;
+        BulletHitType bhtType = BHT_BRUSH_STONE;
+        // get content type
+        INDEX iContent = pbpo->bpo_pbscSector->GetContentType();
+        CContentType &ct = GetWorld()->wo_actContentTypes[iContent];
+        
+        bhtType=(BulletHitType) GetBulletHitTypeForSurface(iSurfaceType);
+        // if this is under water polygon
+        if( ct.ct_ulFlags&CTF_BREATHABLE_GILLS)
+        {
+          // if we hit water surface
+          if( iSurfaceType==SURFACE_WATER) 
+          {
+            vHitNormal = -vHitNormal;
+
+            bhtType=BHT_BRUSH_WATER;
+          }   
+          // if we hit stone under water
+          else
+          {
+            bhtType=BHT_BRUSH_UNDER_WATER;
+          }
+        }
+        // spawn hit effect
+        BOOL bPassable = pbpo->bpo_ulFlags & (BPOF_PASSABLE|BPOF_SHOOTTHRU);
+        if (!bPassable || iSurfaceType==SURFACE_WATER) {
+          SpawnHitTypeEffect(this, bhtType, bSound, vHitNormal, crRay.cr_vHit, vHitDirection, FLOAT3D(0.0f, 0.0f, 0.0f));
+        }
+        if(!bPassable) {
+          break;
+        }
+	   }
     }
   };
 
