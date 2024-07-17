@@ -55,7 +55,7 @@ enum BarOrientations {
   BO_DOWN  = 4,
 };
 
-extern const INDEX aiWeaponsRemap[19];
+extern const INDEX aiWeaponsRemap[20];
 
 // maximal mana for master status
 #define MANA_MASTER 10000
@@ -99,6 +99,8 @@ static CTextureObject _toANapalm;
 static CTextureObject _toAElectricity;
 static CTextureObject _toAIronBall;
 static CTextureObject _toASniperBullets;
+static CTextureObject _toAPlasmaPack;
+static CTextureObject _toADevastator;
 static CTextureObject _toASeriousBomb;
 // weapon textures
 static CTextureObject _toWKnife;
@@ -114,6 +116,10 @@ static CTextureObject _toWGrenadeLauncher;
 static CTextureObject _toWFlamer;
 static CTextureObject _toWLaser;
 static CTextureObject _toWIronCannon;
+static CTextureObject _toWPlasma;
+static CTextureObject _toWGhostBuster;
+static CTextureObject _toWDevastator;
+static CTextureObject _toWHydro;
 
 // powerup textures (ORDER IS THE SAME AS IN PLAYER.ES!)
 #define MAX_POWERUPS 4
@@ -160,20 +166,22 @@ struct WeaponInfo {
   BOOL wi_bHasWeapon;
 };
 
-extern struct WeaponInfo _awiWeapons[18];
-static struct AmmoInfo _aaiAmmo[8] = {
+extern struct WeaponInfo _awiWeapons[20];
+static struct AmmoInfo _aaiAmmo[20] = {
   { &_toAShells,        &_awiWeapons[4],  &_awiWeapons[5],  0, 0, 0, -9, FALSE }, //  0
   { &_toABullets,       &_awiWeapons[6],  &_awiWeapons[7],  0, 0, 0, -9, FALSE }, //  1
   { &_toARockets,       &_awiWeapons[8],  NULL,             0, 0, 0, -9, FALSE }, //  2
   { &_toAGrenades,      &_awiWeapons[9],  NULL,             0, 0, 0, -9, FALSE }, //  3
   { &_toANapalm,        &_awiWeapons[11], NULL,             0, 0, 0, -9, FALSE }, //  4
-  { &_toAElectricity,   &_awiWeapons[12], NULL,             0, 0, 0, -9, FALSE }, //  5
+  { &_toAElectricity,   &_awiWeapons[12], &_awiWeapons[19], 0, 0, 0, -9, FALSE }, //  5
   { &_toAIronBall,      &_awiWeapons[14], NULL,             0, 0, 0, -9, FALSE }, //  6
   { &_toASniperBullets, &_awiWeapons[13], NULL,             0, 0, 0, -9, FALSE }, //  7
+  { &_toAPlasmaPack,    &_awiWeapons[15], NULL,             0, 0, 0, -9, FALSE }, //  8
+  { &_toADevastator,    &_awiWeapons[16], NULL,             0, 0, 0, -9, FALSE }, //  9
 };
-static const INDEX aiAmmoRemap[8] = { 0, 1, 2, 3, 4, 7, 5, 6 };
+static const INDEX aiAmmoRemap[10] = { 0, 1, 2, 3, 4, 7, 5, 9, 6, 8 };
 
-struct WeaponInfo _awiWeapons[18] = {
+struct WeaponInfo _awiWeapons[20] = {
   { WEAPON_NONE,            NULL,                 NULL,         FALSE },   //  0
   { WEAPON_KNIFE,           &_toWKnife,           NULL,         FALSE },   //  1
   { WEAPON_COLT,            &_toWColt,            NULL,         FALSE },   //  2
@@ -189,12 +197,13 @@ struct WeaponInfo _awiWeapons[18] = {
   { WEAPON_LASER,           &_toWLaser,           &_aaiAmmo[5], FALSE },   // 12
   { WEAPON_SNIPER,          &_toWSniper,          &_aaiAmmo[7], FALSE },   // 13
   { WEAPON_IRONCANNON,      &_toWIronCannon,      &_aaiAmmo[6], FALSE },   // 14
-//{ WEAPON_PIPEBOMB,        &_toWPipeBomb,        &_aaiAmmo[3], FALSE },   // 15
-//{ WEAPON_GHOSTBUSTER,     &_toWGhostBuster,     &_aaiAmmo[5], FALSE },   // 16
-//{ WEAPON_NUKECANNON,      &_toWNukeCannon,      &_aaiAmmo[7], FALSE },   // 17
-  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 15
-  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 16
-  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 17
+  { WEAPON_PLASMA,          &_toWPlasma,          &_aaiAmmo[8], FALSE },   // 15
+//{ WEAPON_PIPEBOMB,        &_toWPipeBomb,        &_aaiAmmo[3], FALSE },   // 18
+  { WEAPON_GHOSTBUSTER,     &_toWGhostBuster,     &_aaiAmmo[5], FALSE },   // 19
+//{ WEAPON_NUKECANNON,      &_toWNukeCannon,      &_aaiAmmo[7], FALSE },   // 20
+  { WEAPON_DEVASTATOR,      &_toWDevastator,      &_aaiAmmo[9], FALSE },   // 21
+  { WEAPON_HYDROGUN,        &_toWHydro,           &_aaiAmmo[8], FALSE },   // 22
+  { WEAPON_NONE,            NULL,                 NULL,         FALSE },   // 23
 };
 
 
@@ -680,10 +689,14 @@ static void FillWeaponAmmoTables(void)
   _aaiAmmo[6].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxIronBalls;
   _aaiAmmo[7].ai_iAmmoAmmount    = _penWeapons->m_iSniperBullets;
   _aaiAmmo[7].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxSniperBullets;
+  _aaiAmmo[8].ai_iAmmoAmmount    = _penWeapons->m_iPlasma;
+  _aaiAmmo[8].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxPlasma;
+  _aaiAmmo[9].ai_iAmmoAmmount    = _penWeapons->m_iDev;
+  _aaiAmmo[9].ai_iMaxAmmoAmmount = _penWeapons->m_iMaxDev;
 
   // prepare ammo table for weapon possesion
   INDEX i, iAvailableWeapons = _penWeapons->m_iAvailableWeapons;
-  for( i=0; i<8; i++) _aaiAmmo[i].ai_bHasWeapon = FALSE;
+  for( i=0; i<15; i++) _aaiAmmo[i].ai_bHasWeapon = FALSE;
   // weapon possesion
   for( i=WEAPON_NONE+1; i<WEAPON_LAST; i++)
   {
@@ -949,7 +962,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
 
   // loop thru all ammo types
   if (!GetSP()->sp_bInfiniteAmmo) {
-    for( INDEX ii=7; ii>=0; ii--) {
+    for( INDEX ii=9; ii>=0; ii--) {
       i = aiAmmoRemap[ii];
       // if no ammo and hasn't got that weapon - just skip this ammo
       AmmoInfo &ai = _aaiAmmo[i];
@@ -1384,6 +1397,8 @@ extern void InitHUD(void)
     _toAElectricity.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmElectricity.tex"));
     _toAIronBall.SetData_t(      CTFILENAME("TexturesMP\\Interface\\AmCannonBall.tex"));
     _toASniperBullets.SetData_t( CTFILENAME("TexturesMP\\Interface\\AmSniperBullets.tex"));
+    _toAPlasmaPack.SetData_t(    CTFILENAME("TexturesMP\\Interface\\AmPlasma.tex"));
+    _toADevastator.SetData_t(    CTFILENAME("TexturesF\\Interface\\AmDevastator.tex"));
     _toASeriousBomb.SetData_t(   CTFILENAME("TexturesMP\\Interface\\AmSeriousBomb.tex"));
     // initialize weapon textures
     _toWKnife.SetData_t(           CTFILENAME("TexturesMP\\Interface\\WKnife.tex"));
@@ -1399,6 +1414,10 @@ extern void InitHUD(void)
     _toWChainsaw.SetData_t(        CTFILENAME("TexturesMP\\Interface\\WChainsaw.tex"));
     _toWSniper.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WSniper.tex"));
     _toWFlamer.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WFlamer.tex"));
+    _toWPlasma.SetData_t(          CTFILENAME("TexturesMP\\Interface\\WPlasmaThrower.tex"));
+    _toWGhostBuster.SetData_t(     CTFILENAME("TexturesMP\\Interface\\WGhostBuster.tex"));
+    _toWDevastator.SetData_t(      CTFILENAME("TexturesF\\Interface\\WDevastator.tex"));
+    _toWHydro.SetData_t(           CTFILENAME("TexturesF\\Interface\\WHydrogun.tex"));
         
     // initialize powerup textures (DO NOT CHANGE ORDER!)
     _atoPowerups[0].SetData_t( CTFILENAME("TexturesMP\\Interface\\PInvisibility.tex"));
@@ -1451,6 +1470,10 @@ extern void InitHUD(void)
     ((CTextureData*)_toWSniper         .GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_toWMinigun        .GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_toWFlamer         .GetData())->Force(TEX_CONSTANT);
+    ((CTextureData*)_toWPlasma         .GetData())->Force(TEX_CONSTANT);
+    ((CTextureData*)_toWGhostBuster    .GetData())->Force(TEX_CONSTANT);
+    ((CTextureData*)_toWDevastator     .GetData())->Force(TEX_CONSTANT);
+    ((CTextureData*)_toWHydro          .GetData())->Force(TEX_CONSTANT);
     
     ((CTextureData*)_atoPowerups[0].GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_atoPowerups[1].GetData())->Force(TEX_CONSTANT);

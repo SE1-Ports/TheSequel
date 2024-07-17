@@ -9,6 +9,19 @@
 #define SURFACE_GRASS_NOIMPACT 20
 #define SURFACE_WOOD 18
 #define SURFACE_SNOW 21
+#define SURFACE_SNOW_NO_IMPACT 29
+#define SURFACE_LAVA 8
+#define SURFACE_ACID 22
+#define SURFACE_ICE 1
+#define SURFACE_ICE_CLIMBABLE 4
+#define SURFACE_ICE_SLOPE 5
+#define SURFACE_ICE_LESS 6
+#define SURFACE_GLASS 23
+#define SURFACE_FLESH 24
+#define SURFACE_METAL 25
+#define SURFACE_METAL_NO_IMPACT 26
+#define SURFACE_METAL_SLIDING 27
+#define SURFACE_ENERGY 28
 
 // Max ammo
 #define MAX_BULLETS INDEX(500)
@@ -20,6 +33,8 @@
 #define MAX_IRONBALLS INDEX(30)
 //#define MAX_NUKEBALLS INDEX(3)
 #define MAX_SNIPERBULLETS INDEX(50)
+#define MAX_PLASMA INDEX(300)
+#define MAX_DEV INDEX(100)
 
 // Bit shifters for ammo
 #define AMMO_BULLETS       0
@@ -31,9 +46,12 @@
 //#define AMMO_NUKEBALLS   6
 #define AMMO_IRONBALLS     7
 #define AMMO_SNIPERBULLETS 8
+#define AMMO_PLASMA        9 
+#define AMMO_DEV          10 
 
 #define BLOOD_SPILL_RED RGBAToColor(250,20,20,255)
 #define BLOOD_SPILL_GREEN RGBAToColor(0,250,0,255)
+#define BLOOD_SPILL_YELLOW RGBAToColor(0,128,12,0)
 
 // Ammo mana Value
 #define AV_SHELLS         INDEX(70)
@@ -45,6 +63,8 @@
 //#define AV_NUKEBALLS      INDEX(1800)
 #define AV_NAPALM         INDEX(200)
 #define AV_SNIPERBULLETS  INDEX(200)
+#define AV_PLASMA         INDEX(200)
+#define AV_DEV            INDEX(300)
 
 // used for invisibility powerup
 #define INVISIBILITY_ALPHA_LOCAL  0x55

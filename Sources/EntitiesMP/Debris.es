@@ -6,12 +6,14 @@
 uses "EntitiesMP/BasicEffects";
 
 enum DebrisParticlesType {
-  0 DPT_NONE        "",   // no particles
-  1 DPT_BLOODTRAIL  "",   // blood
-  2 DPR_SMOKETRAIL  "",   // smoke
-  3 DPR_SPARKS      "",   // sparks (for robots)
-  4 DPR_FLYINGTRAIL "",   // just flying object
-  5 DPT_AFTERBURNER "",   // afterburner trail
+  0 DPT_NONE        "None",   // no particles
+  1 DPT_BLOODTRAIL  "Blood",   // blood
+  2 DPR_SMOKETRAIL  "Smoke",   // smoke
+  3 DPR_SPARKS      "Sparks",   // sparks (for robots)
+  4 DPR_FLYINGTRAIL "Flying",   // just flying object
+  5 DPT_AFTERBURNER "Afterburner",   // afterburner trail
+  6 DPT_SLIMETRAIL  "Slime trail",   // slime trail
+  7 DPT_GOOTRAIL    "Goo trail",   // goo trail
 };
 
 // input parameter for spawning a debris
@@ -190,6 +192,12 @@ functions:
                          } break;
     case DPT_AFTERBURNER:{
       Particles_AfterBurner( this, m_tmStarted, 0.5f);
+                         } break;
+    case DPT_SLIMETRAIL: {
+      Particles_BloodGreenTrail( this);
+                         } break;
+    case DPT_GOOTRAIL: {
+      Particles_BloodYellowTrail( this);
                          } break;
     default: ASSERT(FALSE);
     case DPT_NONE:

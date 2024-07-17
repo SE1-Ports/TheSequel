@@ -13,6 +13,7 @@ enum HealthItemType {
   2 HIT_MEDIUM    "Medium",     // medium health
   3 HIT_LARGE     "Large",      // large health
   4 HIT_SUPER     "Super",      // super health
+  5 HIT_MEGA      "Mega",      // mega health
 };
 
 // event for sending through receive item
@@ -54,6 +55,10 @@ components:
  40 model   MODEL_SUPER     "Models\\Items\\Health\\Super\\Super.mdl",
  41 texture TEXTURE_SUPER   "Models\\Items\\Health\\Super\\Super.tex",
 
+// ********* MEGA HEALTH *********
+100 model   MODEL_MEGA     "ModelsF\\Items\\Health\\Mega\\Mega.mdl",
+101 texture TEXTURE_MEGA   "ModelsF\\Items\\Health\\Mega\\Mega.tex",
+
 // ********* MISC *********
  50 texture TEXTURE_SPECULAR_STRONG "Models\\SpecularTextures\\Strong.tex",
  51 texture TEXTURE_SPECULAR_MEDIUM "Models\\SpecularTextures\\Medium.tex",
@@ -62,6 +67,7 @@ components:
  54 texture TEXTURE_REFLECTION_PUPLE01 "Models\\ReflectionTextures\\Purple01.tex",
  55 texture TEXTURE_FLARE "Models\\Items\\Flares\\Flare.tex",
  56 model   MODEL_FLARE "Models\\Items\\Flares\\Flare.mdl",
+ 57 texture TEXTURE_REFLECTION_MEGA "ModelsF\\Items\\Health\\Mega\\Mega.tex",
 
 // ************** SOUNDS **************
 301 sound   SOUND_PILL         "Sounds\\Items\\HealthPill.wav",
@@ -69,6 +75,7 @@ components:
 303 sound   SOUND_MEDIUM       "Sounds\\Items\\HealthMedium.wav",
 304 sound   SOUND_LARGE        "Sounds\\Items\\HealthLarge.wav",
 305 sound   SOUND_SUPER        "Sounds\\Items\\HealthSuper.wav",
+306 sound   SOUND_MEGA         "SoundsF\\Items\\HealthMega.wav",
 
 functions:
   void Precache(void) {
@@ -78,6 +85,7 @@ functions:
       case HIT_MEDIUM: PrecacheSound(SOUND_MEDIUM); break;
       case HIT_LARGE:  PrecacheSound(SOUND_LARGE ); break;
       case HIT_SUPER:  PrecacheSound(SOUND_SUPER ); break;
+      case HIT_MEGA:   PrecacheSound(SOUND_MEGA ); break;
     }
   }
   /* Fill in entity statistics - for AI purposes only */
@@ -95,6 +103,7 @@ functions:
       case HIT_MEDIUM:pes->es_strName+=" medium"; break;
       case HIT_LARGE: pes->es_strName+=" large";  break;
       case HIT_SUPER: pes->es_strName+=" super";  break;
+      case HIT_MEGA:  pes->es_strName+=" mega";  break;
     }
 
     return TRUE;
@@ -123,6 +132,9 @@ functions:
         break;
       case HIT_SUPER:
         Particles_Stardust(this, 2.3f*0.75f, 1.5f*0.75f, PT_STAR08, 320);
+        break;
+      case HIT_MEGA:
+        Particles_Stardust(this, 2.5f*0.75f, 1.5f*0.75f, PT_STAR08, 400);
         break;
     }
   }
@@ -184,6 +196,19 @@ functions:
         StretchItem(FLOAT3D(1.2f*0.75f, 1.2f*0.75f, 1.2f*0.75));
         m_iSoundComponent = SOUND_LARGE;
         break;
+      case HIT_MEGA:
+        StartModelAnim(ITEMHOLDER_ANIM_SMALLOSCILATION, AOF_LOOPING|AOF_NORESTART);
+        ForceCollisionBoxIndexChange(ITEMHOLDER_COLLISION_BOX_MEDIUM);
+        m_fValue = 200.0f;
+        m_bOverTopHealth = TRUE;
+        m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 60.0f; 
+        m_strDescription.PrintF("Mega - H:%g  T:%g", m_fValue, m_fRespawnTime);
+        // set appearance
+        AddItem(MODEL_MEGA, TEXTURE_MEGA, TEXTURE_REFLECTION_MEGA, TEXTURE_SPECULAR_STRONG, 0);
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.8f,0), FLOAT3D(2.8f,2.8f,1.0f) );
+        StretchItem(FLOAT3D(1.0f*0.8f, 1.0f*0.8f, 1.0f*0.8));
+        m_iSoundComponent = SOUND_MEGA;
+        break;
       case HIT_SUPER:
         StartModelAnim(ITEMHOLDER_ANIM_SMALLOSCILATION, AOF_LOOPING|AOF_NORESTART);
         ForceCollisionBoxIndexChange(ITEMHOLDER_COLLISION_BOX_MEDIUM);
@@ -197,7 +222,6 @@ functions:
         StretchItem(FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75));
         CModelObject &mo = GetModelObject()->GetAttachmentModel(ITEMHOLDER_ATTACHMENT_ITEM)->amo_moModelObject;
         mo.PlayAnim(0, AOF_LOOPING);
-
         m_iSoundComponent = SOUND_SUPER;
         break;
     }
@@ -239,6 +263,7 @@ procedures:
           case HIT_MEDIUM:IFeel_PlayEffect("PU_HealthMedium"); break;
           case HIT_LARGE: IFeel_PlayEffect("PU_HealthLarge"); break;
           case HIT_SUPER: IFeel_PlayEffect("PU_HealthSuper"); break;
+          case HIT_MEGA:  IFeel_PlayEffect("PU_HealthMega"); break;
         }
       }
 

@@ -5,6 +5,7 @@ extern FLOAT gam_afEnemyMovementSpeed[5];
 extern FLOAT gam_afEnemyAttackSpeed[5];
 extern FLOAT gam_afDamageStrength[5];
 extern FLOAT gam_afAmmoQuantity[5];
+extern FLOAT gam_afEnemyReaction[5];
 extern FLOAT gam_fManaTransferFactor;
 extern FLOAT gam_fExtraEnemyStrength          ;
 extern FLOAT gam_fExtraEnemyStrengthPerPlayer ;
@@ -73,6 +74,7 @@ static void SetDifficultyParameters(CSessionProperties &sp)
     sp.sp_fEnemyAttackSpeed   = gam_afEnemyAttackSpeed   [0];
     sp.sp_fDamageStrength     = gam_afDamageStrength     [0];
     sp.sp_fAmmoQuantity       = gam_afAmmoQuantity       [0];
+    sp.sp_fReaction           = gam_afEnemyReaction      [0];
     break;
   case CSessionProperties::GD_EASY:
     sp.sp_ulSpawnFlags = SPF_EASY;
@@ -80,6 +82,7 @@ static void SetDifficultyParameters(CSessionProperties &sp)
     sp.sp_fEnemyAttackSpeed   = gam_afEnemyAttackSpeed   [1];
     sp.sp_fDamageStrength     = gam_afDamageStrength     [1];
     sp.sp_fAmmoQuantity       = gam_afAmmoQuantity       [1];
+    sp.sp_fReaction           = gam_afEnemyReaction      [1];
     break;
   default:
     ASSERT(FALSE);
@@ -89,6 +92,7 @@ static void SetDifficultyParameters(CSessionProperties &sp)
     sp.sp_fEnemyAttackSpeed   = gam_afEnemyAttackSpeed   [2];
     sp.sp_fDamageStrength     = gam_afDamageStrength     [2];
     sp.sp_fAmmoQuantity       = gam_afAmmoQuantity       [2];
+    sp.sp_fReaction           = gam_afEnemyReaction      [2];
     break;
   case CSessionProperties::GD_HARD:
     sp.sp_ulSpawnFlags = SPF_HARD;
@@ -96,6 +100,7 @@ static void SetDifficultyParameters(CSessionProperties &sp)
     sp.sp_fEnemyAttackSpeed   = gam_afEnemyAttackSpeed   [3];
     sp.sp_fDamageStrength     = gam_afDamageStrength     [3];
     sp.sp_fAmmoQuantity       = gam_afAmmoQuantity       [3];
+    sp.sp_fReaction           = gam_afEnemyReaction      [3];
     break;
   case CSessionProperties::GD_EXTREME:
     sp.sp_ulSpawnFlags = SPF_EXTREME;
@@ -103,6 +108,7 @@ static void SetDifficultyParameters(CSessionProperties &sp)
     sp.sp_fEnemyAttackSpeed   = gam_afEnemyAttackSpeed   [4];
     sp.sp_fDamageStrength     = gam_afDamageStrength     [4];
     sp.sp_fAmmoQuantity       = gam_afAmmoQuantity       [4];
+    sp.sp_fReaction           = gam_afEnemyReaction      [4];
     break;
   }
 }

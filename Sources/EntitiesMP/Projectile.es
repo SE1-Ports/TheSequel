@@ -16,6 +16,10 @@
 
 #include "ModelsMP/Enemies/ExotechLarva/Weapons/PlasmaGun.h"
 
+#include "ModelsMP/Enemies/SS2/MechaSpider/Projectile/Projectile.h"
+
+#include "ModelsF/Weapons/HydroGun/Projectile/Projectile.h"
+
 #include "EntitiesMP/PlayerWeapons.h"
 #include "EntitiesMP/Shooter.h"
 
@@ -87,6 +91,38 @@ enum ProjectileType {
  75 PRT_AIRELEMENTAL_WIND     "Air Elemental Wind Blast", //air elemental wind blast
  76 PRT_AFTERBURNER_DEBRIS    "Afterburner debris",
  77 PRT_METEOR                "Meteor",
+
+ 100 PRT_LASER_TANK             "Tank Laser",      // tank laser
+ 101 PRT_LASER_FLOATER          "Floater Laser",   // floater laser
+ 102 PRT_SCORP_PROJECTILE       "Scorp Projectile",   // scorp projectile
+ 103 PRT_MANTAMAN_DEBRIS        "Mantaman Debris",   // Mantaman projectile's debris
+ 104 PRT_EYEMAN_ACID            "Eyeman Acid",      // eyeman acid
+ 105 PRT_BEAST_E_PROJECTILE     "Beast Electric Projectile",   // beast electric projectile
+ 106 PRT_SCORP_BIG_PROJECTILE   "Scorp Big Projectile",   // scorp big projectile
+ 107 PRT_ALBINO_PROJECTILE      "Albino Projectile",   // albino projectile
+ 108 PRT_SPIDERWEB_SOL          "Spider Soldier Plasma",  // spider soldier plasma
+ 109 PRT_SPIDERWEB_MUM          "Spider Mommy Plasma",  // spider mommy plasma
+ 110 PRT_KALOPSY_SLIME          "Kalopsy Slime",  // Kalopsy Slime
+ 111 PRT_CATMAN_BOMB            "Catman Bomb",  // catman bomb
+ 113 PRT_LASER_GREEN            "Laser Green",   // player laser ray
+ 114 PRT_ROCKET_SEEKING         "Seeking Rocket", // Seeking Rocket
+ 115 PRT_NEPTUNE                "Neptune",   // Neptune
+ 119 PRT_GRUNT_PROJECTILE_SNIPER"Grunt Sniper Laser", // grunt sniper laser  
+ 121 PRT_BOMB                   "Bomb", // Bomb  
+ 122 PRT_ARROW                  "Arrow",   // Arrow
+ 123 PRT_ARROW_EXPLOSIVE        "Arrow Explosive",   // Arrow Explosive
+ 124 PRT_SCORPION_LASER         "Scorpion Laser", // Scorpion Laser
+
+ 112 PRT_PLASMABOLT             "Plasma Bolt",  // plasma bolt
+ 116 PRT_GRENADE_CLUSTER        "Cluster Grenade",   // cluster grenade
+ 117 PRT_GRENADE_NEW            "Grenade New",   // player grenade
+ 118 PRT_ROCKET_HOMING          "Homing Rocket",   // player rocket
+ 120 PRT_METEOR_SIMPLE          "Meteor simple",
+ 125 PRT_METEOR_SMALL           "Meteor small",
+ 126 PRT_GRENADE_CLUSTERED      "Clustered Grenade",   // cluster grenade
+ 127 PRT_HYDROGUN               "Hydrogun",
+ 128 PRT_MAMUTMAN               "Mamutman Bullet", // mamutman bullet
+ 129 PRT_FISHMAN_FIRE_STRONG    "Fishman strong",   // fishman fire strong
 };
 
 enum ProjectileMovingType {
@@ -96,6 +132,7 @@ enum ProjectileMovingType {
   3 PMT_GUIDED_FAST    "",     // fast guided projectile
   4 PMT_FLYING_REBOUNDING "",  // flying and rebounding from walls a few times
   5 PMT_GUIDED_SLIDING "",     // sliding on floor and guided at the same time
+  6 PMT_GUIDED_PE      "",     // guided projectile PE
 };
 
 
@@ -143,6 +180,7 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   case PRT_DEVIL_ROCKET          :
     pdec->PrecacheModel(MODEL_ROCKET  );
     pdec->PrecacheTexture(TEXTURE_ROCKET);
+    pdec->PrecacheTexture(TEXTURE_ROCKET_NU);
     pdec->PrecacheSound(SOUND_FLYING  );
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_ROCKET);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
@@ -150,9 +188,28 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_ROCKET_PLANE);
     break;
   case PRT_GRENADE:
+  case PRT_GRENADE_CLUSTERED:
     pdec->PrecacheModel(MODEL_GRENADE);
     pdec->PrecacheTexture(TEXTURE_GRENADE);
     pdec->PrecacheSound(SOUND_GRENADE_BOUNCE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_SHOCKWAVE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE_PLANE);
+    break;
+  case PRT_GRENADE_CLUSTER:
+    pdec->PrecacheModel(MODEL_GRENADE_CLUSTER);
+    pdec->PrecacheTexture(TEXTURE_GRENADE_CLUSTER);
+    pdec->PrecacheSound(SOUND_GRENADE_BOUNCE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_SHOCKWAVE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE_PLANE);
+    break;
+  case PRT_GRENADE_NEW:
+    pdec->PrecacheModel(MODEL_GRENADE_NEW);
+    pdec->PrecacheTexture(TEXTURE_GRENADE_NEW);
+    pdec->PrecacheSound(SOUND_GRENADE_BOUNCE_NEW);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_SHOCKWAVE);
@@ -249,6 +306,20 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheTexture(TEXTURE_ELEM_LAVA_BOMB); 
     pdec->PrecacheClass(CLASS_BLOOD_SPRAY);
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON);
+  case PRT_METEOR_SIMPLE:
+    pdec->PrecacheSound(SOUND_FLYING  );
+    pdec->PrecacheSound(SOUND_METEOR_BLAST  );
+    pdec->PrecacheModel(MODEL_ELEM_LAVA_BOMB);
+    pdec->PrecacheTexture(TEXTURE_ELEM_LAVA_BOMB); 
+    pdec->PrecacheClass(CLASS_BLOOD_SPRAY);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON);
+  case PRT_METEOR_SMALL:
+    pdec->PrecacheSound(SOUND_FLYING  );
+    pdec->PrecacheSound(SOUND_METEOR_BLAST  );
+    pdec->PrecacheModel(MODEL_ELEM_LAVA_BOMB);
+    pdec->PrecacheTexture(TEXTURE_ELEM_LAVA_BOMB); 
+    pdec->PrecacheClass(CLASS_BLOOD_SPRAY);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON);
 
     break;
 
@@ -269,13 +340,17 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     break;
 
   case PRT_FISHMAN_FIRE:
+  case PRT_FISHMAN_FIRE_STRONG:
     pdec->PrecacheModel(MODEL_FISHMAN_FIRE      );
     pdec->PrecacheTexture(TEXTURE_FISHMAN_FIRE  );
     break;
 
   case PRT_MANTAMAN_FIRE:
-    pdec->PrecacheModel(MODEL_MANTAMAN_FIRE     );
-    pdec->PrecacheTexture(TEXTURE_MANTAMAN_FIRE );
+  case PRT_MANTAMAN_DEBRIS:
+    pdec->PrecacheSound(SOUND_BEAST_FLYING  );
+    pdec->PrecacheModel(MODEL_MANTAMAN_FIRE);
+    pdec->PrecacheTexture(TEXTURE_MANTAMAN_FIRE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON);
     break;
 
   case PRT_DEVIL_LASER:         
@@ -371,6 +446,119 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheModel(MODEL_MARKER);
     pdec->PrecacheTexture(TEXTURE_MARKER);    
     break;
+
+  case PRT_LASER_TANK:
+    pdec->PrecacheModel(MODEL_LASER                   );
+    pdec->PrecacheTexture(TEXTURE_PINK_LASER          );
+    break;
+  case PRT_LASER_FLOATER:
+    pdec->PrecacheModel(MODEL_LASER                   );
+    pdec->PrecacheTexture(TEXTURE_GREEN_LASER          );
+    break;
+  case PRT_SCORP_PROJECTILE:
+    pdec->PrecacheModel(MODEL_BEAST_FIRE);
+    pdec->PrecacheTexture(TEXTURE_BEAST_FIRE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_LASERWAVE);
+    break;
+  case PRT_SCORP_BIG_PROJECTILE:
+    pdec->PrecacheSound(SOUND_DEMON_FLYING  );
+    pdec->PrecacheModel(MODEL_LARVA_PLASMA);
+    pdec->PrecacheTexture(TEXTURE_LARVA_PLASMA);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_SHOCKWAVE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON);
+    break;
+  case PRT_EYEMAN_ACID:
+    pdec->PrecacheModel(MODEL_EYEMAN_ACID);
+    pdec->PrecacheTexture(TEXTURE_EYEMAN_ACID);
+    break;
+  case PRT_BEAST_E_PROJECTILE:
+    pdec->PrecacheSound(SOUND_ELECTRIC_FLYING  );
+    pdec->PrecacheModel(MODEL_LARVA_PLASMA);
+    pdec->PrecacheTexture(TEXTURE_LARVA_PLASMA);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_LIGHT_CANNON);    
+    break;
+  case PRT_ALBINO_PROJECTILE:
+    pdec->PrecacheSound(SOUND_DEMON_FLYING  );
+    pdec->PrecacheModel(MODEL_LARVA_PLASMA);
+    pdec->PrecacheTexture(TEXTURE_LARVA_PLASMA);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_LIGHT_CANNON);    
+    break;
+  case PRT_SPIDERWEB_SOL:
+    pdec->PrecacheModel(MODEL_SPIDER_PROJECTILE           );
+    pdec->PrecacheTexture(TEXTURE_SPIDER_PROJECTILE    );
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GIZMO_SPLASH_FX);
+    break;
+  case PRT_SPIDERWEB_MUM:
+    pdec->PrecacheModel(MODEL_SPIDER_PROJECTILE           );
+    pdec->PrecacheTexture(TEXTURE_SPIDER_PROJECTILE    );
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GIZMO_SPLASH_FX);
+    break;
+  case PRT_KALOPSY_SLIME:
+    pdec->PrecacheModel(MODEL_SPIDER_PROJECTILE           );
+    pdec->PrecacheTexture(TEXTURE_SPIDER_PROJECTILE    );
+    break;
+  case PRT_CATMAN_BOMB:
+    pdec->PrecacheModel(MODEL_CYBORG_BOMB     );
+    pdec->PrecacheTexture(TEXTURE_CYBORG_BOMB );
+    break;
+  case PRT_LASER_GREEN:
+    pdec->PrecacheModel(MODEL_LASER                   );
+    pdec->PrecacheTexture(TEXTURE_GREEN_LASER          );
+    break;
+  case PRT_ROCKET_SEEKING:
+    pdec->PrecacheSound(SOUND_FLYING                   );
+    pdec->PrecacheModel(MODEL_GUFFY_PROJECTILE         );
+    pdec->PrecacheTexture(TEXTURE_GUFFY_PROJECTILE     );
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_ROCKET );
+    break;
+  case PRT_NEPTUNE:
+    pdec->PrecacheSound(SOUND_BEAST_FLYING  );
+    pdec->PrecacheModel(MODEL_MANTAMAN_FIRE);
+    pdec->PrecacheTexture(TEXTURE_MANTAMAN_FIRE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON);
+    break;
+  case PRT_GRUNT_PROJECTILE_SNIPER:
+    pdec->PrecacheModel(MODEL_GRUNT_PROJECTILE           );
+    pdec->PrecacheTexture(TEXTURE_GRUNT_PROJECTILE_03    );
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_LASERWAVE);
+    pdec->PrecacheSound(SOUND_FLYING02  );
+    break;
+  case PRT_BOMB:
+    pdec->PrecacheModel(MODEL_BOMB);
+    pdec->PrecacheTexture(TEXTURE_BOMB);
+    pdec->PrecacheSound(SOUND_FLYING04);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_EXPLOSIONSTAIN);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_SHOCKWAVE);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_GRENADE_PLANE);
+    break;
+  case PRT_ARROW:
+  case PRT_ARROW_EXPLOSIVE:
+    pdec->PrecacheModel(MODEL_ARROW);
+    pdec->PrecacheTexture(TEXTURE_ARROW);
+    pdec->PrecacheSound(SOUND_ARROWHIT);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_ARROWHIT);
+    break;
+  case PRT_SCORPION_LASER:
+    pdec->PrecacheModel(MODEL_CATMAN_FIRE             );
+    pdec->PrecacheTexture(TEXTURE_CATMAN_FIRE         );
+    pdec->PrecacheSound(SOUND_FLYING  );
+    break;
+  case PRT_HYDROGUN:
+    pdec->PrecacheModel(MODEL_HYDROGUN);
+    pdec->PrecacheTexture(TEXTURE_GUFFY_PROJECTILE     );
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON_NOLIGHT);
+    pdec->PrecacheClass(CLASS_BLOOD_SPRAY);
+    pdec->PrecacheSound(SOUND_HYDROGUN  );
+    break;
+
+  case PRT_PLASMABOLT:
+  case PRT_MAMUTMAN:
+    pdec->PrecacheModel(MODEL_CYBORG_LASER                   );
+    pdec->PrecacheTexture(TEXTURE_RED_LASER         );
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_PLASMA_EXPLOSION);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION  );
+    break;
   default:
     ASSERT(FALSE);
   }
@@ -431,6 +619,7 @@ components:
 // ********* PLAYER ROCKET *********
   5 model   MODEL_ROCKET        "Models\\Weapons\\RocketLauncher\\Projectile\\Rocket.mdl",
   6 texture TEXTURE_ROCKET      "Models\\Weapons\\RocketLauncher\\Projectile\\Rocket.tex",
+  7 texture TEXTURE_ROCKET_NU      "ModelsF\\Weapons\\RocketLauncher\\Projectile\\Rocket.tex",
   8 sound   SOUND_FLYING        "Sounds\\Weapons\\RocketFly.wav",
   9 sound   SOUND_BEAST_FLYING  "Sounds\\Weapons\\ProjectileFly.wav",
 
@@ -438,6 +627,15 @@ components:
  10 model   MODEL_GRENADE         "Models\\Weapons\\GrenadeLauncher\\Grenade\\Grenade.mdl",
  11 texture TEXTURE_GRENADE       "Models\\Weapons\\GrenadeLauncher\\Grenade\\Grenade.tex",
  12 sound   SOUND_GRENADE_BOUNCE  "Models\\Weapons\\GrenadeLauncher\\Sounds\\Bounce.wav",
+
+// ********* CLUSTER GRENADE *********
+ 310 model   MODEL_GRENADE_CLUSTER         "Models\\Weapons\\GrenadeLauncherNE\\Grenade\\Grenade.mdl",
+ 311 texture TEXTURE_GRENADE_CLUSTER       "Models\\Weapons\\GrenadeLauncherNE\\Grenade\\Grenade.tex",
+
+// ********* PLAYER GRENADE NEW *********
+ 320 model   MODEL_GRENADE_NEW         "Models\\Weapons\\GrenadeLauncher2\\Grenade\\Grenade.mdl",
+ 321 texture TEXTURE_GRENADE_NEW       "Models\\Weapons\\GrenadeLauncher2\\Grenade\\Grenade.tex",
+ 322 sound   SOUND_GRENADE_BOUNCE_NEW  "Models\\Weapons\\GrenadeLauncher2\\Sounds\\Bounce.wav",
 
 // ********* PLAYER FLAME *********
  15 model   MODEL_FLAME         "ModelsMP\\Weapons\\Flamer\\Projectile\\Invisible.mdl",
@@ -467,6 +665,8 @@ components:
  50 model   MODEL_LASER           "Models\\Weapons\\Laser\\Projectile\\LaserProjectile.mdl",
  51 texture TEXTURE_GREEN_LASER   "Models\\Weapons\\Laser\\Projectile\\LaserProjectile.tex",
  52 texture TEXTURE_BLUE_LASER    "Models\\Weapons\\Laser\\Projectile\\LaserProjectileBlue.tex",
+ 53 texture TEXTURE_RED_LASER     "Models\\Weapons\\Laser\\Projectile\\LaserProjectileRed.tex",
+ 54 texture TEXTURE_PINK_LASER    "Models\\Weapons\\Laser\\Projectile\\LaserProjectilePink.tex",
 
 // ********* BONEMAN FIRE *********
  60 model   MODEL_BONEMAN_FIRE    "Models\\Enemies\\Boneman\\Projectile\\Projectile.mdl",
@@ -508,9 +708,9 @@ components:
 110 model   MODEL_FISHMAN_FIRE      "Models\\Enemies\\Fishman\\Projectile\\Projectile.mdl",
 111 texture TEXTURE_FISHMAN_FIRE    "Models\\Enemies\\Fishman\\Projectile\\Water.tex",
 
-// ********* FISHMAN FIRE *********
-120 model   MODEL_MANTAMAN_FIRE     "Models\\Enemies\\Mantaman\\Projectile\\Projectile.mdl",
-121 texture TEXTURE_MANTAMAN_FIRE   "Models\\Enemies\\Mantaman\\Projectile\\Water.tex",
+// ********* MANTAMAN FIRE *********
+120 model   MODEL_MANTAMAN_FIRE     "Models\\Enemies\\Beast\\Projectile\\Projectile.mdl",
+121 texture TEXTURE_MANTAMAN_FIRE   "Models\\Enemies\\Beast\\Projectile\\ProjectileBlue.tex",
 
 // ********* CYBORG FIRE *********
 130 model   MODEL_CYBORG_LASER      "Models\\Weapons\\Laser\\Projectile\\LaserProjectile.mdl",
@@ -522,6 +722,8 @@ components:
 135 model   MODEL_GRUNT_PROJECTILE      "ModelsMP\\Enemies\\Grunt\\Projectile\\GruntProjectile.mdl",
 136 texture TEXTURE_GRUNT_PROJECTILE_01 "ModelsMP\\Enemies\\Grunt\\Projectile\\GruntProjectileSoldier.tex",
 137 texture TEXTURE_GRUNT_PROJECTILE_02 "ModelsMP\\Enemies\\Grunt\\Projectile\\GruntProjectileCommander.tex",
+138 texture TEXTURE_GRUNT_PROJECTILE_03 "ModelsMP\\Enemies\\Grunt\\Projectile\\GruntProjectileBlue.tex",
+139 sound   SOUND_FLYING02        "SoundsF\\Weapons\\Flying02.wav",
 
 // ********* DEVIL FIRE *********
 /*
@@ -557,12 +759,44 @@ components:
 177 texture TEXTURE_LARVA_TAIL        "ModelsMP\\Enemies\\ExotechLarva\\Projectile\\TailProjectile.tex",
 178 sound   SOUND_LARVETTE            "ModelsMP\\Enemies\\ExotechLarva\\Sounds\\Squeak.wav",
 
+179 sound   SOUND_ELECTRIC_FLYING      "SoundsMP\\Weapons\\ElectricProjectile.wav",
+302 texture TEXTURE_PINK_PLASMA_BALL "ModelsMP\\Enemies\\ExotechLarva\\Weapons\\PlasmaPink.tex",
+308 texture TEXTURE_GREEN_PLASMA_BALL "ModelsMP\\Enemies\\ExotechLarva\\Weapons\\PlasmaGreen.tex",
+
 // ********** AIR ELEMENTAL WIND BLAST **********
 180 model   MODEL_WINDBLAST          "ModelsMP\\Enemies\\AirElemental\\Projectile\\WindBlast.mdl",
 181 texture TEXTURE_WINDBLAST        "ModelsMP\\Enemies\\AirElemental\\Projectile\\WindBlast.tex",
 
 // ****************** METEOR  ******************
 185 sound   SOUND_METEOR_BLAST       "SoundsMP\\Weapons\\MeteorBlast.wav",
+
+// ********* EYEMAN FIRE *********
+300 model   MODEL_EYEMAN_ACID     "Models\\Enemies\\Eyeman\\Projectile\\Acid.mdl",
+301 texture TEXTURE_EYEMAN_ACID   "Models\\Enemies\\Eyeman\\Projectile\\Acid.tex",
+
+// ********* SPIDER PROJECTILES *********
+303 model   MODEL_SPIDER_PROJECTILE      "ModelsMP\\Enemies\\SS2\\MechaSpider\\Projectile\\Projectile.mdl",
+304 texture TEXTURE_SPIDER_PROJECTILE    "ModelsMP\\Enemies\\Grunt\\Projectile\\GruntProjectileGreen.tex",
+305 model   MODEL_SPIDER_WEB      "ModelsMP\\SouthAmerica\\SpiderWeb\\SpiderWeb.mdl",
+306 texture TEXTURE_SPIDER_WEB    "ModelsMP\\SouthAmerica\\SpiderWeb\\SpiderWeb.tex",
+307 sound   SOUND_SLIME_FLYING        "SoundsMP\\Weapons\\SlimyProjectile.wav",
+
+// ********* PLASMABOLT *********
+330 sound   SOUND_PLASMA_EXPLOSION           "ModelsMP\\Weapons\\PlasmaThrower\\Sounds\\_Explosion.wav",
+
+// ********* BOMB *********
+340 model   MODEL_BOMB         "ModelsF\\SS2\\Projectiles\\Bomb\\Bomb.mdl",
+341 texture TEXTURE_BOMB       "ModelsF\\SS2\\Projectiles\\Bomb\\Bomb.tex",
+342 sound   SOUND_FLYING04        "SoundsF\\Weapons\\Flying04.wav",
+
+// ********* ARROW *********
+350 model   MODEL_ARROW      "ModelsF\\NextEncounter\\Enemies\\Chariot\\Arrow.mdl",
+351 texture TEXTURE_ARROW    "ModelsF\\NextEncounter\\Enemies\\Chariot\\Arrow.tex",
+352 sound   SOUND_ARROWHIT   "ModelsF\\NextEncounter\\Enemies\\Chariot\\Sounds\\ArrowHit.wav",
+
+// ********** HYDROGUN **********
+360 model   MODEL_HYDROGUN   "ModelsF\\Weapons\\Hydrogun\\Projectile\\Projectile.mdl",
+361 sound   SOUND_HYDROGUN                   "SoundsF\\Weapons\\Acid.wav",
 
 // ************** REFLECTIONS **************
 200 texture TEX_REFL_BWRIPLES01         "Models\\ReflectionTextures\\BWRiples01.tex",
@@ -683,6 +917,7 @@ functions:
     switch (m_prtType) {
       case PRT_ROCKET:
       case PRT_WALKER_ROCKET:
+      case PRT_ROCKET_HOMING:
       case PRT_DEVIL_ROCKET:
         if( bLive)
         {
@@ -703,6 +938,18 @@ functions:
         lsNew.ls_colColor = 0x2F1F0F00;
         lsNew.ls_rFallOff = 2.0f;
         lsNew.ls_rHotSpot = 0.2f;
+        lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
+        break;
+      case PRT_GRENADE_NEW:
+        lsNew.ls_colColor = 0x2F1F0F00;
+        lsNew.ls_rFallOff = 2.0f;
+        lsNew.ls_rHotSpot = 0.2f;
+        lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
+        break;
+      case PRT_BOMB:
+        lsNew.ls_colColor = 0x2F1F0F00;
+        lsNew.ls_rFallOff = 5.0f;
+        lsNew.ls_rHotSpot = 1.0f;
         lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
         break;
       case PRT_FLAME:
@@ -763,11 +1010,16 @@ functions:
       case PRT_FISHMAN_FIRE:
         lsNew.ls_colColor = C_lBLUE;
         lsNew.ls_rFallOff = 2.0f;
-        lsNew.ls_plftLensFlare = NULL;
+        lsNew.ls_plftLensFlare = &_lftProjectileYellowBubbleGlow;
+        break;
+      case PRT_FISHMAN_FIRE_STRONG:
+        lsNew.ls_colColor = C_lBLUE;
+        lsNew.ls_rFallOff = 4.0f;
+        lsNew.ls_plftLensFlare = &_lftProjectileWhiteBubbleGlow;
         break;
       case PRT_MANTAMAN_FIRE:
         lsNew.ls_colColor = C_lBLUE;
-        lsNew.ls_rFallOff = 2.0f;
+        lsNew.ls_rFallOff = 3.0f;
         lsNew.ls_plftLensFlare = NULL;
         break;
       case PRT_CYBORG_LASER:
@@ -795,6 +1047,99 @@ functions:
         lsNew.ls_rFallOff = 1.0f;
         lsNew.ls_plftLensFlare = NULL;
         break;
+
+      case PRT_LASER_TANK:
+        lsNew.ls_colColor = C_vdPINK;
+        lsNew.ls_rFallOff = 3.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_LASER_FLOATER:
+        lsNew.ls_colColor = C_vdGREEN;
+        lsNew.ls_rFallOff = 1.5f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_SCORP_PROJECTILE:
+        lsNew.ls_colColor = C_vdGREEN;
+        lsNew.ls_rFallOff = 2.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_SCORP_BIG_PROJECTILE:
+        lsNew.ls_colColor = C_vdGREEN;
+        lsNew.ls_rFallOff = 6.0f;
+        lsNew.ls_plftLensFlare = &_lftCatmanFireGlow;
+        break;
+      case PRT_BEAST_E_PROJECTILE:
+        lsNew.ls_colColor = C_dBLUE;
+        lsNew.ls_rFallOff = 5.0f;
+        lsNew.ls_plftLensFlare = &_lftCatmanFireGlow;
+        break;
+      case PRT_ALBINO_PROJECTILE:
+        lsNew.ls_colColor = C_vdPINK;
+        lsNew.ls_rFallOff = 7.0f;
+        lsNew.ls_plftLensFlare = &_lftCatmanFireGlow;
+        break;
+      case PRT_SPIDERWEB_SOL:
+        lsNew.ls_colColor = C_vdGREEN;
+        lsNew.ls_rFallOff = 1.5f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_SPIDERWEB_MUM:
+        lsNew.ls_colColor = C_vdGREEN;
+        lsNew.ls_rFallOff = 8.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_KALOPSY_SLIME:
+        lsNew.ls_colColor = C_vdYELLOW;
+        lsNew.ls_rFallOff = 2.0f;
+        lsNew.ls_plftLensFlare = &_lftCatmanFireGlow;
+        break;
+      case PRT_CATMAN_BOMB:
+        lsNew.ls_colColor = C_vdORANGE;
+        lsNew.ls_rFallOff = 4.0f;
+        lsNew.ls_plftLensFlare = &_lftCatmanFireGlow;
+        break;
+      case PRT_PLASMABOLT:
+        lsNew.ls_colColor = C_vdRED;
+        lsNew.ls_rFallOff = 4.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_NEPTUNE:
+        lsNew.ls_colColor = C_lBLUE;
+        lsNew.ls_rFallOff = 8.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_GRENADE_CLUSTER:
+        lsNew.ls_colColor = 0x2F1F0F00;
+        lsNew.ls_rFallOff = 4.0f;
+        lsNew.ls_rHotSpot = 0.5f;
+        lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
+        break;
+      case PRT_GRUNT_PROJECTILE_SNIPER:
+        lsNew.ls_colColor = C_vdBLUE;
+        lsNew.ls_rFallOff = 3.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_SCORPION_LASER:
+        lsNew.ls_colColor = C_BLUE;
+        lsNew.ls_rFallOff = 8.0f;
+        lsNew.ls_plftLensFlare = &_lftCatmanFireGlow;
+        break;
+      case PRT_GRENADE_CLUSTERED:
+        lsNew.ls_colColor = 0x2F1F0F00;
+        lsNew.ls_rFallOff = 2.0f;
+        lsNew.ls_rHotSpot = 0.2f;
+        lsNew.ls_plftLensFlare = &_lftYellowStarRedRingFar;
+        break;
+      case PRT_HYDROGUN:
+        lsNew.ls_colColor = C_vdBLUE;
+        lsNew.ls_rFallOff = 2.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
+      case PRT_MAMUTMAN:
+        lsNew.ls_colColor = C_WHITE;
+        lsNew.ls_rFallOff = 5.0f;
+        lsNew.ls_plftLensFlare = NULL;
+        break;
       default:
         ASSERTALWAYS("Unknown light source");
     }
@@ -809,12 +1154,35 @@ functions:
   void RenderParticles(void) {
     switch (m_prtType) {
       case PRT_ROCKET:
+      case PRT_ROCKET_HOMING:
       case PRT_WALKER_ROCKET: Particles_RocketTrail(this, 1.0f); break;
       case PRT_DEVIL_ROCKET: Particles_RocketTrail(this, 8.0f); break;
-      case PRT_GUFFY_PROJECTILE: break;// Particles_RocketTrail(this, 1.0f); break;
+      case PRT_GUFFY_PROJECTILE: Particles_RocketTrail(this, 1.0f); break;
       case PRT_GRENADE: {
         //Particles_GrenadeTrail(this);
         FLOAT fSpeedRatio = en_vCurrentTranslationAbsolute.Length()/140.0f;
+        Particles_CannonBall(this, fSpeedRatio);
+        break;
+                        }
+      case PRT_GRENADE_CLUSTER: {
+        //Particles_GrenadeTrail(this);
+        FLOAT fSpeedRatio = en_vCurrentTranslationAbsolute.Length()/140.0f;
+        Particles_CannonBall(this, fSpeedRatio);
+        break;
+                        }
+      case PRT_GRENADE_CLUSTERED: {
+        Particles_RocketTrail(this, 1.0f);
+        break;
+                        }
+      case PRT_GRENADE_NEW: {
+        //Particles_GrenadeTrail(this);
+        FLOAT fSpeedRatio = en_vCurrentTranslationAbsolute.Length()/140.0f;
+        Particles_CannonBall(this, fSpeedRatio);
+        break;
+                        }
+      case PRT_BOMB: {
+        //Particles_GrenadeTrail(this);
+        FLOAT fSpeedRatio = en_vCurrentTranslationAbsolute.Length()/70.0f;
         Particles_CannonBall(this, fSpeedRatio);
         break;
                         }
@@ -931,12 +1299,36 @@ functions:
         Particles_MeteorTrail(this, m_fStretch, 1.0f, en_vCurrentTranslationAbsolute);
         Particles_AfterBurner(this, m_fStartTime, m_fStretch*4.0f, 2);
         break;
+      case PRT_METEOR_SIMPLE:
+        Particles_MeteorTrail(this, m_fStretch, 0.5f, en_vCurrentTranslationAbsolute);
+        Particles_AfterBurner(this, m_fStartTime, m_fStretch*2.0f, 2);
+        break;
+      case PRT_METEOR_SMALL:
+        Particles_AfterBurner(this, m_fStartTime, m_fStretch*1.0f, 2);
+        break;
       case PRT_AFTERBURNER_DEBRIS:
         Particles_AfterBurner(this, m_fStartTime, m_fStretch);
         break;
       case PRT_AIRELEMENTAL_WIND:
         Particles_Windblast(this, m_fStretch/4.0f, m_fStartTime+3.0f);
         break;
+
+      case PRT_SCORP_BIG_PROJECTILE: Particles_BeastProjectileTrail( this, 2.0f, 0.1f, 10); break;
+      case PRT_MANTAMAN_FIRE: Particles_RomboidTrail(this); break;
+      case PRT_MANTAMAN_DEBRIS: Particles_RocketTrail(this, 0.20f); break;
+      case PRT_ALBINO_PROJECTILE: Particles_BeastBigProjectileTrail (this, 3.0f, 0.0f, 0.0f, 10); break;
+      case PRT_SPIDERWEB_MUM: Particles_RocketTrail(this, 3.0f); break;
+      case PRT_KALOPSY_SLIME: Particles_BeastProjectileTrail( this, 0.1f, 0.1f, 10); break;
+      case PRT_CATMAN_BOMB: Particles_Fireball01Trail(this); break;
+      case PRT_PLASMABOLT: Particles_Fireball01Trail(this); break;
+      case PRT_ROCKET_SEEKING: Particles_RocketTrail(this, 2.0f); break;
+      case PRT_NEPTUNE: Particles_RomboidTrail(this); break;
+      case PRT_ARROW: Particles_RocketTrail(this, 0.25f); break;
+      case PRT_ARROW_EXPLOSIVE: Particles_Fireball01Trail(this); break;
+      case PRT_SCORPION_LASER: Particles_RocketTrail(this, 4.0f); break;
+      case PRT_MAMUTMAN: Particles_RocketTrail(this, 0.5f); break;
+      case PRT_FISHMAN_FIRE: Particles_BeastProjectileDebrisTrail(this, 0.10f); break;
+      case PRT_FISHMAN_FIRE_STRONG: Particles_BeastProjectileDebrisTrail(this, 0.20f); break;
     }
   }
 
@@ -952,24 +1344,16 @@ void PlayerRocket(void) {
   SetPhysicsFlags(EPF_PROJECTILE_FLYING);
   SetCollisionFlags(ECF_PROJECTILE_SOLID);
   SetModel(MODEL_ROCKET);
-  SetModelMainTexture(TEXTURE_ROCKET);
+  SetModelMainTexture(TEXTURE_ROCKET_NU);
   // start moving
-  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   // play the flying sound
   m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
   PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
   m_fFlyTime = 30.0f;
-  if( GetSP()->sp_bCooperative)
-  {
-    m_fDamageAmount = 100.0f;
-    m_fRangeDamageAmount = 50.0f;
-  }
-  else
-  {
-    m_fDamageAmount = 75.0f;
-    m_fRangeDamageAmount = 75.0f;
-  }
+  m_fDamageAmount = 50.0f;
+  m_fRangeDamageAmount = 100.0f;
   m_fDamageHotSpotRange = 4.0f;
   m_fDamageFallOffRange = 8.0f;
   m_fSoundRange = 50.0f;
@@ -982,6 +1366,57 @@ void PlayerRocket(void) {
   m_tmInvisibility = 0.05f;
   SetHealth(5.0f);
   m_pmtMove = PMT_FLYING;
+};
+
+void PlayerHomingRocket(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_FREE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_ROCKET);
+  SetModelMainTexture(TEXTURE_ROCKET_NU);
+
+  // add player's forward velocity
+  CMovableEntity *penPlayer = (CMovableEntity*)(CEntity*)m_penLauncher;
+  FLOAT3D vDirection = penPlayer->en_vCurrentTranslationAbsolute;
+  FLOAT3D vFront = -GetRotationMatrix().GetColumn(3);
+  FLOAT fSpeedFwd = ClampDn( vDirection%vFront, 0.0f);
+
+  // correct for speed adjuster
+  FLOAT fSpeedAdj = m_fSpeed;
+  fSpeedAdj /= 2;
+  if (fSpeedAdj<1) {
+    fSpeedAdj = 1.0f;
+  }
+
+	m_fGuidedMaxSpeedFactor = 50.0f*fSpeedAdj;
+
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -((75.0f*fSpeedAdj)+fSpeedFwd)), (CMovableEntity*)(CEntity*)m_penLauncher);
+
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  // play the flying sound
+  m_soEffect.Set3DParameters(40.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
+  m_fFlyTime = 16.0f;
+  m_fDamageAmount = 200.0f;
+  m_fRangeDamageAmount = 50.0f;
+  m_fDamageHotSpotRange = 3.0f;
+  m_fDamageFallOffRange = 6.0f;
+  m_fSoundRange = 150.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = FALSE; 
+  m_bCanHitHimself = TRUE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 1.125f;
+  m_tmExpandBox = 0.000001f;
+  m_tmInvisibility = 0.05f;
+  SetHealth(5.0f);
+  CEntityPointer pw;
+  pw = ((CPlayer*)&*m_penLauncher)->GetPlayerWeapons();
+  m_penTarget = ((CPlayerWeapons*) &*pw)->m_penRocketLauncherHoming;
+  m_pmtMove = PMT_GUIDED_PE;
+  m_aRotateSpeed = 360.0f;
 };
 
 void WalkerRocket(void) {
@@ -1083,10 +1518,150 @@ void PlayerGrenade(void) {
   en_fCollisionSpeedLimit = 45.0f;
   en_fCollisionDamageFactor = 10.0f;
   m_fFlyTime = 3.0f;
-  m_fDamageAmount = 75.0f;
-  m_fRangeDamageAmount = 100.0f;
+  m_fDamageAmount = 50.0f;
+  m_fRangeDamageAmount = 125.0f;
   m_fDamageHotSpotRange = 4.0f;
   m_fDamageFallOffRange = 8.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  en_fDeceleration = 25.0f;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(20.0f);
+  m_pmtMove = PMT_SLIDING;
+  m_tmInvisibility = 0.05f;
+  m_tmExpandBox = 0.1f;
+};
+
+
+void PlayerGrenadeNew(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_GRENADE_NEW);
+  SetModelMainTexture(TEXTURE_GRENADE_NEW);
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 5.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  en_fBounceDampNormal   = 0.75f;
+  en_fBounceDampParallel = 0.6f;
+  en_fJumpControlMultiplier = 0.0f;
+  en_fCollisionSpeedLimit = 45.0f;
+  en_fCollisionDamageFactor = 10.0f;
+  m_fFlyTime = 3.0f;
+  m_fDamageAmount = 75.0f;
+  m_fRangeDamageAmount = 100.0f;
+  m_fDamageHotSpotRange = 5.0f;
+  m_fDamageFallOffRange = 10.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  en_fDeceleration = 25.0f;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(20.0f);
+  m_pmtMove = PMT_SLIDING;
+  m_tmInvisibility = 0.05f;
+  m_tmExpandBox = 0.1f;
+};
+
+
+void ClusteredGrenade(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_GRENADE);
+  SetModelMainTexture(TEXTURE_GRENADE_NEW);
+  GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 5.0f, -m_fSpeed*1.5), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  en_fBounceDampNormal   = 0.75f;
+  en_fBounceDampParallel = 0.6f;
+  en_fJumpControlMultiplier = 0.0f;
+  m_fFlyTime = 6.0f;
+  m_fDamageAmount = 0.0f;
+  m_fRangeDamageAmount = 100.0f;
+  m_fDamageHotSpotRange = 6.0f;
+  m_fDamageFallOffRange = 10.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  en_fDeceleration = 25.0f;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_FLYING;
+  m_tmInvisibility = 0.05f;
+  m_tmExpandBox = 1.0f;
+  m_fIgnoreTime = 1.0f;
+  
+
+};
+
+void PlayerGrenadeExplosion(void) {
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // explosion
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
+  ese.betType = BET_GRENADE;
+  ese.vStretch = FLOAT3D(1.25,1.25,1.25);
+  SpawnEffect(GetPlacement(), ese);
+  // spawn sound event in range
+  if( IsDerivedFromClass( m_penLauncher, "Player")) {
+    SpawnRangeSound( m_penLauncher, this, SNDT_PLAYER, m_fSoundRange);
+  }
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // wall stain
+      ese.betType = BET_EXPLOSIONSTAIN;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // shock wave
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // second explosion on plane
+      ese.betType = BET_GRENADE_PLANE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint+ese.vNormal/50.0f, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+};
+
+
+void ClusterGrenade(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_GRENADE_CLUSTER);
+  SetModelMainTexture(TEXTURE_GRENADE_CLUSTER);
+  GetModelObject()->StretchModel(FLOAT3D(2.0f, 2.0f, 2.0f));
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 5.0f, -m_fSpeed*1.5), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, FRnd()*120.0f+120.0f, FRnd()*250.0f-125.0f));
+  en_fBounceDampNormal   = 0.75f;
+  en_fBounceDampParallel = 0.6f;
+  en_fJumpControlMultiplier = 0.0f;
+  en_fCollisionSpeedLimit = 45.0f;
+  en_fCollisionDamageFactor = 10.0f;
+  m_fFlyTime = 1.0f;
+  m_fDamageAmount = 50.0f;
+  m_fRangeDamageAmount = 50.0f;
+  m_fDamageHotSpotRange = 5.0f;
+  m_fDamageFallOffRange = 10.0f;
   m_fSoundRange = 50.0f;
   m_bExplode = TRUE;
   en_fDeceleration = 25.0f;
@@ -1100,7 +1675,7 @@ void PlayerGrenade(void) {
   m_tmExpandBox = 0.1f;
 };
 
-void PlayerGrenadeExplosion(void) {
+void ClusterGrenadeExplosion(void) {
   ESpawnEffect ese;
   FLOAT3D vPoint;
   FLOATplane3D vPlaneNormal;
@@ -1132,6 +1707,107 @@ void PlayerGrenadeExplosion(void) {
       ese.vNormal = FLOAT3D(vPlaneNormal);
       SpawnEffect(CPlacement3D(vPoint+ese.vNormal/50.0f, ANGLE3D(0, 0, 0)), ese);
     }
+  }
+  // spawn grenades
+  for( INDEX iDebris1=0; iDebris1<1; iDebris1++)
+  {
+    FLOAT fHeading = 0.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris2=0; iDebris2<1; iDebris2++)
+  {
+    FLOAT fHeading = 75.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris3=0; iDebris3<1; iDebris3++)
+  {
+    FLOAT fHeading = -75.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris4=0; iDebris4<1; iDebris4++)
+  {
+    FLOAT fHeading = 150.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris5=0; iDebris5<1; iDebris5++)
+  {
+    FLOAT fHeading = -150.0f;
+    FLOAT fPitch = 30.0f;
+    FLOAT fSpeed = 10.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 2.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GRENADE_CLUSTERED;
+    eLaunch.fSpeed = fSpeed;
+    penProjectile->Initialize(eLaunch);
   }
 };
 
@@ -1729,10 +2405,10 @@ void HuanmanProjectile(void) {
   GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
   ModelChangeNotify();
   // start moving
-  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -45.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   m_fFlyTime = 5.0f;
-  m_fDamageAmount = 10.0f;
+  m_fDamageAmount = 5.0f;
   m_fSoundRange = 0.0f;
   m_bExplode = FALSE;
   m_bLightSource = TRUE;
@@ -2058,6 +2734,28 @@ void FishmanProjectile(void) {
   m_pmtMove = PMT_FLYING;
 };
 
+void FishmanProjectileStrong(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetComponents(this, *GetModelObject(), MODEL_FISHMAN_FIRE, TEXTURE_FISHMAN_FIRE, 0, 0, 0);
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -60.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 10.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_FLYING;
+};
+
 
 
 /************************************************************
@@ -2068,22 +2766,99 @@ void MantamanProjectile(void) {
   InitAsModel();
   SetPhysicsFlags(EPF_PROJECTILE_FLYING);
   SetCollisionFlags(ECF_PROJECTILE_MAGIC);
-  SetFlags(GetFlags() | ENF_SEETHROUGH);
-  SetComponents(this, *GetModelObject(), MODEL_MANTAMAN_FIRE, TEXTURE_MANTAMAN_FIRE, 0, 0, 0);
+  SetModel(MODEL_MANTAMAN_FIRE);
+  SetModelMainTexture(TEXTURE_MANTAMAN_FIRE);
+  GetModelObject()->StretchModel(FLOAT3D(0.75f, 0.75f, 0.75f));
   ModelChangeNotify();
   // start moving
-  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -35.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
-  m_fFlyTime = 5.0f;
-  m_fDamageAmount = 7.0f;
+  m_fFlyTime = 30.0f;
+  m_fDamageAmount = 5.0f;
+  m_fRangeDamageAmount = 10.0f;
+  m_fDamageHotSpotRange = 2.0f;
+  m_fDamageFallOffRange = 6.0f;
   m_fSoundRange = 0.0f;
-  m_bExplode = FALSE;
+  m_bExplode = TRUE;
   m_bLightSource = TRUE;
   m_bCanHitHimself = FALSE;
-  m_bCanBeDestroyed = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  SetHealth(10.0f);
   m_fWaitAfterDeath = 0.0f;
   m_pmtMove = PMT_FLYING;
 };
+
+void MantamanDebris(void)
+{
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+
+  SetModel(MODEL_MANTAMAN_FIRE);
+  GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
+  SetModelMainTexture(TEXTURE_MANTAMAN_FIRE);
+  GetModelObject()->StartAnim(1+(ULONG)FRnd()*5.0f);
+
+  ModelChangeNotify();
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -20.0f), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 0.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_FLYING;
+  SetHealth(1.0f);
+  m_aRotateSpeed = 100.0f;
+};
+
+void MantamanDebrisExplosion(void)
+{
+  // explosion
+  ESpawnEffect ese;
+  ese.colMuliplier = C_BLUE|CT_OPAQUE;
+  ese.betType = BET_LIGHT_CANNON;
+  ese.vStretch = FLOAT3D(0.5,0.5,0.5);
+  SpawnEffect(GetPlacement(), ese);
+}
+
+void MantamanProjectileExplosion(void)
+{
+  PlayerRocketExplosion();
+  // explosion
+  ESpawnEffect ese;
+  ese.colMuliplier = C_BLUE|CT_OPAQUE;
+  ese.betType = BET_LIGHT_CANNON;
+  ese.vStretch = FLOAT3D(1.0,1.0,1.0);
+  SpawnEffect(GetPlacement(), ese);
+
+  FLOAT fHeading = 20.0f+(FRnd()-0.5f)*60.0f;
+  // debris
+  for( INDEX iDebris=0; iDebris<2; iDebris++)
+  {
+    FLOAT fPitch = 10.0f+FRnd()*10.0f;
+    FLOAT fSpeed = 5.0+FRnd()*20.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    // turn to other way
+    fHeading = -fHeading;
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    penProjectile->Initialize(eLaunch);
+  }
+}
 
 
 /************************************************************
@@ -2435,6 +3210,47 @@ void GruntCommanderLaser(void) {
   m_pmtMove = PMT_FLYING;
 };
 
+void GruntSniperLaser(void) {
+  // we need target for guied misile
+  if (IsDerivedFromClass(m_penLauncher, "Enemy Base")) {
+    m_penTarget = ((CEnemyBase *) &*m_penLauncher)->m_penEnemy;
+  }
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetModel(MODEL_GRUNT_PROJECTILE);
+  CModelObject *pmo = GetModelObject();
+  if(pmo != NULL)
+  {
+    pmo->PlayAnim(GRUNTPROJECTILE_ANIM_DEFAULT, 0);
+  }
+  SetModelMainTexture(TEXTURE_GRUNT_PROJECTILE_03);
+  GetModelObject()->StretchModel(FLOAT3D(1.5f, 1.5f, 1.5f));
+  // play the flying sound
+  m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_FLYING02, SOF_3D|SOF_LOOP);
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -45.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 5.0f;
+  m_fDamageAmount = 10.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_tmExpandBox = 0.1f;
+  // time when laser ray becomes visible
+  m_tmInvisibility = 0.025f;
+  m_pmtMove = PMT_GUIDED;
+  m_fGuidedMaxSpeedFactor = 45.0f;
+  m_aRotateSpeed = 90.0f;
+  SetHealth(10.0f);
+};
+
 
 /************************************************************
  *                G U F F Y   R O C K E T                   *
@@ -2727,6 +3543,83 @@ void Meteor() {
   m_pmtMove = PMT_FLYING;
 }
 
+void MeteorSimple() {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+
+  SetModel(MODEL_ELEM_LAVA_BOMB);
+  SetModelMainTexture(TEXTURE_ELEM_LAVA_BOMB);
+  /*AddAttachmentToModel(this, *GetModelObject(), LAVABOMB_ATTACHMENT_FLARE,
+                     MODEL_ELEM_LAVA_BOMB_FLARE, TEXTURE_ELEM_LAVA_BOMB_FLARE, 0, 0, 0);*/
+
+  GetModelObject()->StretchModel(FLOAT3D(1, 1, 1));
+  ModelChangeNotify();
+
+  Particles_AfterBurner_Prepare(this);
+
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -65), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  // play the flying sound
+  m_soEffect.Set3DParameters(250.0f, 10.0f, 2.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
+  m_fFlyTime = 30.0f;
+  m_fDamageAmount = 100.0f;
+  m_fRangeDamageAmount = 100.0f;
+  m_fDamageHotSpotRange = 5.0f;
+  m_fDamageFallOffRange = 15.0f;
+  m_fSoundRange = 100.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = TRUE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = GetSoundLength(SOUND_METEOR_BLAST)+0.25f;
+  m_tmExpandBox = 0.1f;
+  m_tmInvisibility = 0.05f;
+  SetHealth(30.0f);
+  m_pmtMove = PMT_FLYING;
+}
+
+void MeteorSmall() {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+
+  SetModel(MODEL_ELEM_LAVA_BOMB);
+  SetModelMainTexture(TEXTURE_ELEM_LAVA_BOMB);
+  /*AddAttachmentToModel(this, *GetModelObject(), LAVABOMB_ATTACHMENT_FLARE,
+                     MODEL_ELEM_LAVA_BOMB_FLARE, TEXTURE_ELEM_LAVA_BOMB_FLARE, 0, 0, 0);*/
+
+  GetModelObject()->StretchModel(FLOAT3D(0.5, 0.5, 0.5));
+  ModelChangeNotify();
+
+  Particles_AfterBurner_Prepare(this);
+
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -40), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  // play the flying sound
+  m_soEffect.Set3DParameters(70.0f, 5.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
+  m_fFlyTime = 60.0f;
+  m_fDamageAmount = 50.0f;
+  m_fRangeDamageAmount = 100.0f;
+  m_fDamageHotSpotRange = 2.0f;
+  m_fDamageFallOffRange = 8.0f;
+  m_fSoundRange = 100.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = TRUE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = GetSoundLength(SOUND_METEOR_BLAST)+0.25f;
+  m_tmExpandBox = 0.1f;
+  m_tmInvisibility = 0.05f;
+  m_pmtMove = PMT_FLYING;
+}
+
 void MeteorExplosion() {
   //LavamanBombExplosion();
   //PlayerRocketExplosion();
@@ -2787,6 +3680,124 @@ void MeteorExplosion() {
   PlaySound(m_soExplosion, SOUND_METEOR_BLAST, SOF_3D);
 }
 
+void MeteorExplosionSmall() {
+  //LavamanBombExplosion();
+  //PlayerRocketExplosion();
+  // spawn particle debris
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 4.0f;
+  eSpawnSpray.fSizeMultiplier = 0.5f;
+  eSpawnSpray.sptType = SPT_LAVA_STONES;
+  eSpawnSpray.vDirection = en_vCurrentTranslationAbsolute/32.0f;
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // explosion
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
+  ese.betType = BET_CANNON;
+  ese.vStretch = FLOAT3D(2.5,2.5,2.5);
+  SpawnEffect(GetPlacement(), ese);
+  // spawn sound event in range
+  if( IsDerivedFromClass( m_penLauncher, "Player")) {
+    SpawnRangeSound( m_penLauncher, this, SNDT_PLAYER, m_fSoundRange);
+  }
+
+  // explosion debris
+  ese.betType = BET_EXPLOSION_DEBRIS;
+  SpawnEffect(GetPlacement(), ese);
+
+  // explosion smoke
+  ese.betType = BET_EXPLOSION_SMOKE;
+  SpawnEffect(GetPlacement(), ese);
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // stain
+      ese.betType = BET_EXPLOSIONSTAIN;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // shock wave
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // second explosion on plane
+      ese.betType = BET_ROCKET_PLANE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint+ese.vNormal/50.0f, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+  m_soExplosion.Set3DParameters(150.0f, 10.0f, 1.5f, 1.0f);
+  PlaySound(m_soExplosion, SOUND_METEOR_BLAST, SOF_3D);
+}
+
+void MeteorExplosionEvenSmaller() {
+  // spawn particle debris
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 4.0f;
+  eSpawnSpray.fSizeMultiplier = 0.5f;
+  eSpawnSpray.sptType = SPT_LAVA_STONES;
+  eSpawnSpray.vDirection = en_vCurrentTranslationAbsolute/32.0f;
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // explosion
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
+  ese.betType = BET_CANNON;
+  ese.vStretch = FLOAT3D(1.25,1.25,1.25);
+  SpawnEffect(GetPlacement(), ese);
+  // spawn sound event in range
+  if( IsDerivedFromClass( m_penLauncher, "Player")) {
+    SpawnRangeSound( m_penLauncher, this, SNDT_PLAYER, m_fSoundRange);
+  }
+
+  // explosion debris
+  ese.betType = BET_EXPLOSION_DEBRIS;
+  SpawnEffect(GetPlacement(), ese);
+
+  // explosion smoke
+  ese.betType = BET_EXPLOSION_SMOKE;
+  SpawnEffect(GetPlacement(), ese);
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // stain
+      ese.betType = BET_EXPLOSIONSTAIN;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // shock wave
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // second explosion on plane
+      ese.betType = BET_ROCKET_PLANE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint+ese.vNormal/50.0f, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+  m_soExplosion.Set3DParameters(100.0f, 5.0f, 1.5f, 1.0f);
+  PlaySound(m_soExplosion, SOUND_METEOR_BLAST, SOF_3D);
+}
+
 
 /************************************************************
  *                    S H O O T E R S                       *
@@ -2842,7 +3853,7 @@ void ShooterFireball(void) {
   // set appearance
   InitAsModel();
   SetPhysicsFlags(EPF_PROJECTILE_FLYING);
-  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
   SetModel(MODEL_BEAST_FIRE);
   SetModelMainTexture(TEXTURE_BEAST_BIG_FIRE);
   GetModelObject()->StretchModel(FLOAT3D(0.25f, 0.25f, 0.25f));
@@ -2932,6 +3943,958 @@ void AfterburnerDebris(void)
   m_fWaitAfterDeath = 2.0f;
   m_pmtMove = PMT_FLYING;
 }
+
+
+/************************************************************
+ *               CUSTOM PROJECTILES                         *
+ ************************************************************/
+void TankLaser(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetComponents(this, *GetModelObject(), MODEL_CYBORG_LASER, TEXTURE_PINK_LASER, 0, 0, 0);
+  GetModelObject()->StretchModel(FLOAT3D(4.0f, 4.0f, 2.0f));
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -100), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 5.0f;
+  m_fDamageAmount = 10.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_FLYING;
+};
+
+void FloaterLaser(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetComponents(this, *GetModelObject(), MODEL_CYBORG_LASER, TEXTURE_GREEN_LASER, 0, 0, 0);
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -60.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 4.0f;
+  m_fDamageAmount = 5.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_FLYING;
+};
+
+void ScorpProj(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  
+  SetModel(MODEL_SPIDER_PROJECTILE);
+  CModelObject *pmo = GetModelObject();
+  if(pmo != NULL)
+  {
+    pmo->PlayAnim(GRUNTPROJECTILE_ANIM_DEFAULT, 0);
+  }
+  SetModelMainTexture(TEXTURE_SPIDER_PROJECTILE);
+  GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -75.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 4.0f;
+  m_fDamageAmount = 6.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_FLYING;
+};
+
+void ScorpBigProj(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  // set appearance  
+  SetModel(MODEL_LARVA_PLASMA_BALL);
+  SetModelMainTexture(TEXTURE_GREEN_PLASMA_BALL);
+  AddAttachmentToModel(this, *GetModelObject(), PLASMAGUN_ATTACHMENT_PROJECTILE,
+        MODEL_LARVA_PLASMA, TEXTURE_LARVA_PLASMA, 0, 0, 0);
+  GetModelObject()->StretchModel(FLOAT3D(1.5f, 1.5f, 1.5f));
+  ModelChangeNotify();
+  
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 5.0f;
+  m_fDamageAmount = 10.0f;
+  m_fRangeDamageAmount = 5.0f;
+  m_fDamageHotSpotRange = 5.0f;
+  m_fDamageFallOffRange = 10.0f;
+  m_fSoundRange = 0.0f;
+  m_fFlyTime = 20.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  SetHealth(10.0f);
+  m_pmtMove = PMT_FLYING;
+};
+
+void ScorpBigProjExplosion(void) {
+{
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+  
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge))
+  {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f)
+    {
+      // shock wave
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+
+  // shock wave
+  ese.colMuliplier = C_GREEN|CT_OPAQUE;
+  ese.betType = BET_CANNON;
+  ese.vStretch = FLOAT3D(4,4,4);
+  SpawnEffect(GetPlacement(), ese);
+
+  // spawn particle debris
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_GREEN|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 4.0f;
+  eSpawnSpray.fSizeMultiplier = 0.5f;
+  eSpawnSpray.sptType = SPT_BEAST_PROJECTILE_SPRAY;
+  eSpawnSpray.vDirection = en_vCurrentTranslationAbsolute/32.0f;
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+ }
+};
+
+void EyemanAcid(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_ONBLOCK_SLIDE|EPF_PUSHABLE|EPF_MOVABLE);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetModel(MODEL_EYEMAN_ACID);
+  SetModelMainTexture(TEXTURE_EYEMAN_ACID);
+  GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
+  ModelChangeNotify();
+  // start moving
+    LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+    m_fDamageAmount = 8.0f;
+    SetHealth(10.0f);
+  SetDesiredRotation(ANGLE3D(0, 0, FRnd()*1800.0f-900.0f));
+  en_fCollisionSpeedLimit = 1000.0f;
+  en_fCollisionDamageFactor = 0.0f;
+  m_fFlyTime = 5.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(10.0f);
+  m_pmtMove = PMT_SLIDING;
+};
+
+void BeastEProj(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetModel(MODEL_LARVA_PLASMA_BALL);
+  SetModelMainTexture(TEXTURE_LARVA_PLASMA_BALL);
+  AddAttachmentToModel(this, *GetModelObject(), PLASMAGUN_ATTACHMENT_PROJECTILE,
+        MODEL_LARVA_PLASMA, TEXTURE_LARVA_PLASMA, 0, 0, 0);
+      
+  GetModelObject()->StretchModel(FLOAT3D(1.5f, 1.5f, 1.5f));
+  ModelChangeNotify();
+
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -60.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  // play the flying sound
+  m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_ELECTRIC_FLYING, SOF_3D|SOF_LOOP);
+  m_fFlyTime = 30.0f;
+  m_fDamageAmount = 20.0f;
+  m_fRangeDamageAmount = 10.0f;
+  m_fDamageHotSpotRange = 4.0f;
+  m_fDamageFallOffRange = 8.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.05f;
+  m_tmExpandBox = 0.1f;
+  m_tmInvisibility = 0.05f;
+  SetHealth(100.0f);
+  m_iRebounds = 4;
+  m_pmtMove = PMT_FLYING_REBOUNDING;
+}
+
+void AlbinoProjectile(void) {
+  // we need target for guied misile
+  if (IsDerivedFromClass(m_penLauncher, "Enemy Base")) {
+    m_penTarget = ((CEnemyBase *) &*m_penLauncher)->m_penEnemy;
+  }
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_FREE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+
+  SetModel(MODEL_LARVA_PLASMA_BALL);
+  SetModelMainTexture(TEXTURE_PINK_PLASMA_BALL);
+  AddAttachmentToModel(this, *GetModelObject(), PLASMAGUN_ATTACHMENT_PROJECTILE,
+        MODEL_LARVA_PLASMA, TEXTURE_LARVA_PLASMA, 0, 0, 0);
+  GetModelObject()->StretchModel(FLOAT3D(2.5f, 2.5f, 2.5f));
+
+  ModelChangeNotify();
+  // play the flying sound
+  m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_DEMON_FLYING, SOF_3D|SOF_LOOP);
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -60.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 20.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_GUIDED;
+  m_fGuidedMaxSpeedFactor = 60.0f;
+  m_aRotateSpeed = 90.0f;
+  SetHealth(30.0f);
+};
+
+void AlbinoExplosion(void) {
+  // explosion
+  ESpawnEffect ese;
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
+  ese.betType = BET_LIGHT_CANNON;
+  ese.vStretch = FLOAT3D(2,2,2);
+  SpawnEffect(GetPlacement(), ese);
+
+  // particles
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 1.0f;
+  eSpawnSpray.fSizeMultiplier = 1.0f;
+  eSpawnSpray.sptType = SPT_LAVA_STONES;
+  eSpawnSpray.vDirection = FLOAT3D(0.0f, 2.5f, 0.0f);
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+}
+
+void SpiderWebSoldier(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetModel(MODEL_SPIDER_PROJECTILE);
+  CModelObject *pmo = GetModelObject();
+  if(pmo != NULL)
+  {
+    pmo->PlayAnim(GRUNTPROJECTILE_ANIM_DEFAULT, 0);
+  }
+  SetModelMainTexture(TEXTURE_SPIDER_PROJECTILE);
+  AddAttachmentToModel(this, *GetModelObject(), PROJECTILE_ATTACHMENT_WEB ,
+        MODEL_SPIDER_WEB, TEXTURE_SPIDER_WEB, 0, 0, 0);
+  GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -55.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 3.0f;
+  m_fDamageAmount = 10.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_tmExpandBox = 0.1f;
+  // time when laser ray becomes visible
+  m_tmInvisibility = 0.025f;
+  m_pmtMove = PMT_FLYING;
+};
+
+void SpiderSoldierImpact(void) {
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // shock wave
+      ese.colMuliplier = C_dRED|CT_OPAQUE;
+      ese.betType = BET_GIZMO_SPLASH_FX;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+
+  // particles
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 1.0f;
+  eSpawnSpray.fSizeMultiplier = 0.25f;
+  eSpawnSpray.sptType = SPT_SLIME;
+  eSpawnSpray.vDirection = FLOAT3D(0.0f, 1.5f, 0.0f);
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+};
+
+void SpiderWebBig(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetModel(MODEL_SPIDER_PROJECTILE);
+  CModelObject *pmo = GetModelObject();
+  if(pmo != NULL)
+  {
+    pmo->PlayAnim(GRUNTPROJECTILE_ANIM_DEFAULT, 0);
+  }
+  SetModelMainTexture(TEXTURE_SPIDER_PROJECTILE);
+  AddAttachmentToModel(this, *GetModelObject(), PROJECTILE_ATTACHMENT_WEB ,
+        MODEL_SPIDER_WEB, TEXTURE_SPIDER_WEB, 0, 0, 0);
+
+  GetModelObject()->StretchModel(FLOAT3D(3.0f, 3.0f, 3.0f));
+
+  m_soEffect.Set3DParameters(40.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_SLIME_FLYING, SOF_3D|SOF_LOOP);
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -60.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 10.0f;
+  m_fRangeDamageAmount = 20.0f;
+  m_fDamageHotSpotRange = 4.0f;
+  m_fDamageFallOffRange = 8.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_tmExpandBox = 0.1f;
+  // time when laser ray becomes visible
+  m_tmInvisibility = 0.025f;
+  m_pmtMove = PMT_FLYING;
+};
+
+void SpiderBigImpact(void) {
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+  
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge))
+  {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f)
+    {
+      // shock wave
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+
+  // shock wave
+  ese.colMuliplier = C_GREEN|CT_OPAQUE;
+  ese.betType = BET_CANNON;
+  ese.vStretch = FLOAT3D(2,2,2);
+  SpawnEffect(GetPlacement(), ese);
+
+  // particles
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 2.0f;
+  eSpawnSpray.fSizeMultiplier = 3.0f;
+  eSpawnSpray.sptType = SPT_SLIME;
+  eSpawnSpray.vDirection = FLOAT3D(0.0f, 1.5f, 0.0f);
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+};
+
+void KalopsySlime(void) {
+  // we need target for guied misile
+  if (IsDerivedFromClass(m_penLauncher, "Enemy Base")) {
+    m_penTarget = ((CEnemyBase *) &*m_penLauncher)->m_penEnemy;
+  }
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_FREE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  
+  SetModel(MODEL_SPIDER_PROJECTILE);
+  SetModelMainTexture(TEXTURE_SPIDER_PROJECTILE);
+  GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
+
+  ModelChangeNotify();
+  // play the flying sound
+  m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_SLIME_FLYING, SOF_3D|SOF_LOOP);
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, FRnd()*1800.0f-900.0f));
+  m_fFlyTime = 7.0f;
+  m_fDamageAmount = 7.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_GUIDED;
+  m_fGuidedMaxSpeedFactor = 15.0f;
+  m_aRotateSpeed = 90.0f;
+  SetHealth(10.0f);
+};
+
+void KalopsyExplosion(void)
+{
+  // explosion
+  ESpawnEffect ese;
+  ese.colMuliplier = C_GREEN|CT_OPAQUE;
+  ese.betType = BET_GIZMO_SPLASH_FX;
+  ese.vStretch = FLOAT3D(1.0,1.0,1.0);
+  SpawnEffect(GetPlacement(), ese);
+
+  // spawn particles
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 1.0f;
+  eSpawnSpray.fSizeMultiplier = 3.0f;
+  eSpawnSpray.sptType = SPT_SLIME;
+  eSpawnSpray.vDirection = en_vCurrentTranslationAbsolute/64.0f;
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+}
+
+void CatmanBomb(void)
+{
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetModel(MODEL_HEADMAN_FIRECRACKER);
+  SetModelMainTexture(TEXTURE_HEADMAN_FIRECRACKER);
+  ModelChangeNotify();
+  // just freefall
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 2.5f;
+  m_fDamageAmount = 10.0f;
+  m_fRangeDamageAmount = 15.0f;
+  m_fDamageHotSpotRange = 1.0f;
+  m_fDamageFallOffRange = 6.0f;
+  m_fSoundRange = 25.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_FLYING;
+};
+
+void PlasmaBolt(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_LASER);
+  SetModelMainTexture(TEXTURE_RED_LASER);
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -120.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  // play the flying sound
+  m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
+  m_fFlyTime = 30.0f;
+  m_fDamageAmount = 15.0f;
+  m_fRangeDamageAmount = 30.0f;
+  m_fDamageHotSpotRange = 2.0f;
+  m_fDamageFallOffRange = 6.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.5f;
+  m_tmExpandBox = 0.1f;
+  m_tmInvisibility = 0.05f;
+  m_pmtMove = PMT_FLYING;
+};
+
+void PlasmaBoltExplosion(void) {
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // explosion
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
+  ese.betType = BET_PLASMA_EXPLOSION;
+  ese.vStretch = FLOAT3D(0.5f,0.5f,0.5f);
+  SpawnEffect(GetPlacement(), ese);
+  // spawn sound event in range
+  if( IsDerivedFromClass( m_penLauncher, "Player")) {
+    SpawnRangeSound( m_penLauncher, this, SNDT_PLAYER, m_fSoundRange);
+  }
+
+  // explosion smoke
+  ese.betType = BET_EXPLOSION_SMOKE;
+  ese.vStretch = FLOAT3D(0.5,0.5,0.5);
+  SpawnEffect(GetPlacement(), ese);
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // stain
+      ese.betType = BET_EXPLOSIONSTAIN;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      ese.vStretch = FLOAT3D(0.5f,0.5f,0.5f);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // shock wave
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      ese.vStretch = FLOAT3D(0.5f,0.5f,0.5f);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+};
+
+void GreenLaser(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetComponents(this, *GetModelObject(), MODEL_CYBORG_LASER, TEXTURE_GREEN_LASER, 0, 0, 0);
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -90.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 3.0f;
+  m_fDamageAmount = 10.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_tmExpandBox = 0.1f;
+  // time when laser ray becomes visible
+  m_tmInvisibility = 0.025f;
+  m_pmtMove = PMT_FLYING;
+};
+
+void SeekingRocket(void) {
+  // we need target for guided misile
+  if (IsDerivedFromClass(m_penLauncher, "Enemy Base")) {
+    m_penTarget = ((CEnemyBase *) &*m_penLauncher)->m_penEnemy;
+  }
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetModel(MODEL_GUFFY_PROJECTILE);
+  SetModelMainTexture(TEXTURE_GUFFY_PROJECTILE);
+  GetModelObject()->StretchModel(FLOAT3D(2.0f, 2.0f, 2.0f));
+
+  CModelObject *pmo = GetModelObject();
+  if(pmo != NULL)
+  {
+    pmo->PlayAnim(GUFFYPROJECTILE_ANIM_ROTATE01, AOF_LOOPING);
+  }
+
+  ModelChangeNotify();
+  // play the flying sound
+  m_soEffect.Set3DParameters(50.0f, 2.0f, 1.0f, 0.75f);
+  PlaySound(m_soEffect, SOUND_BEAST_FLYING, SOF_3D|SOF_LOOP);
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -80.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 12.0f;
+  if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+    m_fDamageAmount = 5.0f;
+    m_fRangeDamageAmount = 15.0f;
+  } else {
+    m_fDamageAmount = 10.0f;
+    m_fRangeDamageAmount = 40.0f;
+  }
+  m_fDamageHotSpotRange = 4.0f;
+  m_fDamageFallOffRange = 8.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = TRUE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_GUIDED;
+  m_fGuidedMaxSpeedFactor = 80.0f;
+  m_aRotateSpeed = 200.0f;
+  SetHealth(30.0f);
+};
+
+void NeptuneProjectile(void) {
+  // we need target for guied misile
+  if (IsDerivedFromClass(m_penLauncher, "Enemy Base")) {
+    m_penTarget = ((CEnemyBase *) &*m_penLauncher)->m_penEnemy;
+  }
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetModel(MODEL_MANTAMAN_FIRE);
+  SetModelMainTexture(TEXTURE_MANTAMAN_FIRE);
+  GetModelObject()->StretchModel(FLOAT3D(2.0f, 2.0f, 2.0f));
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 20.0f;
+  m_fRangeDamageAmount = 10.0f;
+  m_fDamageHotSpotRange = 2.0f;
+  m_fDamageFallOffRange = 6.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_GUIDED;
+  m_fGuidedMaxSpeedFactor = 30.0f;
+  m_aRotateSpeed = 175.0f;
+  SetHealth(20.0f);
+};
+
+
+void Bomb(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_BOMB);
+  SetModelMainTexture(TEXTURE_BOMB);
+  GetModelObject()->StretchModel(FLOAT3D(3.0f, 3.0f, 3.0f));
+  // start moving
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 5.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  m_soEffect.Set3DParameters(70.0f, 10.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_FLYING04, SOF_3D|SOF_LOOP);
+  SetDesiredRotation(ANGLE3D(0, 45, 0));
+  en_fBounceDampNormal   = 0.75f;
+  en_fBounceDampParallel = 0.6f;
+  en_fJumpControlMultiplier = 0.0f;
+  en_fCollisionSpeedLimit = 1.0f;
+  en_fCollisionDamageFactor = 10.0f;
+  m_fFlyTime = 6.0f;
+  m_fDamageAmount = 0.0f;
+  m_fRangeDamageAmount = 75.0f;
+  m_fDamageHotSpotRange = 6.0f;
+  m_fDamageFallOffRange = 15.0f;
+  m_fSoundRange = 50.0f;
+  m_bExplode = TRUE;
+  en_fDeceleration = 25.0f;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(20.0f);
+  m_pmtMove = PMT_SLIDING;
+  m_tmInvisibility = 0.05f;
+  m_tmExpandBox = 0.1f;
+};
+
+void BombExplosion(void) {
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // explosion
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
+  ese.betType = BET_GRENADE;
+  ese.vStretch = FLOAT3D(3.0,3.0,3.0);
+  SpawnEffect(GetPlacement(), ese);
+  // spawn sound event in range
+  if( IsDerivedFromClass( m_penLauncher, "Player")) {
+    SpawnRangeSound( m_penLauncher, this, SNDT_PLAYER, m_fSoundRange);
+  }
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // wall stain
+      ese.betType = BET_EXPLOSIONSTAIN;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // shock wave
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // second explosion on plane
+      ese.betType = BET_GRENADE_PLANE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint+ese.vNormal/50.0f, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+};
+
+void Arrow(void)
+{
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_ARROW);
+  SetModelMainTexture(TEXTURE_ARROW);
+  GetModelObject()->StretchModel(FLOAT3D(0.25f, 0.25f, 0.25f));
+  ModelChangeNotify();
+  // just freefall
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 30.0f;
+  m_fDamageAmount = 10.0f;
+  m_fSoundRange = 25.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = TRUE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_FLYING;
+};
+
+void ArrowExplosive(void)
+{
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_BOUNCING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_ARROW);
+  SetModelMainTexture(TEXTURE_ARROW);
+  GetModelObject()->StretchModel(FLOAT3D(0.25f, 0.25f, 0.25f));
+  ModelChangeNotify();
+  // just freefall
+  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_fSpeed), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 15.0f;
+  m_fDamageAmount = 10.0f;
+  m_fRangeDamageAmount = 15.0f;
+  m_fDamageHotSpotRange = 1.0f;
+  m_fDamageFallOffRange = 6.0f;
+  m_fSoundRange = 25.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = TRUE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.0f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_FLYING;
+};
+
+void ArrowHit(void) {
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // shock wave
+      ese.colMuliplier = C_dRED|CT_OPAQUE;
+      ese.betType = BET_ARROWHIT;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
+};
+
+void ScorpionLaser(void) {
+  // we need target for guided misile
+  if (IsDerivedFromClass(m_penLauncher, "Enemy Base")) {
+    m_penTarget = ((CEnemyBase *) &*m_penLauncher)->m_penEnemy;
+  }
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_FREE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+
+  SetModel(MODEL_CATMAN_FIRE);
+  SetModelMainTexture(TEXTURE_CATMAN_FIRE);
+  GetModelObject()->StretchModel(FLOAT3D(6.0f, 6.0f, 6.0f));
+
+  ModelChangeNotify();
+  // play the flying sound
+  m_soEffect.Set3DParameters(50.0f, 2.0f, 1.0f, 0.75f);
+  PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -80.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 12.0f;
+  m_fDamageAmount = 30.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_GUIDED_FAST;
+  m_fGuidedMaxSpeedFactor = 80.0f;
+  m_aRotateSpeed = 200.0f;
+};
+
+void ScorpionLaserExplosion(void)
+{
+  // explosion
+  ESpawnEffect ese;
+  ese.colMuliplier = C_BLUE|CT_OPAQUE;
+  ese.betType = BET_PLASMA_EXPLOSION;
+  ese.vStretch = FLOAT3D(1,1,1);
+  SpawnEffect(GetPlacement(), ese);
+}
+
+void Hydrogun(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_MODEL_FREE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  
+  SetModel(MODEL_HYDROGUN);
+  SetModelMainTexture(TEXTURE_GUFFY_PROJECTILE);
+  GetModelObject()->StretchModel(FLOAT3D(0.6f, 0.6f, 0.6f));
+
+  CModelObject *pmo = GetModelObject();
+  if(pmo != NULL)
+  {
+    pmo->PlayAnim(PROJECTILE_ANIM_ROTATE01, AOF_LOOPING);
+  }
+
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -60.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  en_fCollisionSpeedLimit = 1.0f;
+  en_fCollisionDamageFactor = 10.0f;
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 0.0f;
+  m_fRangeDamageAmount = 45.0f;
+  m_fDamageHotSpotRange = 1.0f;
+  m_fDamageFallOffRange = 2.5f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = TRUE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_FLYING;
+  m_aRotateSpeed = 360.0f;
+};
+
+void HydroExplosion(void)
+{
+
+  // explosion
+  ESpawnEffect ese;
+  ese.colMuliplier = C_BLUE|CT_OPAQUE;
+  ese.betType = BET_HYDROGUN;
+  ese.vStretch = FLOAT3D(0.4,0.4,0.4);
+  SpawnEffect(GetPlacement(), ese);
+
+  // particles
+  CPlacement3D plSpray = GetPlacement();
+  CEntityPointer penSpray = CreateEntity( plSpray, CLASS_BLOOD_SPRAY);
+  penSpray->SetParent( this);
+  ESpawnSpray eSpawnSpray;
+  eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
+  eSpawnSpray.fDamagePower = 1.0f;
+  eSpawnSpray.fSizeMultiplier = 0.25f;
+  eSpawnSpray.sptType = SPT_PLASMA_SMALL;
+  eSpawnSpray.vDirection = en_vCurrentTranslationAbsolute/64.0f;
+  eSpawnSpray.penOwner = this;
+  penSpray->Initialize( eSpawnSpray);
+}
+
+void MamutmanBullet(void) {
+  // set appearance
+  InitAsModel();
+  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetComponents(this, *GetModelObject(), MODEL_CYBORG_LASER, TEXTURE_RED_LASER, 0, 0, 0);
+  ModelChangeNotify();
+
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -70.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  /*// play the flying sound
+  m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_FLYING, SOF_3D|SOF_LOOP);*/
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 10.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = TRUE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = TRUE;
+  m_fWaitAfterDeath = 0.125f;
+  m_tmExpandBox = 0.1f;
+  m_tmInvisibility = 0.05f;
+  SetHealth(5.0f);
+  m_pmtMove = PMT_FLYING;
+};
 
 
 /************************************************************
@@ -3046,6 +5009,12 @@ void BounceSound(void) {
       if (en_vCurrentTranslationAbsolute.Length() > 3.0f) {
         m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
         PlaySound(m_soEffect, SOUND_GRENADE_BOUNCE, SOF_3D);
+      }
+      break;
+    case PRT_GRENADE_NEW:
+      if (en_vCurrentTranslationAbsolute.Length() > 3.0f) {
+        m_soEffect.Set3DParameters(50.0f, 5.0f, 1.0f, 1.0f);
+        PlaySound(m_soEffect, SOUND_GRENADE_BOUNCE_NEW, SOF_3D);
       }
       break;
   }
@@ -3494,6 +5463,105 @@ procedures:
     return EEnd();
   };
 
+  // --->>> GUIDED PROJECTILE PE
+  ProjectileGuidedPE(EVoid) {
+    // if already inside some entity
+    CEntity *penObstacle;
+    if (CheckForCollisionNow(0, &penObstacle)) {
+      // explode now
+      ProjectileTouch(penObstacle);
+      return EEnd();
+    }
+
+    // fly loop
+    while( _pTimer->CurrentTick()<(m_fStartTime+m_fFlyTime))
+    {
+      FLOAT fWaitFrequency = 0.1f;
+      if (m_penTarget!=NULL) {
+
+        // calculate desired position and angle
+        EntityInfo *pei= (EntityInfo*) (m_penTarget->GetEntityInfo());
+        FLOAT3D vDesiredPosition;
+        GetEntityInfoPosition( m_penTarget, pei->vSourceCenter, vDesiredPosition);
+        FLOAT3D vDesiredDirection = (vDesiredPosition-GetPlacement().pl_PositionVector).Normalize();
+
+        // calculate heading
+        ANGLE aWantedHeading = GetRelativeHeading( vDesiredDirection);
+        //CPrintF("aWantedHeading: %.0f\n", aWantedHeading);
+        ANGLE aHeading = GetRotationSpeed( aWantedHeading, 2000.0f, fWaitFrequency);
+        //CPrintF("aHeading: %.0f\n", aHeading);
+
+        // calculate pitch
+        ANGLE aWantedPitch = GetRelativePitch( vDesiredDirection);
+        //CPrintF("aWantedPitch: %.0f\n", aWantedPitch);
+        ANGLE aPitch = GetRotationSpeed( aWantedPitch, 2000.0f, fWaitFrequency);
+        //CPrintF("aPitch: %.0f\n", aPitch);
+        // adjust heading pitch according to distance from the target
+        FLOAT fDistance = DistanceTo(this, m_penTarget);
+        FLOAT fSpeedAdjusted = m_fGuidedMaxSpeedFactor;
+
+				if (abs(aWantedHeading)>45) {
+          // slow down so we can turn
+          fSpeedAdjusted = fSpeedAdjusted*((fDistance*0.035f)+0.3f);
+        }
+
+				if (fDistance<2) {
+          // explode now
+          ProjectileTouch(m_penTarget);
+          return EEnd();
+        } else {
+          // calculate distance factor
+          FLOAT fDistanceFactor = fDistance/50.0;
+          fDistanceFactor = ClampUp(fDistanceFactor, 4.0f);
+          // randomize heading and pitch
+          FLOAT fRNDHeading = (FRnd()-0.5f)*90*fDistanceFactor;
+          FLOAT fRNDPitch = (FRnd()-0.5f)*90*fDistanceFactor;
+          aHeading = aHeading+fRNDHeading;
+          aPitch = aPitch+fRNDPitch;
+        }
+
+        // adjust heading and pitch
+        SetDesiredRotation(ANGLE3D(aHeading, aPitch, 0));
+
+        // adjust translation velocity
+        SetDesiredTranslation( FLOAT3D(0, 0, -fSpeedAdjusted));  
+      }
+
+      wait( fWaitFrequency)
+      {
+        on (EBegin) : { resume; }
+        on (EPass epass) : {
+          BOOL bHit;
+          // ignore launcher within 1 second
+          bHit = epass.penOther!=m_penLauncher || _pTimer->CurrentTick()>m_fIgnoreTime;
+          // ignore other projectiles
+          bHit &= !IsOfClass(epass.penOther, "Projectile");
+          // ignore twister
+          bHit &= !IsOfClass(epass.penOther, "Twister");
+          if (bHit) {
+            ProjectileTouch(epass.penOther);
+            return EEnd();
+          }
+          resume;
+        }
+        on (EDeath) :
+        {
+          if (m_bCanBeDestroyed)
+          {
+            ProjectileHit();
+            return EEnd();
+          }
+          resume;
+        }
+        on (ETimer) :
+        {
+          stop;
+        }
+      }
+    }
+    return EEnd();
+  };
+
   // --->>> PROJECTILE SLIDE ON BRUSH
   ProjectileSlide(EVoid) {
     // if already inside some entity
@@ -3659,6 +5727,7 @@ procedures:
       case PRT_DEVIL_ROCKET:
       case PRT_WALKER_ROCKET:
       case PRT_ROCKET:
+      case PRT_ROCKET_HOMING:
       case PRT_SHOOTER_WOODEN_DART:
         {
           Particles_RocketTrail_Prepare(this);
@@ -3666,6 +5735,8 @@ procedures:
         }
       case PRT_GUFFY_PROJECTILE: break; //Particles_RocketTrail_Prepare(this); break;
       case PRT_GRENADE: Particles_GrenadeTrail_Prepare(this); break;
+      case PRT_GRENADE_CLUSTER: Particles_GrenadeTrail_Prepare(this); break;
+      case PRT_GRENADE_NEW: Particles_GrenadeTrail_Prepare(this); break;
       case PRT_CATMAN_FIRE: Particles_RocketTrail_Prepare(this); break;
       case PRT_HEADMAN_FIRECRACKER: Particles_FirecrackerTrail_Prepare(this); break;
       case PRT_HEADMAN_ROCKETMAN: Particles_Fireball01Trail_Prepare(this); break;
@@ -3709,6 +5780,7 @@ procedures:
       case PRT_ICEMAN_LARGE_FIRE: ElementalRock(ELEMENTAL_LARGE, ELEMENTAL_ICEMAN); break;
       case PRT_HUANMAN_FIRE: HuanmanProjectile(); break;
       case PRT_FISHMAN_FIRE: FishmanProjectile(); break;
+      case PRT_FISHMAN_FIRE_STRONG: FishmanProjectileStrong(); break;
       case PRT_MANTAMAN_FIRE: MantamanProjectile(); break;
       case PRT_CYBORG_LASER: CyborgLaser(); break;
       case PRT_CYBORG_BOMB: CyborgBomb(); break;
@@ -3732,6 +5804,36 @@ procedures:
       case PRT_AFTERBURNER_DEBRIS: AfterburnerDebris(); break;
       case PRT_AIRELEMENTAL_WIND: WindBlast(); break;
       case PRT_METEOR: Meteor(); break;
+      case PRT_METEOR_SIMPLE: MeteorSimple(); break;
+      case PRT_METEOR_SMALL: MeteorSmall(); break;
+
+      case PRT_LASER_TANK: TankLaser(); break;
+      case PRT_LASER_FLOATER: FloaterLaser(); break;
+      case PRT_SCORP_PROJECTILE: ScorpProj(); break;
+      case PRT_SCORP_BIG_PROJECTILE: ScorpBigProj(); break;
+      case PRT_MANTAMAN_DEBRIS: MantamanDebris(); break;
+      case PRT_EYEMAN_ACID: EyemanAcid(); break;
+      case PRT_BEAST_E_PROJECTILE: BeastEProj(); break;    
+      case PRT_ALBINO_PROJECTILE: AlbinoProjectile(); break;  
+      case PRT_SPIDERWEB_SOL: SpiderWebSoldier(); break;  
+      case PRT_SPIDERWEB_MUM: SpiderWebBig(); break;  
+      case PRT_KALOPSY_SLIME: KalopsySlime(); break; 
+      case PRT_CATMAN_BOMB: CatmanBomb(); break; 
+      case PRT_PLASMABOLT: PlasmaBolt(); break; 
+      case PRT_LASER_GREEN: GreenLaser(); break; 
+      case PRT_ROCKET_SEEKING: SeekingRocket(); break; 
+      case PRT_NEPTUNE: NeptuneProjectile(); break;
+      case PRT_GRENADE_CLUSTER: ClusterGrenade(); break;
+      case PRT_GRENADE_NEW: PlayerGrenadeNew(); break;
+      case PRT_ROCKET_HOMING: PlayerHomingRocket(); break;
+      case PRT_GRUNT_PROJECTILE_SNIPER: GruntSniperLaser(); break;
+      case PRT_BOMB: Bomb(); break;
+      case PRT_ARROW: Arrow(); break;
+      case PRT_ARROW_EXPLOSIVE: ArrowExplosive(); break;
+      case PRT_SCORPION_LASER: ScorpionLaser(); break;
+      case PRT_GRENADE_CLUSTERED: ClusteredGrenade(); break;
+      case PRT_HYDROGUN: Hydrogun(); break;
+      case PRT_MAMUTMAN: MamutmanBullet(); break;
       default: ASSERTALWAYS("Unknown projectile type");
     }
 
@@ -3753,6 +5855,8 @@ procedures:
       autocall ProjectileFlyRebounding() EEnd;
     } else if (m_pmtMove==PMT_GUIDED_SLIDING) {
       autocall ProjectileGuidedSlide() EEnd;
+    } else if (m_pmtMove==PMT_GUIDED_PE) {
+      autocall ProjectileGuidedPE() EEnd;
     }
 
     // projectile explosion
@@ -3779,6 +5883,32 @@ procedures:
       case PRT_SHOOTER_WOODEN_DART: ShooterWoodenDartExplosion(); break;
       case PRT_SHOOTER_FIREBALL: ShooterFireballExplosion(); break;
       case PRT_METEOR: MeteorExplosion(); break;
+      case PRT_METEOR_SIMPLE: MeteorExplosionSmall(); break;
+      case PRT_METEOR_SMALL: MeteorExplosionEvenSmaller(); break;
+
+      case PRT_SCORP_PROJECTILE: PlayerLaserWave(); break;
+      case PRT_SCORP_BIG_PROJECTILE: ScorpBigProjExplosion(); break;
+      case PRT_MANTAMAN_FIRE: MantamanProjectileExplosion(); break;
+      case PRT_MANTAMAN_DEBRIS: MantamanDebrisExplosion(); break;   
+      case PRT_BEAST_E_PROJECTILE: LarvaPlasmaExplosion(); break;
+      case PRT_ALBINO_PROJECTILE: AlbinoExplosion(); break;
+      case PRT_SPIDERWEB_SOL: SpiderSoldierImpact(); break;
+      case PRT_SPIDERWEB_MUM: SpiderBigImpact(); break;
+      case PRT_KALOPSY_SLIME: KalopsyExplosion(); break;
+      case PRT_CATMAN_BOMB: CyborgBombExplosion(); break;
+      case PRT_PLASMABOLT: PlasmaBoltExplosion(); break;
+      case PRT_LASER_GREEN: PlayerLaserWave(); break;
+      case PRT_ROCKET_SEEKING: GuffyProjectileExplosion(); break;
+      case PRT_NEPTUNE: MantamanProjectileExplosion(); break;
+      case PRT_GRENADE_CLUSTER: ClusterGrenadeExplosion(); break;
+      case PRT_GRENADE_NEW: PlayerGrenadeExplosion(); break;
+      case PRT_ROCKET_HOMING: PlayerRocketExplosion(); break;
+      case PRT_BOMB: BombExplosion(); break;
+      case PRT_ARROW: ArrowHit(); break;
+      case PRT_ARROW_EXPLOSIVE: CyborgBombExplosion(); break;
+      case PRT_SCORPION_LASER: ScorpionLaserExplosion(); break;
+      case PRT_GRENADE_CLUSTERED: PlayerGrenadeExplosion(); break;
+      case PRT_HYDROGUN: HydroExplosion(); break;
     }
 
     // wait after death

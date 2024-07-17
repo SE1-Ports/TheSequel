@@ -257,7 +257,23 @@ EffectParticlesType GetParticleEffectTypeForSurface(INDEX iSurfaceType)
     case SURFACE_GRASS_NOIMPACT:
       {eptType=EPT_BULLET_GRASS; break;}
     case SURFACE_WOOD:     {eptType=EPT_BULLET_WOOD; break;}
-    case SURFACE_SNOW:     {eptType=EPT_BULLET_SNOW; break;}
+    case SURFACE_SNOW:
+    case SURFACE_SNOW_NO_IMPACT:
+		{eptType=EPT_BULLET_SNOW; break;}
+    case SURFACE_LAVA:     {eptType=EPT_BULLET_LAVA; break;}
+    case SURFACE_ACID:     {eptType=EPT_BULLET_ACID; break;}
+    case SURFACE_GLASS:
+    case SURFACE_ICE:
+    case SURFACE_ICE_CLIMBABLE:
+    case SURFACE_ICE_SLOPE:
+    case SURFACE_ICE_LESS:
+		{eptType=EPT_BULLET_GLASS; break;}
+    case SURFACE_FLESH:     {eptType=EPT_BULLET_FLESH; break;}
+    case SURFACE_METAL:
+    case SURFACE_METAL_NO_IMPACT:
+    case SURFACE_METAL_SLIDING:
+		{eptType=EPT_BULLET_METAL; break;}
+    case SURFACE_ENERGY:     {eptType=EPT_BULLET_ENERGY; break;}
   }
   return eptType;
 }
@@ -275,7 +291,23 @@ BulletHitType GetBulletHitTypeForSurface(INDEX iSurfaceType)
     case SURFACE_GRASS_NOIMPACT:
       {bhtType=BHT_BRUSH_GRASS; break;}
     case SURFACE_WOOD:     {bhtType=BHT_BRUSH_WOOD; break;}
-    case SURFACE_SNOW:     {bhtType=BHT_BRUSH_SNOW; break;}
+    case SURFACE_SNOW:
+    case SURFACE_SNOW_NO_IMPACT:
+		{bhtType=BHT_BRUSH_SNOW; break;}
+    case SURFACE_LAVA:     {bhtType=BHT_BRUSH_LAVA; break;}
+    case SURFACE_ACID:     {bhtType=BHT_BRUSH_ACID; break;}
+    case SURFACE_GLASS:
+    case SURFACE_ICE:
+    case SURFACE_ICE_CLIMBABLE:
+    case SURFACE_ICE_SLOPE:
+    case SURFACE_ICE_LESS:
+		{bhtType=BHT_BRUSH_GLASS; break;}
+    case SURFACE_FLESH:     {bhtType=BHT_BRUSH_FLESH; break;}
+    case SURFACE_METAL:
+    case SURFACE_METAL_NO_IMPACT:
+    case SURFACE_METAL_SLIDING:
+		{bhtType=BHT_BRUSH_METAL; break;}
+    case SURFACE_ENERGY:     {bhtType=BHT_BRUSH_ENERGY; break;}
   }
   return bhtType;
 }
@@ -294,6 +326,12 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
     case BHT_BRUSH_GRASS:
     case BHT_BRUSH_WOOD:
     case BHT_BRUSH_SNOW:
+    case BHT_BRUSH_LAVA:
+    case BHT_BRUSH_ACID:
+    case BHT_BRUSH_GLASS:
+    case BHT_BRUSH_FLESH:
+    case BHT_BRUSH_METAL:
+    case BHT_BRUSH_ENERGY:
     {
       // bullet stain
       ESpawnEffect ese;
@@ -307,6 +345,12 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
         if( bhtType == BHT_BRUSH_GRASS)         {ese.betType = BET_BULLETSTAINGRASS;};
         if( bhtType == BHT_BRUSH_WOOD)          {ese.betType = BET_BULLETSTAINWOOD;};
         if( bhtType == BHT_BRUSH_SNOW)          {ese.betType = BET_BULLETSTAINSNOW;};
+        if( bhtType == BHT_BRUSH_LAVA)          {ese.betType = BET_BULLETSTAINLAVA;};
+        if( bhtType == BHT_BRUSH_ACID)          {ese.betType = BET_BULLETSTAINACID;};
+        if( bhtType == BHT_BRUSH_GLASS)         {ese.betType = BET_BULLETSTAINGLASS;};
+        if( bhtType == BHT_BRUSH_FLESH)         {ese.betType = BET_BULLETSTAINFLESH;};
+        if( bhtType == BHT_BRUSH_METAL)         {ese.betType = BET_BULLETSTAINMETAL;};
+        if( bhtType == BHT_BRUSH_ENERGY)        {ese.betType = BET_BULLETSTAINENERGY;};
       }
       else
       {
@@ -318,6 +362,12 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
         if( bhtType == BHT_BRUSH_GRASS)         {ese.betType = BET_BULLETSTAINGRASSNOSOUND;};
         if( bhtType == BHT_BRUSH_WOOD)          {ese.betType = BET_BULLETSTAINWOODNOSOUND;};
         if( bhtType == BHT_BRUSH_SNOW)          {ese.betType = BET_BULLETSTAINSNOWNOSOUND;};
+        if( bhtType == BHT_BRUSH_LAVA)          {ese.betType = BET_BULLETSTAINLAVANOSOUND;};
+        if( bhtType == BHT_BRUSH_ACID)          {ese.betType = BET_BULLETSTAINACIDNOSOUND;};
+        if( bhtType == BHT_BRUSH_GLASS)         {ese.betType = BET_BULLETSTAINGLASSNOSOUND;};
+        if( bhtType == BHT_BRUSH_FLESH)         {ese.betType = BET_BULLETSTAINFLESHNOSOUND;};
+        if( bhtType == BHT_BRUSH_METAL)         {ese.betType = BET_BULLETSTAINMETALNOSOUND;};
+        if( bhtType == BHT_BRUSH_ENERGY)        {ese.betType = BET_BULLETSTAINENERGYNOSOUND;};
       }
 
       ese.vNormal = vHitNormal;
@@ -347,6 +397,7 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
     }
     case BHT_FLESH:
     case BHT_ACID:
+    case BHT_GOO:
     {
       // spawn bullet entry wound
       ESpawnEffect ese;
@@ -361,7 +412,11 @@ void SpawnHitTypeEffect(CEntity *pen, enum BulletHitType bhtType, BOOL bSound, F
         {
           ese.colMuliplier = BLOOD_SPILL_GREEN;
         }
-        else
+        if( bhtType == BHT_GOO)
+        {
+          ese.colMuliplier = BLOOD_SPILL_YELLOW;
+        }
+        if( bhtType == BHT_FLESH)
         {
           ese.colMuliplier = BLOOD_SPILL_RED;
         }

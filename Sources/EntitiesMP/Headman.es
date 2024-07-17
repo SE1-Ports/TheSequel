@@ -2,6 +2,7 @@
 %{
 #include "StdH.h"
 #include "Models/Enemies/Headman/Headman.h"
+#include "Models/Enemies/HeadmanAlphaHD/Headman.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -14,6 +15,11 @@ enum HeadmanType {
   3 HDT_KAMIKAZE      "Kamikaze",
 };
 
+
+enum HeadmanStyle {
+  0 HDT_ALPHA     "Alpha",
+  1 HDT_FINAL     "Final",
+};
 
 %{
 // info structure
@@ -34,7 +40,9 @@ name      "Headman";
 thumbnail "Thumbnails\\Headman.tbn";
 
 properties:
-  1 enum HeadmanType m_hdtType "Type" 'Y' = HDT_FIRECRACKER,
+  1 enum HeadmanType m_hdtType   "Type" 'Y' = HDT_FIRECRACKER,
+  2 enum HeadmanStyle m_hdtStyle "Style" 'S' = HDT_FINAL,
+  3 INDEX   m_fgibTexture = TEXTURE_ROCKETMAN,
 
   // class internal
   5 BOOL m_bExploded = FALSE,
@@ -62,6 +70,33 @@ components:
  28 texture TEXTURE_ROCKETLAUNCHER  "Models\\Enemies\\Headman\\RocketLauncher.tex",
  29 texture TEXTURE_BOMB            "Models\\Enemies\\Headman\\Projectile\\Bomb.tex",
 
+100 model   MODEL_A_HEADMAN         "Models\\Enemies\\HeadmanAlphaHD\\Headman.mdl",
+101 model   MODEL_A_HEAD            "Models\\Enemies\\HeadmanAlphaHD\\Head.mdl",
+102 model   MODEL_A_FIRECRACKERHEAD "Models\\Enemies\\HeadmanAlphaHD\\FirecrackerHead.mdl",
+103 model   MODEL_A_CHAINSAW        "Models\\Enemies\\HeadmanAlphaHD\\ChainSaw.mdl",
+104 model   MODEL_A_ROCKETLAUNCHER  "Models\\Enemies\\HeadmanAlphaHD\\RocketLauncher.mdl",
+105 model   MODEL_A_BOMB            "Models\\Enemies\\HeadmanAlphaHD\\Projectile\\Bomb.mdl",
+
+106 model   MODEL_NECK_STICK      "Models\\Enemies\\HeadmanAlphaHD\\Stick.mdl",
+107 model   MODEL_NECK_SAW        "Models\\Enemies\\HeadmanAlphaHD\\Saw.mdl",
+108 model   MODEL_BOMBER_BAG      "Models\\Enemies\\HeadmanAlphaHD\\Bag.mdl",
+
+109 texture TEXTURE_A_BOMBERMAN       "Models\\Enemies\\HeadmanAlphaHD\\Bomberman.tex",
+110 texture TEXTURE_A_FIRECRACKER     "Models\\Enemies\\HeadmanAlphaHD\\Firecracker.tex",
+111 texture TEXTURE_A_KAMIKAZE        "Models\\Enemies\\HeadmanAlphaHD\\Kamikaze.tex",
+112 texture TEXTURE_A_ROCKETMAN       "Models\\Enemies\\HeadmanAlphaHD\\Rocketman.tex",
+113 texture TEXTURE_A_HEAD            "Models\\Enemies\\HeadmanAlphaHD\\Head.tex",
+114 texture TEXTURE_A_FIRECRACKERHEAD "Models\\Enemies\\HeadmanAlphaHD\\FirecrackerHead.tex",
+115 texture TEXTURE_A_CHAINSAW        "Models\\Enemies\\HeadmanAlphaHD\\Chainsaw.tex",
+116 texture TEXTURE_A_ROCKETLAUNCHER  "Models\\Enemies\\HeadmanAlphaHD\\RocketLauncher.tex",
+117 texture TEXTURE_A_BOMB            "Models\\Enemies\\HeadmanAlphaHD\\Projectile\\Bomb.tex",
+
+118 texture TEXTURE_NECK_STICK      "Models\\Enemies\\HeadmanAlphaHD\\Stick.tex",
+119 texture TEXTURE_NECK_SAW        "Models\\Enemies\\HeadmanAlphaHD\\Saw.tex",
+120 texture TEXTURE_BOMBER_BAG      "Models\\Enemies\\HeadmanAlphaHD\\Bag.tex",
+121 texture TEXTURE_ROCKETMAN_HEAD  "Models\\Enemies\\HeadmanAlphaHD\\RocketmanHead.tex",
+122 texture TEXTURE_BOMBERMAN_HEAD  "Models\\Enemies\\HeadmanAlphaHD\\BombermanHead.tex",
+
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE              "Models\\Enemies\\Headman\\Sounds\\Idle.wav",
  51 sound   SOUND_IDLEKAMIKAZE      "Models\\Enemies\\Headman\\Sounds\\IdleKamikaze.wav",
@@ -73,11 +108,13 @@ components:
  57 sound   SOUND_ATTACKKAMIKAZE    "Models\\Enemies\\Headman\\Sounds\\AttackKamikaze.wav",
  58 sound   SOUND_DEATH             "Models\\Enemies\\Headman\\Sounds\\Death.wav",
 
- /*
- 60 model     MODEL_HEADMAN_BODY   "Models\\Enemies\\Headman\\Debris\\Torso.mdl",
- 61 model     MODEL_HEADMAN_HAND   "Models\\Enemies\\Headman\\Debris\\Arm.mdl",
- 62 model     MODEL_HEADMAN_LEGS   "Models\\Enemies\\Headman\\Debris\\Leg.mdl",
- */
+ // debris
+
+ 61 model     MODEL_HEADMAN_HAND   "ModelsF\\Enemies\\Headman\\Debris\\Arm.mdl",
+ 62 model     MODEL_HEADMAN_LEGS   "ModelsF\\Enemies\\Headman\\Debris\\Leg.mdl",
+
+ 73 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 74 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
 functions:
   // describe how this enemy killed player
@@ -124,6 +161,12 @@ functions:
     PrecacheSound(SOUND_WOUND);
     PrecacheSound(SOUND_DEATH);
 
+	PrecacheModel(MODEL_HEADMAN_HAND);
+	PrecacheModel(MODEL_HEADMAN_LEGS);
+
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_RED);
+
     switch(m_hdtType) {
     case HDT_FIRECRACKER: { 
       PrecacheSound(SOUND_FIREFIRECRACKER);
@@ -138,6 +181,10 @@ functions:
       PrecacheClass(CLASS_PROJECTILE, PRT_HEADMAN_BOMBERMAN);
       PrecacheModel(MODEL_BOMB);
       PrecacheTexture(TEXTURE_BOMB);  
+      PrecacheModel(MODEL_A_BOMB);
+      PrecacheTexture(TEXTURE_A_BOMB); 
+      PrecacheModel(MODEL_BOMBER_BAG);
+      PrecacheTexture(TEXTURE_BOMBER_BAG); 
                           } break;
     case HDT_KAMIKAZE:    { 
       PrecacheSound(SOUND_ATTACKKAMIKAZE);
@@ -145,6 +192,8 @@ functions:
       PrecacheClass(CLASS_BASIC_EFFECT, BET_BOMB);
       PrecacheModel(MODEL_BOMB);
       PrecacheTexture(TEXTURE_BOMB);  
+      PrecacheModel(MODEL_A_BOMB);
+      PrecacheTexture(TEXTURE_A_BOMB);  
                           } break;
     }
   };
@@ -339,11 +388,10 @@ functions:
     }
   };
 
+
   // spawn body parts
-  /*void BlowUp(void)
+  void BlowUp(void)
   {
-    if( m_hdtType==HDT_FIRECRACKER || m_hdtType==HDT_ROCKETMAN)
-    {
       // get your size
       FLOATaabbox3D box;
       GetBoundingBox(box);
@@ -357,33 +405,45 @@ functions:
       FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
 
       // spawn debris
-      Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 5.0f, 2.0f);
 
-      INDEX iTextureID = TEXTURE_ROCKETMAN;
-      if( m_hdtType==HDT_FIRECRACKER)
-      {
-        iTextureID = TEXTURE_FIRECRACKER;
-      }
+	  // kamikaze and bomberman explode if is not already exploded
+	  if (m_hdtType==HDT_KAMIKAZE || m_hdtType==HDT_BOMBERMAN) {
+	      Explode();
+	  }
+	
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
 
-      Debris_Spawn(this, this, MODEL_HEADMAN_BODY, iTextureID, 0, 0, 0, 0, 0.0f,
+      Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+
+
+      Debris_Spawn(this, this, MODEL_HEADMAN_HAND, m_fgibTexture, 0, 0, 0, 0, 0.72f,
         FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-      Debris_Spawn(this, this, MODEL_HEADMAN_HAND, iTextureID, 0, 0, 0, 0, 0.0f,
+      Debris_Spawn(this, this, MODEL_HEADMAN_HAND, m_fgibTexture, 0, 0, 0, 0, 0.72f,
         FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-      Debris_Spawn(this, this, MODEL_HEADMAN_HAND, iTextureID, 0, 0, 0, 0, 0.0f,
+      Debris_Spawn(this, this, MODEL_HEADMAN_LEGS, m_fgibTexture, 0, 0, 0, 0, 0.72f,
         FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-      Debris_Spawn(this, this, MODEL_HEADMAN_LEGS, iTextureID, 0, 0, 0, 0, 0.0f,
+	  Debris_Spawn(this, this, MODEL_HEADMAN_LEGS, m_fgibTexture, 0, 0, 0, 0, 0.72f,
         FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.3f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
 
       // hide yourself (must do this after spawning debris)
       SwitchToEditorModel();
       SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
       SetCollisionFlags(ECF_IMMATERIAL);
-    }
-    else
-    {
-      CEnemyBase::BlowUp();
-    }
-  };*/
+  };
 
   // bomberman and kamikaze explode only once
   void Explode(void) {
@@ -613,29 +673,42 @@ procedures:
     SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
-    SetHealth(19.5f);
-    m_fMaxHealth = 19.5f;
+    SetHealth(20.0f);
+    m_fMaxHealth = 20.0f;
     en_tmMaxHoldBreath = 5.0f;
     en_fDensity = 2000.0f;
-    m_fBlowUpSize = 2.0f;
+    m_fBlowUpSize = 1.0f;
 
     // set your appearance
-    SetModel(MODEL_HEADMAN);
+    if (m_hdtStyle==HDT_FINAL) {
+       SetModel(MODEL_HEADMAN); }
+    if (m_hdtStyle==HDT_ALPHA) {
+       SetModel(MODEL_A_HEADMAN); }
     switch (m_hdtType) {
       case HDT_FIRECRACKER:
         // set your texture
-        SetModelMainTexture(TEXTURE_FIRECRACKER);
-        AddAttachment(HEADMAN_ATTACHMENT_HEAD, MODEL_FIRECRACKERHEAD, TEXTURE_FIRECRACKERHEAD);
-        AddAttachment(HEADMAN_ATTACHMENT_CHAINSAW, MODEL_CHAINSAW, TEXTURE_CHAINSAW);
+        if (m_hdtStyle==HDT_FINAL) {
+           SetModelMainTexture(TEXTURE_FIRECRACKER);
+           AddAttachment(HEADMAN_ATTACHMENT_HEAD, MODEL_FIRECRACKERHEAD, TEXTURE_FIRECRACKERHEAD);
+           AddAttachment(HEADMAN_ATTACHMENT_CHAINSAW, MODEL_CHAINSAW, TEXTURE_CHAINSAW);
+		   m_fgibTexture = TEXTURE_FIRECRACKER;
+		   }
+        if (m_hdtStyle==HDT_ALPHA) {
+           SetModelMainTexture(TEXTURE_A_FIRECRACKER);
+           AddAttachment(HEADMAN_ATTACHMENT_HEAD, MODEL_A_FIRECRACKERHEAD, TEXTURE_A_FIRECRACKERHEAD);
+           AddAttachment(HEADMAN_ATTACHMENT_CHAINSAW, MODEL_A_CHAINSAW, TEXTURE_A_CHAINSAW);
+		   AddAttachment(HEADMAN_ATTACHMENT_NECK_STICK, MODEL_NECK_STICK, TEXTURE_NECK_STICK); // Stick 
+		   m_fgibTexture = TEXTURE_A_FIRECRACKER;
+		   }
         // setup moving speed
         m_fWalkSpeed = FRnd() + 1.5f;
         m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
-        m_fAttackRunSpeed = FRnd() + 5.0f;
+        m_fAttackRunSpeed = FRnd() + 6.0f;
         m_aAttackRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         m_fCloseRunSpeed = FRnd() + 5.0f;
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
-        m_fAttackDistance = 50.0f;
+        m_fAttackDistance = 80.0f;
         m_fCloseDistance = 0.0f;
         m_fStopDistance = 8.0f;
         m_fAttackFireTime = 2.0f;
@@ -643,25 +716,36 @@ procedures:
         m_fIgnoreRange = 200.0f;
         // damage/explode properties
         m_fBlowUpAmount = 65.0f;
-        m_fBodyParts = 4;
+        m_fBodyParts = 3;
         m_fDamageWounded = 0.0f;
         m_iScore = 200;
         break;
   
       case HDT_ROCKETMAN:
         // set your texture
-        SetModelMainTexture(TEXTURE_ROCKETMAN);
-        AddAttachment(HEADMAN_ATTACHMENT_HEAD, MODEL_HEAD, TEXTURE_HEAD);
-        AddAttachment(HEADMAN_ATTACHMENT_ROCKET_LAUNCHER, MODEL_ROCKETLAUNCHER, TEXTURE_ROCKETLAUNCHER);
+        if (m_hdtStyle==HDT_FINAL) {
+           SetModelMainTexture(TEXTURE_ROCKETMAN);
+           AddAttachment(HEADMAN_ATTACHMENT_HEAD, MODEL_HEAD, TEXTURE_HEAD);
+           AddAttachment(HEADMAN_ATTACHMENT_ROCKET_LAUNCHER, MODEL_ROCKETLAUNCHER, TEXTURE_ROCKETLAUNCHER);
+		   m_fgibTexture = TEXTURE_ROCKETMAN;
+		   }
+        if (m_hdtStyle==HDT_ALPHA) {
+           SetModelMainTexture(TEXTURE_A_ROCKETMAN);
+           AddAttachment(HEADMAN_ATTACHMENT_HEAD, MODEL_A_HEAD, TEXTURE_ROCKETMAN_HEAD);
+           AddAttachment(HEADMAN_ATTACHMENT_ROCKET_LAUNCHER, MODEL_A_ROCKETLAUNCHER, TEXTURE_A_ROCKETLAUNCHER);
+		   AddAttachment(HEADMAN_ATTACHMENT_NECK_SAW, MODEL_NECK_SAW, TEXTURE_NECK_SAW);       // Saw
+	  	   AddAttachment(HEADMAN_ATTACHMENT_NECK_STICK, MODEL_NECK_STICK, TEXTURE_NECK_STICK); // Stick
+		   m_fgibTexture = TEXTURE_A_ROCKETMAN;
+		   }
         // setup moving speed
         m_fWalkSpeed = FRnd() + 1.5f;
         m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
-        m_fAttackRunSpeed = FRnd()*2.0f + 6.0f;
+        m_fAttackRunSpeed = FRnd()*2.0f + 7.0f;
         m_aAttackRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         m_fCloseRunSpeed = FRnd()*2.0f + 6.0f;
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
-        m_fAttackDistance = 50.0f;
+        m_fAttackDistance = 80.0f;
         m_fCloseDistance = 0.0f;
         m_fStopDistance = 8.0f;
         m_fAttackFireTime = 2.0f;
@@ -669,24 +753,34 @@ procedures:
         m_fIgnoreRange = 200.0f;
         // damage/explode properties
         m_fBlowUpAmount = 65.0f;
-        m_fBodyParts = 4;
+        m_fBodyParts = 3;
         m_fDamageWounded = 0.0f;
         m_iScore = 100;
         break;
 
       case HDT_BOMBERMAN:
         // set your texture
-        SetModelMainTexture(TEXTURE_BOMBERMAN);
-        AddAttachment(HEADMAN_ATTACHMENT_HEAD, MODEL_HEAD, TEXTURE_HEAD);
+        if (m_hdtStyle==HDT_FINAL) {
+           SetModelMainTexture(TEXTURE_BOMBERMAN);
+           AddAttachment(HEADMAN_ATTACHMENT_HEAD, MODEL_HEAD, TEXTURE_HEAD);
+		   m_fgibTexture = TEXTURE_BOMBERMAN;
+		   }
+        if (m_hdtStyle==HDT_ALPHA) {
+           SetModelMainTexture(TEXTURE_A_BOMBERMAN);
+		   AddAttachment(HEADMAN_ATTACHMENT_BOMBER_HEAD, MODEL_A_HEAD, TEXTURE_BOMBERMAN_HEAD);  // Bomber head on stick
+           AddAttachment(HEADMAN_ATTACHMENT_NECK_STICK, MODEL_NECK_STICK, TEXTURE_NECK_STICK); // Stick
+		   AddAttachment(HEADMAN_ATTACHMENT_BOMBER_BAG, MODEL_BOMBER_BAG, TEXTURE_BOMBER_BAG); // Bomber bag
+		   m_fgibTexture = TEXTURE_A_BOMBERMAN;
+		   }
         // setup moving speed
         m_fWalkSpeed = FRnd() + 1.5f;
         m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
-        m_fAttackRunSpeed = FRnd() + 4.0f;
+        m_fAttackRunSpeed = FRnd() + 6.0f;
         m_aAttackRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         m_fCloseRunSpeed = FRnd() + 4.0f;
         m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
         // setup attack distances
-        m_fAttackDistance = 45.0f;
+        m_fAttackDistance = 100.0f;
         m_fCloseDistance = 0.0f;
         m_fStopDistance = 20.0f;
         m_fAttackFireTime = 2.0f;
@@ -694,16 +788,25 @@ procedures:
         m_fIgnoreRange = 150.0f;
         // damage/explode properties
         m_fBlowUpAmount = 65.0f;
-        m_fBodyParts = 4;
+        m_fBodyParts = 3;
         m_fDamageWounded = 0.0f;
         m_iScore = 500;
         break;
 
       case HDT_KAMIKAZE:
         // set your texture
-        SetModelMainTexture(TEXTURE_KAMIKAZE);
-        AddAttachment(HEADMAN_ATTACHMENT_BOMB_RIGHT_HAND, MODEL_BOMB, TEXTURE_BOMB);
-        AddAttachment(HEADMAN_ATTACHMENT_BOMB_LEFT_HAND, MODEL_BOMB, TEXTURE_BOMB);
+        if (m_hdtStyle==HDT_FINAL) {
+           SetModelMainTexture(TEXTURE_KAMIKAZE);
+           AddAttachment(HEADMAN_ATTACHMENT_BOMB_RIGHT_HAND, MODEL_BOMB, TEXTURE_BOMB);
+           AddAttachment(HEADMAN_ATTACHMENT_BOMB_LEFT_HAND, MODEL_BOMB, TEXTURE_BOMB);
+		   m_fgibTexture = TEXTURE_KAMIKAZE;
+		   }
+        if (m_hdtStyle==HDT_ALPHA) {
+           SetModelMainTexture(TEXTURE_A_KAMIKAZE);
+           AddAttachment(HEADMAN_ATTACHMENT_BOMB_RIGHT_HAND, MODEL_A_BOMB, TEXTURE_A_BOMB);
+           AddAttachment(HEADMAN_ATTACHMENT_BOMB_LEFT_HAND, MODEL_A_BOMB, TEXTURE_A_BOMB);
+		   m_fgibTexture = TEXTURE_A_KAMIKAZE;
+		   }
         // setup moving speed
         m_fWalkSpeed = FRnd() + 1.5f;
         m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
@@ -720,7 +823,7 @@ procedures:
         m_fIgnoreRange = 250.0f;
         // damage/explode properties
         m_fBlowUpAmount = 0.0f;
-        m_fBodyParts = 4;
+        m_fBodyParts = 3;
         m_fDamageWounded = 0.0f;
         m_iScore = 2500;
         break;

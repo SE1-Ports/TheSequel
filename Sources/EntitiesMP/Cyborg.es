@@ -1,26 +1,22 @@
-330
+324
 %{
 #include "StdH.h"
-#include "Models/Enemies/Cyborg/Cyborg.h"
+#include "AREP/Models/Cyborg2/Cyborg.h"
 %}
-
 
 uses "EntitiesMP/EnemyFly";
 uses "EntitiesMP/Projectile";
-uses "EntitiesMP/CyborgBike";
 
-
-enum CyborgType {
-  0 CBT_GROUND      "Ground",
-  1 CBT_FLY         "Fly",
-  2 CBT_FLYGROUND   "Fly-Ground",
+enum CyChar {
+  0 CY_SOLDIER   "Soldier",    // soldier
+  1 CY_SERGEANT  "Sergeant",   // sergeant
+  2 CY_GENERAL  "General",   // general
 };
-
 
 %{
 // info structure
-static EntityInfo eiCyborgStand = {
-  EIBT_ROBOT, 200.0f,
+static EntityInfo eiCyborg = {
+  EIBT_ROBOT, 1000.0f,
   0.0f, 1.55f, 0.0f,
   0.0f, 1.0f, 0.0f,
 };
@@ -30,66 +26,62 @@ static EntityInfo eiCyborgFly = {
   0.0f, 0.0f, 0.0f,
 };
 
+#define SIZE_SOLDIER   (1.0f)
+#define SIZE_SERGEANT  (2.0f)
+#define SIZE_GENERAL  (3.0f)
+#define FIRE_LEFT_ARM   FLOAT3D(-0.5f, 1.7f, -1.2f)
+#define FIRE_RIGHT_ARM  FLOAT3D(+0.5f, 1.7f, -1.2f)
+#define HIT_DISTANCE 4.0f
 #define FIRE_BIKE   FLOAT3D(-0.35f, 0.1f, -1.2f)
-#define FIRE_LASER  FLOAT3D(-0.5f, 1.7f, -0.75f)
 
-#define IGNORE_RANGE  400.0f
-
-#define BIKE_ATTACHMENT   FLOAT3D(0, 0, -0.271f)
+#define CYBORGSOUND(soundname) ((m_CyChar==CY_GENERAL)? (SOUND_GENERAL_##soundname) : (SOUND_##soundname))
 %}
 
 
-class CCyborg : CEnemyBase {
+class CCyborg : CEnemyFly {
 name      "Cyborg";
 thumbnail "Thumbnails\\Cyborg.tbn";
 
 properties:
-  1 enum CyborgType m_EctType "Type" 'T' = CBT_GROUND,   // type
-  2 INDEX m_iCloseHit = 0,              // close hit hand (left or right)
-  3 INDEX m_iFireLaserCount = 0,        // fire laser binary divider
-  4 INDEX m_ctBombsToDrop = 0,          // counter of bombs to drop in fly-over
- 10 FLOAT m_tmLastBombDropped = -1.0f,  // when last bomb was dropped
-  5 FLOAT m_fFlyAboveEnemy = 0.0f,      // fly above enemy height
-  6 FLOAT m_fFlySpeed = 0.0f,
-  7 FLOAT m_aFlyRotateSpeed = 0.0f,
-  8 FLOAT m_fFallStartTime = 0.0f,
-  9 BOOL  m_bBombing  "Bombing" 'B' = FALSE,           // enable bombing
+  2 enum CyChar m_CyChar   "Character" 'C' = CY_SOLDIER,
+  3 INDEX m_iLoopCounter = 0,
+  4 BOOL m_bWalkSoundPlaying = FALSE,
+  5 FLOAT m_fThreatDistance = 5.0f,
+  6 INDEX m_iCloseHit = 0,              // close hit hand (left or right)
+  7 INDEX m_iFireLaserCount = 0,        // fire laser binary divider
+  8 FLOAT m_fFlyAboveEnemy = 0.0f,      // fly above enemy height
 
-{
-  CEntity *penBullet;     // bullet
-}
-
+  10 CSoundObject m_soFeet,
+  11 CSoundObject m_soFire1,
+  12 CSoundObject m_soFire2,
+  13 CSoundObject m_soFire3,
+  14 CSoundObject m_soFire4,
+  
 components:
-  0 class   CLASS_BASE          "Classes\\EnemyFly.ecl",
-  1 class   CLASS_BULLET        "Classes\\Bullet.ecl",
-  2 class   CLASS_CYBORG_BIKE   "Classes\\CyborgBike.ecl",
-  3 class   CLASS_PROJECTILE      "Classes\\Projectile.ecl",
-  4 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
+  0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
+  1 class   CLASS_PROJECTILE    "Classes\\Projectile.ecl",
+  2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
 
- 10 model   MODEL_CYBORG            "Models\\Enemies\\Cyborg\\Cyborg.mdl",
- 11 model   MODEL_ASS               "Models\\Enemies\\Cyborg\\AssHole.mdl",
- 12 model   MODEL_TORSO             "Models\\Enemies\\Cyborg\\Torso.mdl",
- 13 model   MODEL_HEAD              "Models\\Enemies\\Cyborg\\Head.mdl",
- 14 model   MODEL_RIGHT_UPPER_ARM   "Models\\Enemies\\Cyborg\\RightUpperArm.mdl",
- 15 model   MODEL_RIGHT_LOWER_ARM   "Models\\Enemies\\Cyborg\\RightLowerArm.mdl",
- 16 model   MODEL_LEFT_UPPER_ARM    "Models\\Enemies\\Cyborg\\LeftUpperArm.mdl",
- 17 model   MODEL_LEFT_LOWER_ARM    "Models\\Enemies\\Cyborg\\LeftLowerArm.mdl",
- 18 model   MODEL_RIGHT_UPPER_LEG   "Models\\Enemies\\Cyborg\\RightUpperLeg.mdl",
- 19 model   MODEL_RIGHT_LOWER_LEG   "Models\\Enemies\\Cyborg\\RightLowerLeg.mdl",
- 20 model   MODEL_LEFT_UPPER_LEG    "Models\\Enemies\\Cyborg\\LeftUpperLeg.mdl",
- 21 model   MODEL_LEFT_LOWER_LEG    "Models\\Enemies\\Cyborg\\LeftLowerLeg.mdl",
- 22 model   MODEL_FOOT              "Models\\Enemies\\Cyborg\\Foot.mdl",
- 23 model   MODEL_BIKE              "Models\\Enemies\\Cyborg\\Bike.mdl",
- 30 texture TEXTURE_CYBORG          "Models\\Enemies\\Cyborg\\Cyborg.tex",
- 31 texture TEXTURE_BIKE            "Models\\Enemies\\Cyborg\\Bike.tex",
-
-// ************** SOUNDS **************
- 50 sound   SOUND_IDLE      "Models\\Enemies\\Cyborg\\Sounds\\Idle.wav",
- 51 sound   SOUND_SIGHT     "Models\\Enemies\\Cyborg\\Sounds\\Sight.wav",
- 52 sound   SOUND_WOUND     "Models\\Enemies\\Cyborg\\Sounds\\Wound.wav",
- 53 sound   SOUND_FIRE      "Models\\Enemies\\Cyborg\\Sounds\\Fire.wav",
- 54 sound   SOUND_KICK      "Models\\Enemies\\Cyborg\\Sounds\\Kick.wav",
- 55 sound   SOUND_DEATH     "Models\\Enemies\\Cyborg\\Sounds\\Death.wav",
+ 10 model   MODEL_CYBORG            "AREP\\Models\\Cyborg2\\Cyborg.mdl",
+ 11 model   MODEL_ASS               "AREP\\Models\\Cyborg2\\AssHole.mdl",
+ 12 model   MODEL_TORSO             "AREP\\Models\\Cyborg2\\Torso.mdl",
+ 13 model   MODEL_HEAD              "AREP\\Models\\Cyborg2\\Head.mdl",
+ 14 model   MODEL_RIGHT_UPPER_ARM   "AREP\\Models\\Cyborg2\\RightUpperArm.mdl",
+ 15 model   MODEL_RIGHT_LOWER_ARM   "AREP\\Models\\Cyborg2\\RightLowerArm.mdl",
+ 16 model   MODEL_LEFT_UPPER_ARM    "AREP\\Models\\Cyborg2\\LeftUpperArm.mdl",
+ 17 model   MODEL_LEFT_LOWER_ARM    "AREP\\Models\\Cyborg2\\LeftLowerArm.mdl",
+ 18 model   MODEL_RIGHT_UPPER_LEG   "AREP\\Models\\Cyborg2\\RightUpperLeg.mdl",
+ 19 model   MODEL_RIGHT_LOWER_LEG   "AREP\\Models\\Cyborg2\\RightLowerLeg.mdl",
+ 20 model   MODEL_LEFT_UPPER_LEG    "AREP\\Models\\Cyborg2\\LeftUpperLeg.mdl",
+ 21 model   MODEL_LEFT_LOWER_LEG    "AREP\\Models\\Cyborg2\\LeftLowerLeg.mdl",
+ 22 model   MODEL_FOOT              "AREP\\Models\\Cyborg2\\Foot.mdl",
+ 23 model   MODEL_BIKE              "AREP\\Models\\Cyborg2\\Bike.mdl",
+ 30 texture TEXTURE_CYBORG_SOLDIER  "AREP\\Models\\Cyborg2\\CyborgWhite.tex",
+ 31 texture TEXTURE_CYBORG_SERGEANT "AREP\\Models\\Cyborg2\\CyborgOrangeFaded.tex",
+ 32 texture TEXTURE_CYBORG_GENERAL  "AREP\\Models\\Cyborg2\\CyborgBlack.tex",
+ 33 texture TEXTURE_BIKE_SOLDIER    "AREP\\Models\\Cyborg2\\BikeWhite.tex",
+ 34 texture TEXTURE_BIKE_SERGEANT   "AREP\\Models\\Cyborg2\\BikeOrange.tex",
+ 35 texture TEXTURE_BIKE_GENERAL    "AREP\\Models\\Cyborg2\\BikeBlack.tex",
 
 // ************** REFLECTIONS **************
 202 texture TEX_REFL_LIGHTMETAL01       "Models\\ReflectionTextures\\LightMetal01.tex",
@@ -98,26 +90,153 @@ components:
 211 texture TEX_SPEC_MEDIUM             "Models\\SpecularTextures\\Medium.tex",
 212 texture TEX_SPEC_STRONG             "Models\\SpecularTextures\\Strong.tex",
 
+// ************** SOUNDS **************
+ 50 sound   SOUND_IDLE        "AREP\\Models\\Cyborg2\\Sounds\\Idle.wav",
+ 51 sound   SOUND_SIGHT1       "AREP\\Models\\Cyborg2\\Sounds\\Sight1.wav",
+ 52 sound   SOUND_SIGHT2       "AREP\\Models\\Cyborg2\\Sounds\\Sight2.wav",
+ 53 sound   SOUND_SIGHT3       "AREP\\Models\\Cyborg2\\Sounds\\Sight3.wav",
+ 54 sound   SOUND_FIRE_SMALL        "AREP\\Models\\Cyborg2\\Sounds\\Fire_Small.wav",
+ 55 sound   SOUND_FIRE_MEDIUM        "AREP\\Models\\Cyborg2\\Sounds\\Fire_Medium.wav",
+ 56 sound   SOUND_DEATH       "AREP\\Models\\Cyborg2\\Sounds\\Death.wav",
+ 57 sound   SOUND_WALK        "AREP\\Models\\Cyborg2\\Sounds\\Walk.wav",
+ 58 sound   SOUND_KICK_SMALL        "AREP\\Models\\Cyborg2\\Sounds\\Kick_Small.wav",
+ 59 sound   SOUND_KICK_MEDIUM        "AREP\\Models\\Cyborg2\\Sounds\\Kick_Medium.wav",
+ 60 sound   SOUND_WOUND       "AREP\\Models\\Cyborg2\\Sounds\\Wound.wav",
+
+ 70 sound   SOUND_GENERAL_IDLE        "AREP\\Models\\Cyborg2\\Sounds\\General\\Idle.wav",
+ 71 sound   SOUND_GENERAL_SIGHT1       "AREP\\Models\\Cyborg2\\Sounds\\General\\Sight1.wav",
+ 72 sound   SOUND_GENERAL_SIGHT2       "AREP\\Models\\Cyborg2\\Sounds\\General\\Sight2.wav",
+ 73 sound   SOUND_GENERAL_SIGHT3       "AREP\\Models\\Cyborg2\\Sounds\\General\\Sight3.wav",
+ 74 sound   SOUND_GENERAL_FIRE        "AREP\\Models\\Cyborg2\\Sounds\\General\\Fire.wav",
+ 75 sound   SOUND_GENERAL_DEATH       "AREP\\Models\\Cyborg2\\Sounds\\General\\Death.wav",
+ 76 sound   SOUND_GENERAL_WALK        "AREP\\Models\\Cyborg2\\Sounds\\General\\Walk.wav",
+ 77 sound   SOUND_GENERAL_KICK        "AREP\\Models\\Cyborg2\\Sounds\\General\\Kick.wav",
+ 78 sound   SOUND_GENERAL_WOUND       "AREP\\Models\\Cyborg2\\Sounds\\General\\Wound.wav",
+ 
+ 80 sound   SOUND_HOVER       "AREP\\Models\\Cyborg2\\Sounds\\Hover_Loop.wav",
+
 functions:
+  // describe how this enemy killed player
+  virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
+  {
+    CTString str;
+    str.PrintF(TRANS("%s has been exterminated"), strPlayerName);
+    return str;
+  }
+
+  virtual const CTFileName &GetComputerMessageName(void) const {
+    static DECLARE_CTFILENAME(fnmSoldier,  "DataMP\\Messages\\Enemies\\AREP\\Cyborg1.txt");
+    static DECLARE_CTFILENAME(fnmSergeant, "DataMP\\Messages\\Enemies\\AREP\\Cyborg2.txt");
+    static DECLARE_CTFILENAME(fnmGeneral, "DataMP\\Messages\\Enemies\\AREP\\Cyborg3.txt");
+    switch(m_CyChar) {
+    default: ASSERT(FALSE);
+    case CY_SOLDIER:   return fnmSoldier;
+    case CY_SERGEANT: return fnmSergeant;
+    case CY_GENERAL: return fnmGeneral;
+    }
+  }
+  // overridable function to get range for switching to another player
+  FLOAT GetThreatDistance(void)
+  {
+    return m_fThreatDistance;
+  }
+
+  BOOL ForcesCannonballToExplode(void)
+  {
+    if (m_CyChar==CY_GENERAL) {
+      return TRUE;
+    }
+    return CEnemyBase::ForcesCannonballToExplode();
+  }
+
+  void Precache(void) {
+    CEnemyBase::Precache();
+
+    PrecacheModel(MODEL_CYBORG);
+
+      PrecacheSound(SOUND_IDLE );
+      PrecacheSound(SOUND_SIGHT1);
+      PrecacheSound(SOUND_SIGHT2);
+      PrecacheSound(SOUND_SIGHT3);
+      PrecacheSound(SOUND_WOUND);
+      PrecacheSound(SOUND_DEATH);
+      PrecacheSound(SOUND_WALK);
+      PrecacheSound(SOUND_HOVER);
+
+    if (m_CyChar==CY_SOLDIER)
+    {
+      PrecacheSound(SOUND_FIRE_SMALL);
+      PrecacheSound(SOUND_KICK_SMALL);
+
+    PrecacheTexture(TEXTURE_CYBORG_SOLDIER);
+    PrecacheTexture(TEXTURE_BIKE_SOLDIER);
+
+    PrecacheClass(CLASS_PROJECTILE, PRT_CYBORG_LASER);
+	}
+
+    if (m_CyChar==CY_SERGEANT)
+    {
+      PrecacheSound(SOUND_FIRE_MEDIUM);
+      PrecacheSound(SOUND_KICK_MEDIUM);
+
+    PrecacheTexture(TEXTURE_CYBORG_SERGEANT);
+    PrecacheTexture(TEXTURE_BIKE_SERGEANT);
+
+    PrecacheClass(CLASS_PROJECTILE, PRT_DEVIL_LASER);
+	}
+	
+    if (m_CyChar==CY_GENERAL)
+    {
+      PrecacheSound(SOUND_GENERAL_IDLE );
+      PrecacheSound(SOUND_GENERAL_SIGHT1);
+      PrecacheSound(SOUND_GENERAL_SIGHT2);
+      PrecacheSound(SOUND_GENERAL_SIGHT3);
+      PrecacheSound(SOUND_GENERAL_WOUND);
+      PrecacheSound(SOUND_GENERAL_DEATH);
+      PrecacheSound(SOUND_GENERAL_FIRE);
+      PrecacheSound(SOUND_GENERAL_WALK);
+      PrecacheSound(SOUND_GENERAL_KICK);
+      PrecacheSound(SOUND_GENERAL_WOUND);
+
+    PrecacheTexture(TEXTURE_CYBORG_GENERAL);
+    PrecacheTexture(TEXTURE_BIKE_GENERAL);
+
+    PrecacheClass(CLASS_PROJECTILE, PRT_GUFFY_PROJECTILE);
+	}
+  };
   /* Entity info */
   void *GetEntityInfo(void) {
-    if (m_EctType!=CBT_GROUND) {
+    if (m_EeftType!=EFT_GROUND_ONLY) {
       return &eiCyborgFly;
     } else {
-      return &eiCyborgStand;
+      return &eiCyborg;
     }
   };
+
+  FLOAT GetCrushHealth(void)
+  {
+    if (m_CyChar==CY_GENERAL) {
+      return 100.0f;
+    }
+    return 0.0f;
+  }
 
   /* Receive damage */
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
+
     // cyborg can't harm cyborg
-    if (!IsOfClass(penInflictor, "Cyborg")) {
+    if (!IsOfClass(penInflictor, "Cyborg") ||
+      ((CCyborg*)penInflictor)->m_CyChar!=m_CyChar) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
     }
   };
 
+  void LeaveStain(BOOL bGrow)
+  {
+    // cyborg doesn't leave bloody stain
+  }
 
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
@@ -127,53 +246,43 @@ functions:
       case 1: iAnim = CYBORG_ANIM_WOUND02; break;
       case 2: iAnim = CYBORG_ANIM_WOUND03; break;
       case 3: iAnim = CYBORG_ANIM_WOUND04; break;
-      default: ASSERTALWAYS("Cyborg unknown damage");
+      default: ASSERTALWAYS("Cyborg2 unknown damage");
     }
     StartModelAnim(iAnim, 0);
     return iAnim;
   };
-
-  // death
-  INDEX AnimForDeath(void) {
-    INDEX iAnim;
-    switch (IRnd()%2) {
-      case 0: iAnim = CYBORG_ANIM_DEATH01; break;
-      case 1: iAnim = CYBORG_ANIM_DEATH02; break;
-      default: ASSERTALWAYS("Cyborg unknown death");
-    }
-    StartModelAnim(iAnim, 0);
-    return iAnim;
-  };
-
 
   // virtual anim functions
   void StandingAnim(void) {
-    if (m_EctType!=CBT_GROUND) {
+    DeactivateWalkingSound();
+    if (m_EeftType!=EFT_GROUND_ONLY) {
       StartModelAnim(CYBORG_ANIM_BIKEREST, AOF_LOOPING|AOF_NORESTART);
     } else {
       StartModelAnim(CYBORG_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART);
     }
   };
+  void StandingAnimFight(void)
+  {
+    DeactivateWalkingSound();
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+      StartModelAnim(CYBORG_ANIM_BIKEREST, AOF_LOOPING|AOF_NORESTART);
+    } else {
+      StartModelAnim(CYBORG_ANIM_WAIT02, AOF_LOOPING|AOF_NORESTART);
+    }
+  };
   void WalkingAnim(void) {
-    if (m_EctType!=CBT_GROUND) {
+    ActivateWalkingSound();
+    if (m_EeftType!=EFT_GROUND_ONLY) {
       StartModelAnim(CYBORG_ANIM_BIKEREST, AOF_LOOPING|AOF_NORESTART);
     } else {
       StartModelAnim(CYBORG_ANIM_WALK01, AOF_LOOPING|AOF_NORESTART);
     }
   };
   void RunningAnim(void) {
-    if (m_EctType!=CBT_GROUND) {
-      StartModelAnim(CYBORG_ANIM_BIKEREST, AOF_LOOPING|AOF_NORESTART);
-    } else {
-      StartModelAnim(CYBORG_ANIM_WALK01, AOF_LOOPING|AOF_NORESTART);
-    }
+    WalkingAnim();
   };
   void RotatingAnim(void) {
-    if (m_EctType!=CBT_GROUND) {
-      StartModelAnim(CYBORG_ANIM_BIKEREST, AOF_LOOPING|AOF_NORESTART);
-    } else {
-      StartModelAnim(CYBORG_ANIM_WALK01, AOF_LOOPING|AOF_NORESTART);
-    }
+    WalkingAnim();
   };
   void ChangeCollisionToAir() {
     ChangeCollisionBoxIndexWhenPossible(CYBORG_COLLISION_BOX_BIKE);
@@ -184,18 +293,55 @@ functions:
 
   // virtual sound functions
   void IdleSound(void) {
-    PlaySound(m_soSound, SOUND_IDLE, SOF_3D);
+    PlaySound(m_soSound, CYBORGSOUND(IDLE), SOF_3D);
   };
   void SightSound(void) {
-    PlaySound(m_soSound, SOUND_SIGHT, SOF_3D);
-  };
-  void WoundSound(void) {
-    PlaySound(m_soSound, SOUND_WOUND, SOF_3D);
+    INDEX iSightSound;
+    switch (IRnd()%3) {
+      case 0: iSightSound = CYBORGSOUND(SIGHT1); break;
+      case 1: iSightSound = CYBORGSOUND(SIGHT2); break;
+      case 2: iSightSound = CYBORGSOUND(SIGHT3); break;
+    }
+    PlaySound(m_soSound, iSightSound, SOF_3D);
   };
   void DeathSound(void) {
-    PlaySound(m_soSound, SOUND_DEATH, SOF_3D);
+    PlaySound(m_soSound, CYBORGSOUND(DEATH), SOF_3D);
+  };
+  void WoundSound(void) {
+    PlaySound(m_soSound, CYBORGSOUND(WOUND), SOF_3D);
   };
 
+  // walking sounds
+  void ActivateWalkingSound(void)
+  {
+    if (!m_bWalkSoundPlaying) {
+	 if (m_EeftType!=EFT_GROUND_ONLY) {
+      PlaySound(m_soFeet, SOUND_HOVER, SOF_3D|SOF_LOOP);
+	  } else {
+      PlaySound(m_soFeet, CYBORGSOUND(WALK), SOF_3D|SOF_LOOP);
+	  }
+      m_bWalkSoundPlaying = TRUE;
+    }
+  }
+  void DeactivateWalkingSound(void)
+  {
+    m_soFeet.Stop();
+    m_bWalkSoundPlaying = FALSE;
+  };
+
+
+
+  // adjust sound and watcher parameters here if needed
+  void EnemyPostInit(void) 
+  {
+    // set sound default parameters
+    m_soSound.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
+    m_soFeet.Set3DParameters(50.0f, 5.0f, 1.0f, 1.0f);
+    m_soFire1.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
+    m_soFire2.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
+    m_soFire3.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
+    m_soFire4.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
+  };
 
 /************************************************************
  *                 BLOW UP FUNCTIONS                        *
@@ -207,44 +353,130 @@ functions:
     GetBoundingBox(box);
     FLOAT fEntitySize = box.Size().MaxNorm();
 
-    // spawn debris
-    Debris_Begin(EIBT_ROBOT, DPR_SMOKETRAIL, BET_EXPLOSIONSTAIN, fEntitySize, m_vDamage*0.3f,
-      en_vCurrentTranslationAbsolute, 1.0f, 0.0f);
-    
-    Debris_Spawn(this, this, MODEL_ASS, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_TORSO, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_HEAD, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_RIGHT_UPPER_ARM, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_RIGHT_LOWER_ARM, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEFT_UPPER_ARM, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEFT_LOWER_ARM, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_RIGHT_UPPER_LEG, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_RIGHT_LOWER_LEG, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEFT_UPPER_LEG, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_LEFT_LOWER_LEG, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_FOOT, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_FOOT, TEXTURE_CYBORG,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
-      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
 
+    vNormalizedDamage *= 0.5f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+    Debris_Begin(EIBT_ROBOT, DPT_NONE, BET_NONE, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 5.0f, 2.0f);
+
+    if (m_CyChar == CY_SOLDIER) {
+
+    // spawn debris
+    
+    Debris_Spawn(this, this, MODEL_ASS, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_TORSO, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_HEAD, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_UPPER_ARM, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_LOWER_ARM, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_UPPER_ARM, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_LOWER_ARM, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_UPPER_LEG, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_LOWER_LEG, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_UPPER_LEG, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_LOWER_LEG, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_FOOT, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_FOOT, TEXTURE_CYBORG_SOLDIER,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	}
+
+    if (m_CyChar == CY_SERGEANT) {
+
+    // spawn debris
+    
+    Debris_Spawn(this, this, MODEL_ASS, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_TORSO, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_HEAD, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_UPPER_ARM, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_LOWER_ARM, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_UPPER_ARM, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_LOWER_ARM, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_UPPER_LEG, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_LOWER_LEG, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_UPPER_LEG, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_LOWER_LEG, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_FOOT, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_FOOT, TEXTURE_CYBORG_SERGEANT,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	}
+
+    if (m_CyChar == CY_GENERAL) {
+
+    // spawn debris
+    
+    Debris_Spawn(this, this, MODEL_ASS, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_TORSO, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_HEAD, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_UPPER_ARM, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_LOWER_ARM, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_UPPER_ARM, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_LOWER_ARM, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_UPPER_LEG, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_RIGHT_LOWER_LEG, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_UPPER_LEG, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEFT_LOWER_LEG, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_FOOT, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_FOOT, TEXTURE_CYBORG_GENERAL,  TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0,
+      0, 0.0f, FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	}
+
+    // inflict damage
+    FLOAT3D vSource;
+    GetEntityInfoPosition(this, eiCyborg.vTargetCenter, vSource);
+      InflictDirectDamage(this, this, DMT_EXPLOSION, 100.0f, vSource, 
+        -en_vGravityDir);
+      if (m_CyChar == CY_SOLDIER) {
+      InflictRangeDamage(this, DMT_EXPLOSION, 15.0f, vSource, 1.0f, 6.0f);
+      } else if (m_CyChar == CY_SERGEANT) {
+      InflictRangeDamage(this, DMT_EXPLOSION, 30.0f, vSource, 1.0f, 12.0f);
+      } else  {
+      InflictRangeDamage(this, DMT_EXPLOSION, 60.0f, vSource, 1.0f, 24.0f);
+      }
+    
     // spawn explosion
     CPlacement3D plExplosion = GetPlacement();
     CEntityPointer penExplosion = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
     ESpawnEffect eSpawnEffect;
     eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
-    eSpawnEffect.betType = BET_BOMB;
-    FLOAT fSize = fEntitySize*0.3f;
+    eSpawnEffect.betType = BET_GRENADE;
+    FLOAT fSize = fEntitySize*0.75f;
     eSpawnEffect.vStretch = FLOAT3D(fSize,fSize,fSize);
     penExplosion->Initialize(eSpawnEffect);
 
@@ -254,342 +486,221 @@ functions:
     SetCollisionFlags(ECF_IMMATERIAL);
   };
 
-
-
 /************************************************************
  *                     MOVING FUNCTIONS                     *
  ************************************************************/
-  // fly desired position for attack
-  virtual void FlyDesiredPosition(FLOAT3D &vPos) {
-    FLOAT fDist = (m_penEnemy->GetPlacement().pl_PositionVector - 
-                   GetPlacement().pl_PositionVector).Length();
-    vPos = m_penEnemy->GetPlacement().pl_PositionVector;
-    vPos += FLOAT3D(m_penEnemy->en_mRotation(1, 2),
-                    m_penEnemy->en_mRotation(2, 2),
-                    m_penEnemy->en_mRotation(3, 2)) * m_fFlyAboveEnemy;
+  // check whether may move while attacking
+  BOOL MayMoveToAttack(void) 
+  {
+    if (m_bInAir) {
+      return WouldNotLeaveAttackRadius();
+    } else {
+      return CEnemyBase::MayMoveToAttack();
+    }
+  }
+
+  // must be more relaxed about hitting then usual enemies
+  BOOL CanHitEnemy(CEntity *penTarget, FLOAT fCosAngle) {
+    if (IsInPlaneFrustum(penTarget, fCosAngle)) {
+      return IsVisibleCheckAll(penTarget);
+    }
+    return FALSE;
   };
-
-  // fly move in direction
-  void FlyInDirection() {
-    /* !!!!
-    RotateToAngle();
-
-    // determine translation speed
-    FLOAT3D vTranslation = (m_vDesiredPosition - GetPlacement().pl_PositionVector) * !en_mRotation;
-    vTranslation(1) = 0.0f;
-    vTranslation.Normalize();
-    vTranslation *= m_fMoveSpeed;
-
-    // start moving
-    SetDesiredTranslation(vTranslation);
-    */
-  };
-
-  // fly entity to desired position
-  void FlyToPosition() {
-
-/*  !!!!
-    CalcAngleFromPosition();
-    FlyInDirection();
-    */
-  };
-
-
 
 procedures:
 /************************************************************
- *                    CLASS INTERNAL                        *
- ************************************************************/
-  // fall to floor
-  FallToFloor(EVoid) {
-    // spawn bike
-    CPlacement3D plBike = GetPlacement();
-    FLOATmatrix3D mRotation;
-    MakeRotationMatrixFast(mRotation, GetPlacement().pl_OrientationAngle);
-    plBike.pl_PositionVector += BIKE_ATTACHMENT*mRotation;
-
-    ECyborgBike ecb;
-    ecb.fSpeed = m_fFlySpeed*2.0f;
-    CEntityPointer penBike = CreateEntity(plBike, CLASS_CYBORG_BIKE);
-    penBike->Initialize(ecb);
-
-    // drop to floor
-    m_EctType = CBT_GROUND;
-    SetPhysicsFlags(EPF_MODEL_WALKING);
-    ChangeCollisionToGround();
-
-    // remove bike
-    RemoveAttachmentFromModel(*GetModelObject(), CYBORG_ATTACHMENT_BIKE);
-
-    // anim
-    if (IRnd()&1) {
-      StartModelAnim(CYBORG_ANIM_FALL01, 0);
-    } else {
-      StartModelAnim(CYBORG_ANIM_FALL02, 0);
-    }
-
-    // wait to touch brush or time limit
-    m_fFallStartTime = _pTimer->CurrentTick();
-    wait (10.0f) {
-      on (EBegin) : { resume; }
-      // brush touched
-      on (ETouch et) : {
-        if (et.penOther->GetRenderType()&RT_BRUSH) {
-          StopMoving();
-          stop;
-        }
-        resume;
-      }
-      on (EDamage) : { resume; }
-      on (EWatch) : { resume; }
-      on (ETimer) : { stop; }
-    }
-
-    // wait fall anim
-    if (_pTimer->CurrentTick() < m_fFallStartTime+1.5f) {
-      wait(m_fFallStartTime+1.5f - _pTimer->CurrentTick()) {
-        on (EBegin) : { resume; }
-        on (EDamage) : { resume; }
-        on (EWatch) : { resume; }
-        on (ETimer) : { stop; }
-      }
-    }
-    return EReturn();
-  };
-
-  // get up
-  GetUp(EVoid) {
-    // get up
-    StartModelAnim(CYBORG_ANIM_GETUP, 0);
-    wait(GetModelObject()->GetAnimLength(CYBORG_ANIM_GETUP)) {
-      on (EBegin) : { resume; }
-      on (EDamage) : { resume; }
-      on (EWatch) : { resume; }
-      on (ETimer) : { stop; }
-    }
-    return EReturn();
-  };
-
-
-
-/************************************************************
- *      PROCEDURES WHEN NO ANY SPECIAL ACTION               *
- ************************************************************/
-  // Move to destination
-/*   !!!!
-  MoveToDestination(EVoid) : CEnemyBase::MoveToDestination {
-    // animation
-    if (m_bRunToMarker) {
-      RunningAnim();
-    } else {
-      WalkingAnim();
-    }
-    // fly to position
-    if (m_EctType!=CBT_GROUND) {
-      m_fMoveFrequency = 0.25f;
-      m_fMovePrecision = m_fMoveSpeed*m_fMoveFrequency*2.0f;
-      while ((m_vDesiredPosition-GetPlacement().pl_PositionVector).Length()>m_fMovePrecision) {
-        wait (0.25f) {
-          on (EBegin) : { FlyToPosition(); }
-          on (ETimer) : { stop; }
-        }
-      }
-      return EReturn();
-    // move to position
-    } else {
-      jump CEnemyBase::MoveToDestination();
-    }
-  };
-  */
-
-
-
-/************************************************************
- *                PROCEDURES WHEN HARMED                    *
- ************************************************************/
-  // Play wound animation and falling body part
-  BeWounded(EDamage eDamage) : CEnemyBase::BeWounded {
-    // damage only on ground
-    if (m_EctType==CBT_GROUND) {
-      jump CEnemyBase::BeWounded(eDamage);
-    // fall on ground
-    } else if (m_EctType==CBT_FLYGROUND && GetHealth()<=60.0f) {
-      SetHealth(60.0f);
-      m_fMaxHealth = 60.0f;
-      autocall FallToFloor() EReturn;
-      autocall GetUp() EReturn;
-      SendEvent(ERestartAttack());
-    }
-    return EReturn();
-  };
-
-
-
-/************************************************************
  *                A T T A C K   E N E M Y                   *
  ************************************************************/
-  AttackEnemy(EVoid) : CEnemyBase::AttackEnemy {
-    // air attack
-    if (m_EctType!=CBT_GROUND) {
-      jump FlyAttackEnemy();
-    // ground attack
-    } else if (TRUE) {
-      jump CEnemyBase::AttackEnemy();
-    }
-  };
-
-  // fly attack enemy
-  FlyAttackEnemy(EVoid) {
-    // initial preparation
-    autocall CEnemyBase::InitializeAttack() EReturn;
-
-    // while you have some enemy
-    while (m_penEnemy != NULL) {
-      // to far cease attack
-      if (CalcDist(m_penEnemy) > IGNORE_RANGE) {
-        SetTargetNone();
-      }
-
-      if (m_penEnemy != NULL) {
-        // attack run
-        if (SeeEntity(m_penEnemy, CosFast(90.0f))) {
-          autocall FlyAttackRun() EReturn;
-        // go away and rotate
-        } else if (TRUE) {
-          autocall GoAwayAndRotate() EReturn;
-        }
-      }
-    }
-
-    // stop attack
-    autocall CEnemyBase::StopAttack() EReturn;
-
-    // return to Move() procedure
-    return EBegin();
-  };
-
-  // fly attack run
-  FlyAttackRun(EVoid) {
-    m_iFireLaserCount = 0;
-    if (m_bBombing) {
-      m_ctBombsToDrop = 3;
-    }
-    while (SeeEntity(m_penEnemy, CosFast(90.0f))) {
-      m_fMoveFrequency = 0.1f;
-      wait(m_fMoveFrequency) {
-        on (EBegin) : {
-          if (IsInFrustum(m_penEnemy, CosFast(55.0f))) {
-            // fire laser
-            if (m_iFireLaserCount==0) {
-              ShootProjectile(PRT_CYBORG_LASER, FIRE_BIKE, ANGLE3D(0, 0, 0));
-              PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-            }
-            if (m_iFireLaserCount++ == 2) {
-              m_iFireLaserCount = 0;
-            }
-          }
-
-          // if a bomb may be dropped
-          if (m_ctBombsToDrop>0 && _pTimer->CurrentTick()>=m_tmLastBombDropped+0.3f) {
-            // calculate where it would hit
-            FLOAT fV = en_vCurrentTranslationAbsolute.Length();
-            FLOAT fD = CalcDist(m_penEnemy);
-            FLOAT fDP = CalcPlaneDist(m_penEnemy);
-            FLOAT fH = Sqrt(fD*fD-fDP*fDP);
-            FLOAT fHitD = fDP-fV*Sqrt(2*fH/en_fGravityA);
-
-            // if close enough
-            if( Abs(fHitD)<10.0f) {
-              // drop it
-              CPlacement3D pl(FLOAT3D(FRnd()*2.0f-1.0f, -1.0f, 0.0f), ANGLE3D(0, 0, 0)); ;
-              pl.RelativeToAbsoluteSmooth(GetPlacement());
-              CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
-              ELaunchProjectile eLaunch;
-              eLaunch.penLauncher = this;
-              eLaunch.prtType = PRT_CYBORG_BOMB;
-              eLaunch.fSpeed = fV;
-              penProjectile->Initialize(eLaunch);
-              m_ctBombsToDrop--;
-              m_tmLastBombDropped = _pTimer->CurrentTick();
-            }
-          }
-
-          // inside attack radius
-          if (MayMoveToAttack()) {
-            m_fMoveSpeed = m_fFlySpeed;
-            m_aRotateSpeed = m_aFlyRotateSpeed;
-            FlyDesiredPosition(m_vDesiredPosition);
-            FlyToPosition();
-            RunningAnim();
-          // outside attack radius
-          } else {
-            StopMoving();
-            StandingAnim();
-          }
-        }
-        on (ETimer) : { stop; }
-      }
-    }
-
+  FlyHit(EVoid) : CEnemyFly::FlyHit {
+  
+    // run to enemy
+    m_fShootTime = _pTimer->CurrentTick() + 0.1f;
     return EReturn();
   };
 
-  GoAwayAndRotate(EVoid) {
-    // go away
-    SetDesiredTranslation(FLOAT3D(0, 1.25f, -m_fFlySpeed));
-    StopRotating();
-    autowait(1.0f);
+  FlyFire(EVoid) : CEnemyFly::FlyFire {
+					
+    DeactivateWalkingSound();
 
-    // rotate side
-    if (IRnd()&1) {
-      SetDesiredRotation(ANGLE3D( 100.0f, 0, 0));
-    } else {
-      SetDesiredRotation(ANGLE3D(-100.0f, 0, 0));
+    if (m_CyChar==CY_GENERAL) {
+       ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire1, SOUND_GENERAL_FIRE, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire2, SOUND_GENERAL_FIRE, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire3, SOUND_GENERAL_FIRE, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire4, SOUND_GENERAL_FIRE, SOF_3D);
+       autowait(0.25f);
+    }
+    if (m_CyChar==CY_SERGEANT) {
+       ShootProjectile(PRT_DEVIL_LASER, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire1, SOUND_FIRE_MEDIUM, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_DEVIL_LASER, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire2, SOUND_FIRE_MEDIUM, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_DEVIL_LASER, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire3, SOUND_FIRE_MEDIUM, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_DEVIL_LASER, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire4, SOUND_FIRE_MEDIUM, SOF_3D);
+       autowait(0.25f);
+    }
+    if (m_CyChar==CY_SOLDIER) {
+       ShootProjectile(PRT_CYBORG_LASER, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire1, SOUND_FIRE_SMALL, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_CYBORG_LASER, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire2, SOUND_FIRE_SMALL, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_CYBORG_LASER, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire3, SOUND_FIRE_SMALL, SOF_3D);
+       autowait(0.25f);
+       ShootProjectile(PRT_CYBORG_LASER, FIRE_BIKE*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+       PlaySound(m_soFire4, SOUND_FIRE_SMALL, SOF_3D);
+       autowait(0.25f);
     }
 
-    // rotate to enemy
-    SetDesiredTranslation(FLOAT3D(0, 0, -m_fFlySpeed));
-    while (!SeeEntityInPlane(m_penEnemy, CosFast(5.0f))) {
-      autowait(_pTimer->TickQuantum);
-    }
+    MaybeSwitchToAnotherPlayer();
+    ActivateWalkingSound();
 
     return EReturn();
   };
+ 
 
-  Fire(EVoid) : CEnemyBase::Fire {
+  GroundFire(EVoid) : CEnemyFly::GroundFire {
+    DeactivateWalkingSound();
     // to fire
     StartModelAnim(CYBORG_ANIM_TOFIRE, 0);
-    m_fLockOnEnemyTime = GetModelObject()->GetAnimLength(CYBORG_ANIM_TOFIRE) + FRnd()/3;
+    m_fLockOnEnemyTime = GetModelObject()->GetAnimLength(CYBORG_ANIM_TOFIRE);
     autocall CEnemyBase::LockOnEnemy() EReturn;
 
-    StartModelAnim(CYBORG_ANIM_FIRE02, 0);
-    ShootProjectile(PRT_CYBORG_LASER, FIRE_LASER, ANGLE3D(0, 0, 0));
-    PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
+    if (m_CyChar==CY_GENERAL) {
+      if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+        m_iLoopCounter = 2;
+      } else {
+        m_iLoopCounter = 4;
+      }
+      while(m_iLoopCounter>0) {
+        if (m_iLoopCounter%2) {
+          StartModelAnim(CYBORG_ANIM_FIRE02, AOF_LOOPING);
+          ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*SIZE_GENERAL, ANGLE3D(0, 0, 0));
+        } else {
+          StartModelAnim(CYBORG_ANIM_FIRE01, AOF_LOOPING);
+          ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*SIZE_GENERAL, ANGLE3D(0, 0, 0));
+        }
+        INDEX iChannel = m_iLoopCounter%4;
+        if (iChannel==0) {
+          PlaySound(m_soFire1, SOUND_GENERAL_FIRE, SOF_3D);
+        } else if (iChannel==1) {
+          PlaySound(m_soFire2, SOUND_GENERAL_FIRE, SOF_3D);
+        } else if (iChannel==2) {
+          PlaySound(m_soFire3, SOUND_GENERAL_FIRE, SOF_3D);
+        } else if (iChannel==3) {
+          PlaySound(m_soFire4, SOUND_GENERAL_FIRE, SOF_3D);
+        }
+        if (m_iLoopCounter>1) {
+          if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+            m_fLockOnEnemyTime = 1.0f;
+          } else {
+            m_fLockOnEnemyTime = 0.5f;
+          }
+          autocall CEnemyBase::LockOnEnemy() EReturn;
+        }
+        m_iLoopCounter--;
+      }
+    }
+    if (m_CyChar==CY_SERGEANT) {
+      if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+        m_iLoopCounter = 2;
+      } else {
+        m_iLoopCounter = 4;
+      }
+      while(m_iLoopCounter>0) {
+        if (m_iLoopCounter%2) {
+          StartModelAnim(CYBORG_ANIM_FIRE02, AOF_LOOPING);
+          ShootProjectile(PRT_DEVIL_LASER, FIRE_LEFT_ARM*SIZE_SERGEANT, ANGLE3D(0, 0, 0));
+        } else {
+          StartModelAnim(CYBORG_ANIM_FIRE01, AOF_LOOPING);
+          ShootProjectile(PRT_DEVIL_LASER, FIRE_RIGHT_ARM*SIZE_SERGEANT, ANGLE3D(0, 0, 0));
+        }
+        INDEX iChannel = m_iLoopCounter%4;
+        if (iChannel==0) {
+          PlaySound(m_soFire1, SOUND_FIRE_MEDIUM, SOF_3D);
+        } else if (iChannel==1) {
+          PlaySound(m_soFire2, SOUND_FIRE_MEDIUM, SOF_3D);
+        } else if (iChannel==2) {
+          PlaySound(m_soFire3, SOUND_FIRE_MEDIUM, SOF_3D);
+        } else if (iChannel==3) {
+          PlaySound(m_soFire4, SOUND_FIRE_MEDIUM, SOF_3D);
+        }
+        if (m_iLoopCounter>1) {
+          if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+            m_fLockOnEnemyTime = 1.0f;
+          } else {
+            m_fLockOnEnemyTime = 0.5f;
+          }
+          autocall CEnemyBase::LockOnEnemy() EReturn;
+        }
+        m_iLoopCounter--;
+      }
+    }
+    if (m_CyChar==CY_SOLDIER) {
+      if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+        m_iLoopCounter = 2;
+      } else {
+        m_iLoopCounter = 4;
+      }
+      while(m_iLoopCounter>0) {
+        if (m_iLoopCounter%2) {
+          StartModelAnim(CYBORG_ANIM_FIRE02, AOF_LOOPING);
+          ShootProjectile(PRT_CYBORG_LASER, FIRE_LEFT_ARM*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+        } else {
+          StartModelAnim(CYBORG_ANIM_FIRE01, AOF_LOOPING);
+          ShootProjectile(PRT_CYBORG_LASER, FIRE_RIGHT_ARM*SIZE_SOLDIER, ANGLE3D(0, 0, 0));
+        }
+        INDEX iChannel = m_iLoopCounter%4;
+        if (iChannel==0) {
+          PlaySound(m_soFire1, SOUND_FIRE_SMALL, SOF_3D);
+        } else if (iChannel==1) {
+          PlaySound(m_soFire2, SOUND_FIRE_SMALL, SOF_3D);
+        } else if (iChannel==2) {
+          PlaySound(m_soFire3, SOUND_FIRE_SMALL, SOF_3D);
+        } else if (iChannel==3) {
+          PlaySound(m_soFire4, SOUND_FIRE_SMALL, SOF_3D);
+        }
+        if (m_iLoopCounter>1) {
+          if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+            m_fLockOnEnemyTime = 1.0f;
+          } else {
+            m_fLockOnEnemyTime = 0.5f;
+          }
+          autocall CEnemyBase::LockOnEnemy() EReturn;
+        }
+        m_iLoopCounter--;
+      }
+    }
+    StopMoving();
 
-    m_fLockOnEnemyTime = 0.5f;
-    autocall CEnemyBase::LockOnEnemy() EReturn;
-    StartModelAnim(CYBORG_ANIM_FIRE02, 0);
-    ShootProjectile(PRT_CYBORG_LASER, FIRE_LASER, ANGLE3D(0, 0, 0));
-    PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-
-    m_fLockOnEnemyTime = 0.5f;
-    autocall CEnemyBase::LockOnEnemy() EReturn;
-    StartModelAnim(CYBORG_ANIM_FIRE02, 0);
-    ShootProjectile(PRT_CYBORG_LASER, FIRE_LASER, ANGLE3D(0, 0, 0));
-    PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-    autowait(0.1f + FRnd()/3);
-
-    m_fShootTime = _pTimer->CurrentTick() + m_fAttackFireTime*(1.0f + FRnd()/3.0f);
+    MaybeSwitchToAnotherPlayer();
 
     // from fire
     StartModelAnim(CYBORG_ANIM_FROMFIRE, 0);
     autowait(GetModelObject()->GetAnimLength(CYBORG_ANIM_FROMFIRE));
 
+    // wait for a while
+    StandingAnimFight();
+    autowait(FRnd()*0.1f+0.1f);
+
     return EReturn();
   };
 
-  Hit(EVoid) : CEnemyBase::Hit {
-    // animation
+  GroundHit(EVoid) : CEnemyFly::GroundHit {
+    // close attack
     m_iCloseHit = IRnd()&1;
     if (m_iCloseHit==0) {
       StartModelAnim(CYBORG_ANIM_ATTACKCLOSE01, 0);
@@ -597,13 +708,24 @@ procedures:
       StartModelAnim(CYBORG_ANIM_ATTACKCLOSE02, 0);
     }
 
-    autowait(0.9f);
-    PlaySound(m_soSound, SOUND_KICK, SOF_3D);
+      if (m_CyChar == CY_SOLDIER) {
+         PlaySound(m_soSound, SOUND_KICK_SMALL, SOF_3D); }
+      if (m_CyChar == CY_SERGEANT) {
+         PlaySound(m_soSound, SOUND_KICK_MEDIUM, SOF_3D); }
+      if (m_CyChar == CY_GENERAL) {
+         PlaySound(m_soSound, SOUND_GENERAL_KICK, SOF_3D); }
+    autowait(1.0f);
     if (CalcDist(m_penEnemy)<m_fCloseDistance) {
       // damage enemy
       FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
       vDirection.Normalize();
-      InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 15.0f, FLOAT3D(0, 0, 0), vDirection);
+      if (m_CyChar == CY_SOLDIER) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection);
+      } else if (m_CyChar == CY_SERGEANT) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 40.0f, FLOAT3D(0, 0, 0), vDirection);
+      } else  {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 80.0f, FLOAT3D(0, 0, 0), vDirection);
+      }
       // push target left/right
       FLOAT3D vSpeed;
       if (m_iCloseHit==0) {
@@ -611,7 +733,7 @@ procedures:
       } else {
         GetHeadingDirection(AngleDeg(-90.0f), vSpeed);
       }
-      vSpeed = vSpeed * 5.0f;
+      vSpeed = vSpeed * 30.0f;
       KickEntity(m_penEnemy, vSpeed);
     }
 
@@ -624,120 +746,253 @@ procedures:
  *                    D  E  A  T  H                         *
  ************************************************************/
   Death(EVoid) : CEnemyBase::Death {
-    StopMoving();     // stop moving
+    // stop moving
+    StopMoving();
     DeathSound();     // death sound
-
-    // death notify (usually change collision box and change body density)
-    ChangeCollisionBoxIndexWhenPossible(CYBORG_COLLISION_BOX_DEATH);
+    DeactivateWalkingSound();
 
     // set physic flags
-    SetPhysicsFlags(EPF_MODEL_CORPSE);
-    SetCollisionFlags(ECF_CORPSE);
+    SetCollisionFlags(ECF_MODEL);
+    SetFlags(GetFlags() | ENF_SEETHROUGH);
 
-    if (m_EctType==CBT_FLY || m_EctType==CBT_FLYGROUND) {
-      autocall FallToFloor() EReturn;
-    } else if (TRUE) {
-      // start death anim
-      INDEX iAnim = AnimForDeath();
-      autowait(GetModelObject()->GetAnimLength(iAnim));
-    }
+    // death notify (change collision box)
+    ChangeCollisionBoxIndexWhenPossible(CYBORG_COLLISION_BOX_DEATH);
 
-    // death twist
-    StartModelAnim(CYBORG_ANIM_DEATHTWIST, AOF_LOOPING);
-    autowait(FRnd()*5.0f + 1.0f);
-    StartModelAnim(CYBORG_ANIM_DEATHREST, 0);
-
-    // explode
-    SetHealth(-45.0f);
-    ReceiveDamage(NULL, DMT_EXPLOSION, 10.0f, FLOAT3D(0,0,0), FLOAT3D(0,1,0));
+    // start death anim
+    StartModelAnim(CYBORG_ANIM_DEATH01, 0);
+    autowait(0.9f);
 
     return EEnd();
   };
-
-
 
 /************************************************************
  *                       M  A  I  N                         *
  ************************************************************/
   Main(EVoid) {
+      if (m_EeftType!=EFT_FLY_ONLY) {
+      m_EeftType=EFT_GROUND_ONLY;
+    }
     // declare yourself as a model
     InitAsModel();
+    SetPhysicsFlags(EPF_MODEL_WALKING);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
+    if (m_CyChar==CY_GENERAL) {
+      SetHealth(600.0f);
+      m_fMaxHealth = 600.0f;
+    } else if (m_CyChar==CY_SERGEANT) {
+      SetHealth(175.0f);
+      m_fMaxHealth = 175.0f;
+    } else {
+      SetHealth(70.0f);
+      m_fMaxHealth = 70.0f;
+    }
     en_fDensity = 5000.0f;
+
+    m_sptType = SPT_ELECTRICITY_SPARKS_NO_BLOOD;
 
     // set your appearance
     SetModel(MODEL_CYBORG);
-    SetModelMainTexture(TEXTURE_CYBORG);
+    if (m_CyChar==CY_GENERAL) {
+      SetModelMainTexture(TEXTURE_CYBORG_GENERAL);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_ASS,
-      MODEL_ASS, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_ASS, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_TORSO,
-      MODEL_TORSO, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0);
+      MODEL_TORSO, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_HEAD,
-      MODEL_HEAD, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_HEAD, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTUPPERARM,
-      MODEL_RIGHT_UPPER_ARM, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_RIGHT_UPPER_ARM, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTLOWERARM,
-      MODEL_RIGHT_LOWER_ARM, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_RIGHT_LOWER_ARM, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTUPPERARM,
-      MODEL_LEFT_UPPER_ARM, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_LEFT_UPPER_ARM, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTLOWERARM,
-      MODEL_LEFT_LOWER_ARM, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_LEFT_LOWER_ARM, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTUPPERLEG,
-      MODEL_RIGHT_UPPER_LEG, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_RIGHT_UPPER_LEG, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTLOWERLEG,
-      MODEL_RIGHT_LOWER_LEG, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_RIGHT_LOWER_LEG, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTUPPERLEG,
-      MODEL_LEFT_UPPER_LEG, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_LEFT_UPPER_LEG, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTLOWERLEG,
-      MODEL_LEFT_LOWER_LEG, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_LEFT_LOWER_LEG, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_FOOTRIGHT,
-      MODEL_FOOT, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+      MODEL_FOOT, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
     AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_FOOTLEFT,
-      MODEL_FOOT, TEXTURE_CYBORG, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-    if (m_EctType!=CBT_GROUND) {
+      MODEL_FOOT, TEXTURE_CYBORG_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    if (m_EeftType!=EFT_GROUND_ONLY) {
       AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_BIKE,
-        MODEL_BIKE, TEXTURE_BIKE, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-      // fly in air
-      SetHealth(90.0f);
-      m_fMaxHealth = 90.0f;
-      ChangeCollisionToAir();
-      SetPhysicsFlags(EPF_MODEL_FLYING);
-      m_iScore = 1000;
+        MODEL_BIKE, TEXTURE_BIKE_GENERAL, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        ChangeCollisionToAir();
+        SetPhysicsFlags(EPF_MODEL_FLYING);
+		}
+      GetModelObject()->StretchModel(FLOAT3D(3,3,3));
+      ModelChangeNotify();
+      m_fBlowUpAmount = 1.0f;
+	             m_fBlowUpSize = 3.0f;
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+         m_iScore = 8000;
+		 } else {
+         m_iScore = 6000;
+		 }
+      m_fThreatDistance = 15;
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+         m_fDamageWounded = 500000.0f;
+		 } else {
+         m_fDamageWounded = 250.0f;
+		 }
+      m_fCloseDistance = 8.0f;
+      m_fStopDistance = 30.0f;
+      m_fWalkSpeed = FRnd()*1.0f + 7.0f;
+      m_fFlyWalkSpeed = FRnd()*1.0f + 25.0f;
+      m_fFlyStopDistance = 30.0f;
+    } else if (m_CyChar==CY_SERGEANT) {
+      SetModelMainTexture(TEXTURE_CYBORG_SERGEANT);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_ASS,
+      MODEL_ASS, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_TORSO,
+      MODEL_TORSO, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_HEAD,
+      MODEL_HEAD, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTUPPERARM,
+      MODEL_RIGHT_UPPER_ARM, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTLOWERARM,
+      MODEL_RIGHT_LOWER_ARM, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTUPPERARM,
+      MODEL_LEFT_UPPER_ARM, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTLOWERARM,
+      MODEL_LEFT_LOWER_ARM, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTUPPERLEG,
+      MODEL_RIGHT_UPPER_LEG, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTLOWERLEG,
+      MODEL_RIGHT_LOWER_LEG, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTUPPERLEG,
+      MODEL_LEFT_UPPER_LEG, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTLOWERLEG,
+      MODEL_LEFT_LOWER_LEG, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_FOOTRIGHT,
+      MODEL_FOOT, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_FOOTLEFT,
+      MODEL_FOOT, TEXTURE_CYBORG_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+      AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_BIKE,
+        MODEL_BIKE, TEXTURE_BIKE_SERGEANT, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        ChangeCollisionToAir();
+        SetPhysicsFlags(EPF_MODEL_FLYING);
+		}
+      GetModelObject()->StretchModel(FLOAT3D(2.0f,2.0f,2.0f));
+      ModelChangeNotify();
+      m_fBlowUpAmount = 1.0f;
+	             m_fBlowUpSize = 2.0f;
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+         m_iScore = 4000;
+		 } else {
+         m_iScore = 3000;
+		 }
+      m_fThreatDistance = 5;
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+         m_fDamageWounded = 500000.0f;
+		 } else {
+         m_fDamageWounded = 150.0f;
+		 }
+      m_fCloseDistance = 5.0f;
+      m_fStopDistance = 15.0f;
+      m_fWalkSpeed = FRnd()*2.0f + 5.0f;
+      m_fFlyWalkSpeed = FRnd()*2.0f + 20.0f;
+      m_fFlyStopDistance = 15.0f;
     } else {
-      // walk on ground
-      SetHealth(60.0f);
-      m_fMaxHealth = 60.0f;
-      ChangeCollisionToGround();
-      SetPhysicsFlags(EPF_MODEL_WALKING);
-      m_iScore = 500;
+      SetModelMainTexture(TEXTURE_CYBORG_SOLDIER);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_ASS,
+      MODEL_ASS, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_TORSO,
+      MODEL_TORSO, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_STRONG, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_HEAD,
+      MODEL_HEAD, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTUPPERARM,
+      MODEL_RIGHT_UPPER_ARM, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTLOWERARM,
+      MODEL_RIGHT_LOWER_ARM, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTUPPERARM,
+      MODEL_LEFT_UPPER_ARM, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTLOWERARM,
+      MODEL_LEFT_LOWER_ARM, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTUPPERLEG,
+      MODEL_RIGHT_UPPER_LEG, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_RIGHTLOWERLEG,
+      MODEL_RIGHT_LOWER_LEG, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTUPPERLEG,
+      MODEL_LEFT_UPPER_LEG, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_LEFTLOWERLEG,
+      MODEL_LEFT_LOWER_LEG, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_FOOTRIGHT,
+      MODEL_FOOT, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_FOOTLEFT,
+      MODEL_FOOT, TEXTURE_CYBORG_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+      AddAttachmentToModel(this, *GetModelObject(), CYBORG_ATTACHMENT_BIKE,
+        MODEL_BIKE, TEXTURE_BIKE_SOLDIER, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        ChangeCollisionToAir();
+        SetPhysicsFlags(EPF_MODEL_FLYING);
+		}
+      GetModelObject()->StretchModel(FLOAT3D(1.0f,1.0f,1.0f));
+      ModelChangeNotify();
+      m_fBlowUpAmount = 1.0f;
+	             m_fBlowUpSize = 1.0f;
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+         m_iScore = 2000;
+		 } else {
+         m_iScore = 1000;
+		 }
+      m_fThreatDistance = 5;
+    if (m_EeftType!=EFT_GROUND_ONLY) {
+         m_fDamageWounded = 500000.0f;
+		 } else {
+         m_fDamageWounded = 50.0f;
+		 }
+      m_fCloseDistance = 3.0f;
+      m_fStopDistance = 3.0f;
+      m_fWalkSpeed = FRnd()*2.0f + 5.0f;
+      m_fFlyWalkSpeed = FRnd()*2.0f + 15.0f;
+      m_fFlyStopDistance = 3.0f;
     }
+    if (m_fStepHeight==-1) {
+      m_fStepHeight = 4.0f;
+    }
+
     StandingAnim();
     // setup moving speed
-    m_fWalkSpeed = FRnd()*3.0f + 6.0f;
-    m_aWalkRotateSpeed = FRnd()*20.0f + 700.0f;
+    m_aWalkRotateSpeed = AngleDeg(FRnd()*50.0f + 500.0f);
     m_fAttackRunSpeed = m_fWalkSpeed;
-    m_aAttackRotateSpeed = m_aWalkRotateSpeed;
+    m_aAttackRotateSpeed = m_aWalkRotateSpeed/2;
     m_fCloseRunSpeed = m_fWalkSpeed;
-    m_aCloseRotateSpeed = m_aWalkRotateSpeed;
-    m_fWalkSpeed/=3;
-
+    m_aCloseRotateSpeed = m_aWalkRotateSpeed/2;
     // setup attack distances
-    m_fAttackDistance = 100.0f;
-    m_fCloseDistance = 2.5f;
-    m_fStopDistance = 1.5;
-    m_fAttackFireTime = 3.0f;
-    m_fCloseFireTime = 2.0f;
-    m_fIgnoreRange = 200.0f;
+    m_fAttackDistance = 800.0f;
+    m_fAttackFireTime = 6.0f;
+    m_fCloseFireTime = 1.0f;
+    m_fIgnoreRange = 300.0f;
     // fly moving properties
-    m_fFlyAboveEnemy = 10.0f+FRnd()*1.0f;
-    m_fFlySpeed = FRnd()*5.0f + 20.0f;
-    m_aFlyRotateSpeed = FRnd()*25.0f + 100.0f;
+    m_aFlyWalkRotateSpeed = AngleDeg(FRnd()*50 + 100.0f);
+    m_fFlyAttackRunSpeed = m_fFlyWalkSpeed;
+    m_aFlyAttackRotateSpeed = m_aFlyWalkRotateSpeed;
+    m_fFlyCloseRunSpeed = m_fFlyWalkSpeed;
+    m_aFlyCloseRotateSpeed = m_aFlyWalkRotateSpeed;
+    m_fGroundToAirSpeed = m_fFlyCloseRunSpeed;
+    m_fAirToGroundSpeed = m_fFlyCloseRunSpeed;
+    m_fAirToGroundMin = 0.1f;
+    m_fAirToGroundMax = 0.1f;
+    // attack properties - CAN BE SET
+    m_fFlyAttackDistance = 800.0f;
+    m_fFlyCloseDistance = 0.0f;
+    m_fFlyAttackFireTime = 3.0f;
+    m_fFlyCloseFireTime = 3.0f;
+    m_fFlyIgnoreRange = 300.0f;
+
     // damage/explode properties
-    m_fBlowUpAmount = 90.0f;
-    m_fDamageWounded = 50.0f;
+    m_fBodyParts = 13;
 
     // continue behavior in base class
-    jump CEnemyBase::MainLoop();
+    jump CEnemyFly::MainLoop();
+	}
   };
-};

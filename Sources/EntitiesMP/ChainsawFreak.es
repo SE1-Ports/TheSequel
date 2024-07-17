@@ -43,6 +43,14 @@ components:
   2 model   MODEL_CHAINSAW    "ModelsMP\\Enemies\\ChainsawFreak\\Saw.mdl",
   3 texture TEXTURE_FREAK     "ModelsMP\\Enemies\\ChainsawFreak\\Freak.tex",
   4 texture TEXTURE_CHAINSAW  "ModelsMP\\Enemies\\ChainsawFreak\\Saw.tex",
+  5 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
+
+ 14 model   MODEL_ARM            "ModelsF\\Enemies\\ChainsawFreak\\Debris\\Arm.mdl",
+ 15 model   MODEL_LEGS            "ModelsF\\Enemies\\ChainsawFreak\\Debris\\Legs.mdl",
+ 16 model   MODEL_HEAD          "ModelsF\\Enemies\\ChainsawFreak\\Debris\\Pumpkin.mdl",
+
+ 23 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 24 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE       "ModelsMP\\Enemies\\ChainsawFreak\\Sounds\\Idle.wav",
@@ -71,7 +79,12 @@ functions:
     PrecacheSound(SOUND_ATTACK   );
     PrecacheSound(SOUND_WOUND    );
     PrecacheSound(SOUND_DEATH    );
-    PrecacheSound(SOUND_SIGHT    );    
+    PrecacheSound(SOUND_SIGHT    );  
+	
+	// debris
+	PrecacheModel(MODEL_HEAD);
+	PrecacheModel(MODEL_LEGS);
+	PrecacheModel(MODEL_ARM);
   };
 
   /* Entity info */
@@ -103,12 +116,12 @@ functions:
     if (!IsOfClass(penInflictor, "ChainsawFreak")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
     }
+    // if caught in range of a nuke ball
+    if (dmtType==DMT_CANNONBALL_EXPLOSION && GetHealth()<=0) {
+      // must blow up easier
+      m_fBlowUpAmount = m_fBlowUpAmount*0.75f;
+    }
   };
-
-  void AdjustDifficulty(void)
-  {
-    // chainsaw freak must not change his speed at different difficulties
-  }
 
   // death
   INDEX AnimForDeath(void) {
@@ -205,6 +218,58 @@ functions:
     m_soFeet.Stop();
     m_bRunSoundPlaying = FALSE;
   }
+
+ /************************************************************
+ *                 BLOW UP FUNCTIONS                        *
+ ************************************************************/
+  // spawn body parts
+  void BlowUp(void) {
+    // get your size
+    FLOATaabbox3D box;
+    GetBoundingBox(box);
+    FLOAT fEntitySize = box.Size().MaxNorm();
+	FLOAT fDebrisSize = 0.25f;
+
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+
+    vNormalizedDamage *= 0.25f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+    // spawn debris
+	Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 2.0f, 1.0f);
+
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
+
+    Debris_Spawn(this, this, MODEL_HEAD, TEXTURE_FREAK, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_ARM, TEXTURE_FREAK, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	Debris_Spawn(this, this, MODEL_ARM, TEXTURE_FREAK, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEGS, TEXTURE_FREAK, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.3f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+    // hide yourself (must do this after spawning debris)
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+  };
 
 
 /************************************************************
@@ -348,9 +413,10 @@ procedures:
   Main(EVoid) {
     // declare yourself as a model
     InitAsModel();
-    SetPhysicsFlags(EPF_MODEL_WALKING);
+    SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
+    en_tmMaxHoldBreath = 10.0f;
     SetHealth(175.0f);
     m_fMaxHealth = 175.0f;
     en_fDensity = 2000.0f;
@@ -375,8 +441,8 @@ procedures:
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 150.0f;
     // damage/explode properties6
-    m_fBlowUpAmount = 1E10f;
-    m_fBodyParts = 6;
+    m_fBlowUpAmount = 300.0f;
+    m_fBodyParts = 5;
     m_fDamageWounded = 100000.0f;
     m_iScore = 1500;
     if (m_fStepHeight==-1) {

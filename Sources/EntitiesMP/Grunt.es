@@ -10,11 +10,13 @@ uses "EntitiesMP/BasicEffects";
 enum GruntType {
   0 GT_SOLDIER    "Grunt soldier",
   1 GT_COMMANDER  "Grunt commander",
+  2 GT_SNIPER     "Grunt sniper",
 };
 
 %{
 #define STRETCH_SOLDIER   1.2f
 #define STRETCH_COMMANDER 1.4f
+#define STRETCH_SNIPER    1.6f
   
 // info structure
 static EntityInfo eiGruntSoldier = {
@@ -29,9 +31,16 @@ static EntityInfo eiGruntCommander = {
   0.0f, 1.3f*STRETCH_COMMANDER, 0.0f,     // target (body)
 };
 
+static EntityInfo eiGruntSniper = {
+  EIBT_FLESH, 250.0f,
+  0.0f, 1.9f*STRETCH_SNIPER, 0.0f,     // source (eyes)
+  0.0f, 1.3f*STRETCH_SNIPER, 0.0f,     // target (body)
+};
+
 #define FIREPOS_SOLDIER      FLOAT3D(0.07f, 1.36f, -0.78f)*STRETCH_SOLDIER
 #define FIREPOS_COMMANDER_UP  FLOAT3D(0.09f, 1.45f, -0.62f)*STRETCH_COMMANDER
 #define FIREPOS_COMMANDER_DN  FLOAT3D(0.10f, 1.30f, -0.60f)*STRETCH_COMMANDER
+#define FIREPOS_SNIPER      FLOAT3D(0.07f, 1.36f, -0.78f)*STRETCH_SNIPER
 %}
 
 
@@ -41,6 +50,8 @@ thumbnail "Thumbnails\\Grunt.tbn";
 
 properties:
   1 enum GruntType m_gtType "Type" 'Y' = GT_SOLDIER,
+  4 BOOL    m_bBeFriendlyFire  "Friendly Fire" 'F' = FALSE,
+  5 INDEX   m_fgibTexture = TEXTURE_SOLDIER,
 
   10 CSoundObject m_soFire1,
   11 CSoundObject m_soFire2,
@@ -49,16 +60,27 @@ properties:
     
 components:
   1 class   CLASS_BASE            "Classes\\EnemyBase.ecl",
+  2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
   3 class   CLASS_PROJECTILE      "Classes\\Projectile.ecl",
 
  10 model   MODEL_GRUNT           "ModelsMP\\Enemies\\Grunt\\Grunt.mdl",
  11 model   MODEL_GUN_COMMANDER   "ModelsMP\\Enemies\\Grunt\\Gun_Commander.mdl",
  12 model   MODEL_GUN_SOLDIER     "ModelsMP\\Enemies\\Grunt\\Gun.mdl",
+ 13 model   MODEL_GUN_SNIPER      "ModelsF\\Enemies\\Grunt\\Rifle.mdl",
  
  20 texture TEXTURE_SOLDIER       "ModelsMP\\Enemies\\Grunt\\Soldier.tex",
  21 texture TEXTURE_COMMANDER     "ModelsMP\\Enemies\\Grunt\\Commander.tex",
+ 25 texture TEXTURE_SNIPER        "ModelsF\\Enemies\\Grunt\\Grunt_GreenPurple.tex",
  22 texture TEXTURE_GUN_COMMANDER "ModelsMP\\Enemies\\Grunt\\Gun_Commander.tex",
  23 texture TEXTURE_GUN_SOLDIER   "ModelsMP\\Enemies\\Grunt\\Gun.tex",
+ 24 texture TEXTURE_GUN_SNIPER    "ModelsF\\Enemies\\Grunt\\Rifle.tex",
+
+ 30 model   MODEL_DEBRIS_HEAD           "ModelsF\\Enemies\\Grunt\\Debris\\Hed.mdl",
+ 31 model   MODEL_DEBRIS_ARM           "ModelsF\\Enemies\\Grunt\\Debris\\Arm.mdl",
+ 32 model   MODEL_DEBRIS_LEG           "ModelsF\\Enemies\\Grunt\\Debris\\Leg.mdl",
+
+ 33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
  
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE            "ModelsMP\\Enemies\\Grunt\\Sounds\\Idle.wav",
@@ -66,6 +88,7 @@ components:
  53 sound   SOUND_WOUND           "ModelsMP\\Enemies\\Grunt\\Sounds\\Wound.wav",
  57 sound   SOUND_FIRE            "ModelsMP\\Enemies\\Grunt\\Sounds\\Fire.wav",
  58 sound   SOUND_DEATH           "ModelsMP\\Enemies\\Grunt\\Sounds\\Death.wav",
+ 59 sound   SOUND_SNIPERFIRE      "ModelsF\\Enemies\\Grunt\\Sounds\\FireSeeker.wav",
 
 functions:
     
@@ -83,19 +106,20 @@ functions:
       return &eiGruntSoldier;
     } else if (m_gtType==GT_COMMANDER) {
       return &eiGruntSoldier;
-    } else {
-      ASSERT("Unknown grunt type!");
-      return NULL;
+    } else if (m_gtType==GT_SNIPER) {
+      return &eiGruntSniper;
     }
   };
 
   virtual const CTFileName &GetComputerMessageName(void) const {
     static DECLARE_CTFILENAME(fnmSoldier,     "DataMP\\Messages\\Enemies\\GruntSoldier.txt");
     static DECLARE_CTFILENAME(fnmCommander,   "DataMP\\Messages\\Enemies\\GruntCommander.txt");
+    static DECLARE_CTFILENAME(fnmSniper,   "DataF\\Messages\\Enemies\\GruntSniper.txt");
     switch(m_gtType) {
     default: ASSERT(FALSE);
     case GT_SOLDIER:  return fnmSoldier;
     case GT_COMMANDER: return fnmCommander;
+    case GT_SNIPER: return fnmSniper;
     }
   };
 
@@ -108,19 +132,40 @@ functions:
     if (m_gtType==GT_COMMANDER) {
       PrecacheClass(CLASS_PROJECTILE, PRT_GRUNT_PROJECTILE_COM);
     }
+    if (m_gtType==GT_SNIPER) {
+      PrecacheClass(CLASS_PROJECTILE, PRT_GRUNT_PROJECTILE_SNIPER);
+    }
 
     PrecacheSound(SOUND_IDLE);
     PrecacheSound(SOUND_SIGHT);
     PrecacheSound(SOUND_WOUND);
     PrecacheSound(SOUND_FIRE);
     PrecacheSound(SOUND_DEATH);
+    PrecacheSound(SOUND_SNIPERFIRE);
+
+    PrecacheModel(MODEL_DEBRIS_HEAD);
+    PrecacheModel(MODEL_DEBRIS_ARM);
+    PrecacheModel(MODEL_DEBRIS_LEG);
+
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_RED);
   };
 
   /* Receive damage */
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
-    CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+
+    // friendly fire function
+    if (!IsOfClass(penInflictor, "Grunt") ||
+      ((CGrunt*)penInflictor)->m_bBeFriendlyFire!=FALSE) {
+      CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
+    }
+      // if died of chainsaw
+      if (dmtType==DMT_CHAINSAW && GetHealth()<=0) {
+        // must always blowup
+        m_fBlowUpAmount = 0;
+      }
   };
 
   // damage anim
@@ -205,6 +250,60 @@ functions:
     m_soFire2.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
   };
 
+/************************************************************
+ *                 BLOW UP FUNCTIONS                        *
+ ************************************************************/
+  // spawn body parts
+  void BlowUp(void) {
+    // get your size
+    FLOATaabbox3D box;
+    GetBoundingBox(box);
+    FLOAT fEntitySize = box.Size().MaxNorm();
+
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+
+    vNormalizedDamage *= 0.75f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
+
+    // spawn debris
+    Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 5.0f, 2.0f);
+    
+    Debris_Spawn(this, this, MODEL_DEBRIS_HEAD, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_ARM, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_ARM, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_LEG, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_LEG, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
+
+    // hide yourself (must do this after spawning debris)
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+  };
+
 procedures:
 /************************************************************
  *                A T T A C K   E N E M Y                   *
@@ -216,6 +315,9 @@ procedures:
     // commander
     } else if (m_gtType == GT_COMMANDER) {
       autocall CommanderAttack() EEnd;
+    // sniper
+    } else if (m_gtType == GT_SNIPER) {
+      autocall SniperAttack() EEnd;
     // should never get here
     } else{
       ASSERT(FALSE);
@@ -282,6 +384,21 @@ procedures:
     autowait(FRnd()*0.5f);
     return EEnd();
   };
+    
+  // Soldier attack
+  SniperAttack(EVoid) {
+    StandingAnimFight();
+    autowait(0.2f + FRnd()*0.25f);
+
+    StartModelAnim(GRUNT_ANIM_FIRE, 0);
+    ShootProjectile(PRT_GRUNT_PROJECTILE_SNIPER, FIREPOS_SNIPER, ANGLE3D(0, 0, 0));
+    PlaySound(m_soFire1, SOUND_SNIPERFIRE, SOF_3D);
+    
+
+    autowait(FRnd()*0.333f);
+    MaybeSwitchToAnotherPlayer();
+    return EEnd();
+  };
 
 /************************************************************
  *                       M  A  I  N                         *
@@ -294,7 +411,6 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     en_tmMaxHoldBreath = 5.0f;
     en_fDensity = 2000.0f;
-    //m_fBlowUpSize = 2.0f;
 
     // set your appearance
     SetModel(MODEL_GRUNT);
@@ -319,7 +435,9 @@ procedures:
         m_fIgnoreRange = 200.0f;
         //m_fBlowUpAmount = 65.0f;
         m_fBlowUpAmount = 80.0f;
-        m_fBodyParts = 4;
+        m_fBodyParts = 2;
+	    m_fBlowUpSize = 2.0f;
+		m_fgibTexture = TEXTURE_SOLDIER;
         m_fDamageWounded = 0.0f;
         m_iScore = 500;
         SetHealth(40.0f);
@@ -345,16 +463,49 @@ procedures:
         m_fStopDistance = 15.0f;
         m_fAttackFireTime = 4.0f;
         m_fCloseFireTime = 2.0f;
-        //m_fBlowUpAmount = 180.0f;
+        m_fBlowUpAmount = 120.0f;
         m_fIgnoreRange = 200.0f;
         // damage/explode properties
-        m_fBodyParts = 5;
+        m_fBodyParts = 3;
+	    m_fBlowUpSize = 2.4f;
+		m_fgibTexture = TEXTURE_COMMANDER;
         m_fDamageWounded = 0.0f;
         m_iScore = 800;
         SetHealth(60.0f);
         m_fMaxHealth = 60.0f;
         // set stretch factors for height and width
         GetModelObject()->StretchModel(FLOAT3D(STRETCH_COMMANDER, STRETCH_COMMANDER, STRETCH_COMMANDER));
+        break;
+  
+      case GT_SNIPER:
+        // set your texture
+        SetModelMainTexture(TEXTURE_SNIPER);
+        AddAttachment(GRUNT_ATTACHMENT_GUN_SNIPER, MODEL_GUN_SNIPER, TEXTURE_GUN_SNIPER);
+        // setup moving speed
+        m_fWalkSpeed = FRnd() + 2.5f;
+        m_aWalkRotateSpeed = AngleDeg(FRnd()*10.0f + 500.0f);
+        m_fAttackRunSpeed = FRnd() + 9.5f;
+        m_aAttackRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
+        m_fCloseRunSpeed = FRnd() + 9.5f;
+        m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
+        // setup attack distances
+        m_fAttackDistance = 500.0f;
+        m_fCloseDistance = 0.0f;
+        m_fStopDistance = 30.0f;
+        m_fAttackFireTime = 4.0f;
+        m_fCloseFireTime = 2.0f;
+        m_fBlowUpAmount = 160.0f;
+        m_fIgnoreRange = 200.0f;
+        // damage/explode properties
+        m_fBodyParts = 4;
+	    m_fBlowUpSize = 2.8f;
+		m_fgibTexture = TEXTURE_SNIPER;
+        m_fDamageWounded = 0.0f;
+        m_iScore = 1100;
+        SetHealth(80.0f);
+        m_fMaxHealth = 80.0f;
+        // set stretch factors for height and width
+        GetModelObject()->StretchModel(FLOAT3D(STRETCH_SNIPER, STRETCH_SNIPER, STRETCH_SNIPER));
         break;
     }
 

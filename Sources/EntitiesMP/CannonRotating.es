@@ -70,7 +70,7 @@ components:
  12 model MODEL_CANNON         "ModelsMP\\Enemies\\CannonStatic\\Cannon.mdl",
  20 texture TEXTURE_TURRET     "ModelsMP\\Enemies\\CannonRotating\\Turret.tex",
  21 texture TEXTURE_ROTATOR    "ModelsMP\\Enemies\\CannonRotating\\RotatingMechanism.tex",
- 22 texture TEXTURE_CANNON     "Models\\Weapons\\Cannon\\Body.tex",
+ 22 texture TEXTURE_CANNON     "Models\\Weapons\\CannonOld\\Body.tex",
 
  // ************** CANNON PARTS **************
  30 model MODEL_DEBRIS_MUZZLE  "ModelsMP\\Enemies\\CannonRotating\\Debris\\Cannon.mdl",

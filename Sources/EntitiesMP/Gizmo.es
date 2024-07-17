@@ -34,6 +34,10 @@ components:
 // ************** DATA **************
  10 model   MODEL_GIZMO           "Models\\Enemies\\Gizmo\\Gizmo.mdl",
  20 texture TEXTURE_GIZMO         "Models\\Enemies\\Gizmo\\Gizmo.tex",
+
+ 11 model   MODEL_LEG1           "ModelsF\\Enemies\\Gizmo\\Debris\\Leg1.mdl",
+ 12 model   MODEL_LEG2           "ModelsF\\Enemies\\Gizmo\\Debris\\Leg2.mdl",
+ 13 model   MODEL_HORN           "ModelsF\\Enemies\\Gizmo\\Debris\\Horn.mdl",
  
  50 sound   SOUND_IDLE            "Models\\Enemies\\Gizmo\\Sounds\\Idle.wav",
  51 sound   SOUND_JUMP            "Models\\Enemies\\Gizmo\\Sounds\\Jump.wav",
@@ -67,6 +71,10 @@ functions:
     PrecacheSound(SOUND_DEATH_JUMP);
     PrecacheClass(CLASS_BASIC_EFFECT, BET_GIZMO_SPLASH_FX);
     PrecacheClass(CLASS_BLOOD_SPRAY);
+
+    PrecacheModel(MODEL_LEG1);
+    PrecacheModel(MODEL_LEG2);
+    PrecacheModel(MODEL_HORN);
   };
 
   void SightSound(void) {
@@ -100,6 +108,49 @@ functions:
     Explode();
   };
 
+  void BlowUp(void) {
+    // get your size
+    FLOATaabbox3D box;
+    GetBoundingBox(box);
+    FLOAT fEntitySize = box.Size().MaxNorm();
+
+    FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
+    vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
+
+    vNormalizedDamage *= 0.25f;
+
+    FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
+
+    Debris_Begin(EIBT_FLESH, DPT_SLIMETRAIL, BET_GIZMOSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+
+
+    Debris_Spawn(this, this, MODEL_LEG1, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG2, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	Debris_Spawn(this, this, MODEL_HORN, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG1, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG2, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	Debris_Spawn(this, this, MODEL_HORN, TEXTURE_GIZMO, 0, 0, 0, IRnd()%4, 0.5,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_GIZMO_SPLASH_FX;
+      penSplat->Initialize(ese);
+
+    // hide yourself (must do this after spawning debris)
+    SwitchToEditorModel();
+    SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
+    SetCollisionFlags(ECF_IMMATERIAL);
+  };
+
   // explode only once
   void Explode(void)
   {
@@ -112,20 +163,12 @@ functions:
       penSpray->SetParent( this);
       ESpawnSpray eSpawnSpray;
       eSpawnSpray.colBurnColor=C_WHITE|CT_OPAQUE;
-      eSpawnSpray.fDamagePower = 2.0f;
+      eSpawnSpray.fDamagePower = 1.0f;
       eSpawnSpray.fSizeMultiplier = 1.0f;
       eSpawnSpray.sptType = SPT_SLIME;
       eSpawnSpray.vDirection = en_vCurrentTranslationAbsolute/8.0f;
       eSpawnSpray.penOwner = this;
       penSpray->Initialize( eSpawnSpray);
-
-      // spawn splash fx (sound)
-      CPlacement3D plSplash = GetPlacement();
-      CEntityPointer penSplash = CreateEntity(plSplash, CLASS_BASIC_EFFECT);
-      ESpawnEffect ese;
-      ese.colMuliplier = C_WHITE|CT_OPAQUE;
-      ese.betType = BET_GIZMO_SPLASH_FX;
-      penSplash->Initialize(ese);
     }
   };
 
@@ -279,7 +322,7 @@ procedures:
           {            
             InflictDirectDamage(etouch.penOther, this, DMT_IMPACT, 10.0f,
               GetPlacement().pl_PositionVector, -en_vGravityDir);
-            SetHealth(-10000.0f);
+            SetHealth(-10.0f);
             m_vDamage = FLOAT3D(0,10000,0);
             SendEvent(EDeath());
           }
@@ -303,7 +346,7 @@ procedures:
     m_fMaxHealth = 9.5f;
     en_tmMaxHoldBreath = 5.0f;
     en_fDensity = 2000.0f;
-    m_fBlowUpSize = 2.0f;
+    m_fBlowUpSize = 2.5f;
 
     // set your appearance
     SetModel(MODEL_GIZMO);

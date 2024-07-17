@@ -43,6 +43,7 @@ properties:
  19 BOOL m_bSpawnEffect "SpawnEffect" 'S' = TRUE, // show effect and play sound
  20 BOOL m_bDoubleInSerious "Double in serious mode" = FALSE,
  21 CEntityPointer m_penSeriousTarget  "Template for Serious"  COLOR(C_RED|0x20),
+ 23 CEntityPointer m_penEasyTarget  "Template for Easy"  COLOR(C_BLUE|0x20),
  22 BOOL m_bFirstPass = TRUE,
  
  50 CSoundObject m_soSpawn,    // sound channel
@@ -78,6 +79,10 @@ functions:
         ((CTString&)m_strDescription).PrintF("->%s, %s", 
           m_penTarget->GetName(), m_penSeriousTarget->GetName());
       }
+      if (m_penEasyTarget!=NULL) {
+        ((CTString&)m_strDescription).PrintF("->%s, %s", 
+          m_penTarget->GetName(), m_penEasyTarget->GetName());
+      }
     }
     ((CTString&)m_strDescription) = EnemySpawnerType_enum.NameForValue(INDEX(m_estType))
       + m_strDescription;
@@ -112,6 +117,10 @@ functions:
     {
       return CheckTemplateValid(penTarget);
     }   
+    else if( slPropertyOffset == offsetof(CEnemySpawner, m_penEasyTarget))
+    {
+      return CheckTemplateValid(penTarget);
+    }  
     else if( slPropertyOffset == offsetof(CEnemySpawner, m_penTacticsHolder))
     {
       if (IsOfClass(penTarget, "TacticsHolder")) { return TRUE; }
@@ -130,6 +139,9 @@ functions:
     pes->es_strName += " (spawned)";
     if (m_penSeriousTarget!=NULL) {
       pes->es_strName += " (has serious)";
+    }
+    if (m_penEasyTarget!=NULL) {
+      pes->es_strName += " (has easy)";
     }
     return TRUE;
   }
@@ -457,6 +469,12 @@ procedures:
         m_penSeriousTarget = NULL;
       }
     }
+    if (m_penEasyTarget!=NULL) {
+      if (!IsDerivedFromClass(m_penEasyTarget, "Enemy Base")) {
+        WarningMessage("Target '%s' is of wrong class!", m_penEasyTarget->GetName());
+        m_penEasyTarget = NULL;
+      }
+    }
 
     // never start ai in wed
     autowait(_pTimer->TickQuantum);
@@ -474,6 +492,12 @@ procedures:
     }
     if (m_penSeriousTarget!=NULL && GetSP()->sp_gdGameDifficulty==CSessionProperties::GD_EXTREME) {
       m_penTarget = m_penSeriousTarget;
+    }
+    if (m_penEasyTarget!=NULL && GetSP()->sp_gdGameDifficulty==CSessionProperties::GD_TOURIST) {
+      m_penTarget = m_penEasyTarget;
+    }
+    if (m_penEasyTarget!=NULL && GetSP()->sp_gdGameDifficulty==CSessionProperties::GD_EASY) {
+      m_penTarget = m_penEasyTarget;
     }
 
     if (m_estType==EST_MAINTAINGROUP) {

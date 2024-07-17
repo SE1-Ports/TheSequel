@@ -409,12 +409,6 @@ functions:
       return;
     }
 
-    // elementals take less damage from heavy bullets (e.g. sniper)
-    if( m_EecChar==ELC_BIG && dmtType==DMT_BULLET && fDamageAmmount>100.0f)
-    {
-      fDamageAmmount/=2.5f;
-    }
-
 
     INDEX ctShouldSpawn = Clamp( INDEX((m_fMaxHealth-GetHealth())/m_fSpawnDamage), INDEX(0), INDEX(10));
     CTString strChar = ElementalCharacter_enum.NameForValue(INDEX(m_EecChar));

@@ -14,7 +14,7 @@ event EGhostBusterRay {
 };
 
 %{
-#define HIT_DISTANCE 50.0f      // ray hit distance
+#define HIT_DISTANCE 75.0f      // ray hit distance
 #define HIT_DAMAGE 15.0f         // hit damage for every lerping bullet
 
 void CGhostBusterRay_OnPrecache(CDLLEntityClass *pdec, INDEX iUser) 
@@ -170,7 +170,7 @@ functions:
     eInit.penOwner = ((CPlayerWeapons&)*m_penOwner).m_penPlayer;
     eInit.fDamage = HIT_DAMAGE;
     penBullet->Initialize(eInit);
-    ((CBullet&)*penBullet).m_EdtDamage = DMT_BULLET;
+    ((CBullet&)*penBullet).m_EdtDamage = DMT_EXPLOSION;
   };
 
   // fire
@@ -179,6 +179,7 @@ functions:
 
     // fire lerped bullets
     PrepareBullet(plSource);
+    ((CBullet&)*penBullet).m_EdtDamage = DMT_EXPLOSION;
     ((CBullet&)*penBullet).CalcTarget(HIT_DISTANCE);
     ((CBullet&)*penBullet).m_fBulletSize = 0.5f;
     ((CBullet&)*penBullet).CalcJitterTarget(0.02f*HIT_DISTANCE);

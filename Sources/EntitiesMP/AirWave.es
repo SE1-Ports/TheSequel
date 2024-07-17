@@ -40,7 +40,7 @@ components:
 functions:
   void PreMoving(void) {
     // stretch model (1-9)
-    FLOAT3D vRatio = FLOAT3D(1, 1, 1);
+    FLOAT3D vRatio = FLOAT3D(2.0, 2.0, 2.0);
     vRatio *= 8*((_pTimer->CurrentTick()-m_fStartTime)/SLIDE_TIME)+1;
     GetModelObject()->StretchModel(vRatio);
     ModelChangeNotify();
@@ -77,7 +77,7 @@ functions:
     // direct damage
     FLOAT3D vDirection;
     AnglesToDirectionVector(GetPlacement().pl_OrientationAngle, vDirection);
-    InflictDirectDamage(penHit, m_penLauncher, DMT_PROJECTILE, 2.0f * fRatio,
+    InflictDirectDamage(penHit, m_penLauncher, DMT_IMPACT, 5.0f * fRatio,
                GetPlacement().pl_PositionVector, vDirection);
     // push target away
     FLOAT3D vSpeed;
@@ -95,7 +95,7 @@ procedures:
   // --->>> PROJECTILE SLIDE ON BRUSH
   AirWaveSlide(EVoid) {
     m_fStartTime = _pTimer->CurrentTick();
-    LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+    LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -60.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
     // fly loop
     wait(SLIDE_TIME) {
       on (EBegin) : { resume; }
@@ -133,9 +133,10 @@ procedures:
     // initialization
     InitAsModel();
     SetPhysicsFlags(EPF_AIRWAVE);
-    SetCollisionFlags(ECF_AIRWAVE);
+    SetCollisionFlags(ECF_PROJECTILE_SOLID);
     SetModel(MODEL_AIRWAVE);
     SetModelMainTexture(TEXTURE_AIRWAVE);
+    SetHealth(500.0f);
 
     // remember lauching time
     m_fIgnoreTime = _pTimer->CurrentTick() + 1.0f;

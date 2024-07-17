@@ -128,7 +128,7 @@ functions:
           m_ctEnemiesInWorld++;
 		      // if this is a woman kamikaze carrier, add another one to count
 		      if (IsOfClass(pen, "Woman")) {
-			      if (((CWoman *)&*pen)->m_bKamikazeCarrier) { m_ctEnemiesInWorld++; }
+			      if (((CWoman *)&*pen)->m_bEnemyAttached) { m_ctEnemiesInWorld++; }
 		      }
         }
       // if spawner
@@ -141,7 +141,7 @@ functions:
           // if this spawner points to a woman kamikaze carrier template, increase count once more
           if (penSpawner->m_penTarget) {
             if (IsOfClass(penSpawner->m_penTarget, "Woman")) {
-              if (((CWoman *)&*penSpawner->m_penTarget)->m_bKamikazeCarrier) { m_ctEnemiesInWorld+=penSpawner->m_ctTotal; }
+              if (((CWoman *)&*penSpawner->m_penTarget)->m_bEnemyAttached) { m_ctEnemiesInWorld+=penSpawner->m_ctTotal; }
             }
           }
         }

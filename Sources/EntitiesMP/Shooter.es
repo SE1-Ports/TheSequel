@@ -8,6 +8,9 @@ uses "EntitiesMP/Projectile";
 uses "EntitiesMP/SoundHolder";
 uses "EntitiesMP/BloodSpray";
 uses "EntitiesMP/CannonBall";
+uses "EntitiesMP/Twister";
+uses "EntitiesMP/AirWave";
+uses "EntitiesMP/Bullet";
 
 enum FireType {
   0 SFT_WOODEN_DART "Wooden dart",
@@ -15,6 +18,12 @@ enum FireType {
   2 SFT_GAS         "-none-",
   3 SFT_IRONBALL    "Ironball",
   4 SFT_FIREBALL    "Fireball",
+  5 SFT_NUKEBALL    "Nukeball alpha",
+  6 SFT_TWISTER     "Twister",
+  7 SFT_AIRWAVE     "Airwave",
+  8 SFT_BULLET      "Bullet",
+  9 SFT_DEV         "Devastator",
+  10 SFT_NUKEBALL2    "Nukeball final",
 };
 
 class CShooter: CModelHolder2 {
@@ -47,10 +56,27 @@ properties:
 
  60 FLOAT m_tmFlameStart = 0.0f,
 
+ 70 FLOAT   m_tSize "Twister size" = 1.0f,
+ 71 FLOAT	m_tDuration "Twister Duration" = 5.0f,
+ 72 INDEX   m_tSpinDir "Twister spin direction" = 1,
+ 73 BOOL    m_tGrow "Twister grow" = TRUE,
+ 74 BOOL    m_tMovingAllowed "Twister moving allowed" = TRUE,
+ 75 FLOAT   m_tLaunch "Twister launch speed" = 0.0f,
+
+ 80 FLOAT   m_bDamage "Bullet damage" = 5.0f,
+ 82 FLOAT   m_bJitter "Bullet jitter" = 1000.0f,
+ 
+{
+  CEntity *penBullet;     // bullet
+}
+
 components:
   1 class CLASS_PROJECTILE    "Classes\\Projectile.ecl",
   2 class CLASS_BLOOD_SPRAY   "Classes\\BloodSpray.ecl",
   3 class CLASS_CANNONBALL    "Classes\\CannonBall.ecl",
+  4 class   CLASS_TWISTER     "Classes\\Twister.ecl",
+  5 class   CLASS_AIRWAVE     "Classes\\AirWave.ecl",
+  6 class   CLASS_BULLET      "Classes\\Bullet.ecl",
 
 functions:                                        
   
@@ -59,6 +85,8 @@ functions:
     PrecacheClass(CLASS_PROJECTILE, PRT_SHOOTER_WOODEN_DART);
     PrecacheClass(CLASS_PROJECTILE, PRT_SHOOTER_FIREBALL);
     PrecacheClass(CLASS_CANNONBALL);
+    PrecacheClass(CLASS_TWISTER);
+    PrecacheClass(CLASS_AIRWAVE);
   };
 
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
@@ -225,6 +253,96 @@ functions:
     penBall->Initialize(eLaunch);
   };
 
+  void ShootNukeball()
+  {
+    // cannon ball start position
+    CPlacement3D plBall = GetPlacement();
+    // create cannon ball
+    CEntityPointer penBall = CreateEntity(plBall, CLASS_CANNONBALL);
+    // init and launch cannon ball
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = 10.0f+m_fCannonBallPower; // ranges from 50-150 (since iPower can be max 100)
+    eLaunch.cbtType = CBT_NUKE;
+    eLaunch.fSize = m_fCannonBallSize;
+    penBall->Initialize(eLaunch);
+  };
+
+  void ShootNukeball2()
+  {
+    // cannon ball start position
+    CPlacement3D plBall = GetPlacement();
+    // create cannon ball
+    CEntityPointer penBall = CreateEntity(plBall, CLASS_CANNONBALL);
+    // init and launch cannon ball
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = 10.0f+m_fCannonBallPower; // ranges from 50-150 (since iPower can be max 100)
+    eLaunch.cbtType = CBT_NUKE2;
+    eLaunch.fSize = m_fCannonBallSize;
+    penBall->Initialize(eLaunch);
+  };
+
+  void ShootTwister()
+  {
+    // twister start position
+    CPlacement3D plTwister = GetPlacement();
+
+    // create twister ball
+    ETwister et;
+    CEntityPointer penTwister = CreateEntity(plTwister, CLASS_TWISTER);
+    et.penOwner = this;
+    et.fSize = m_tSize;
+    et.fDuration = m_tDuration;
+    et.sgnSpinDir = m_tSpinDir;
+    et.bGrow = m_tGrow;
+    et.bMovingAllowed=m_tMovingAllowed;
+    penTwister->Initialize(et);
+    
+    ((CMovableEntity &)*penTwister).LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_tLaunch), (CMovableEntity*)(CEntity*)this);
+  }
+
+  void ShootWave() {
+    CPlacement3D plWave;
+    plWave = GetPlacement();
+    CEntityPointer penProjectile = CreateEntity(plWave, CLASS_AIRWAVE);
+    EAirWave eLaunch;
+    eLaunch.penLauncher = this;
+    penProjectile->Initialize(eLaunch);
+  };
+
+  void ShootBullet() {
+    // bullet start position
+    CPlacement3D plBullet;
+    plBullet = GetPlacement();
+    // create bullet
+    penBullet = CreateEntity(plBullet, CLASS_BULLET);
+    // init bullet
+    EBulletInit eInit;
+    eInit.penOwner = this;
+    eInit.fDamage = m_bDamage;
+    penBullet->Initialize(eInit);
+    ((CBullet&)*penBullet).CalcTarget(10000);
+    ((CBullet&)*penBullet).CalcJitterTarget(m_bJitter);
+    ((CBullet&)*penBullet).LaunchBullet( TRUE, TRUE, TRUE);
+    ((CBullet&)*penBullet).DestroyBullet();
+  };
+
+  void ShootDev()
+  {
+    // cannon ball start position
+    CPlacement3D plBall = GetPlacement();
+    // create cannon ball
+    CEntityPointer penBall = CreateEntity(plBall, CLASS_CANNONBALL);
+    // init and launch cannon ball
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = 200;
+    eLaunch.cbtType = CBT_DEV;
+    eLaunch.fSize = 1.0;
+    penBall->Initialize(eLaunch);
+  };
+
 procedures:
   
   FireOnce()
@@ -248,6 +366,23 @@ procedures:
         break;
       case SFT_FIREBALL:
         ShootProjectile(PRT_SHOOTER_FIREBALL, FLOAT3D (0.0f, 0.0f, 0.0f), ANGLE3D (0.0f, 0.0f, 0.0f));
+      case SFT_NUKEBALL:
+        ShootNukeball();
+        break;
+      case SFT_NUKEBALL2:
+        ShootNukeball2();
+        break;
+      case SFT_TWISTER:
+        ShootTwister();
+        break;
+      case SFT_AIRWAVE:
+        ShootWave();
+        break;
+      case SFT_BULLET:
+        ShootBullet();
+        break;
+      case SFT_DEV:
+        ShootDev();
         break;
     }
     

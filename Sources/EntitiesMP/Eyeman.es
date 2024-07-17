@@ -2,18 +2,23 @@
 %{
 #include "StdH.h"
 #include "Models/Enemies/Eyeman/Eyeman.h"
+#include "ModelsF/Enemies/BuffGnaar/BuffGnaar.h"
 %}
 
 uses "EntitiesMP/EnemyFly";
 
 enum EyemanChar {
-  0 EYC_SOLDIER   "Soldier",    // soldier
-  1 EYC_SERGEANT  "Sergeant",   // sergeant
+  0 EYC_B   "Brute",    // brute
+  1 EYC_X   "Boomer",    // boomer
+  2 EYC_P   "Belcher",   // belcher
+  3 EYC_SOLDIER   "Male",    // male
+  4 EYC_SERGEANT  "Female",   // female
 };
 
 enum EyemanEnv {
   0 EYE_NORMAL    "Normal",
   1 EYE_LAVA      "Lava",
+  2 EYE_SNOW      "Snow",
 };
 
 %{
@@ -28,10 +33,28 @@ static EntityInfo eiEyemanSmall = {
   0.0f, 1.4f, 0.0f,
   0.0f, 1.0f, 0.0f,
 };
+static EntityInfo eiEyemanBrute = {
+  EIBT_FLESH, 1000.0f,
+  0.0f, 1.55f, 0.0f,
+  0.0f, 1.15f, 0.0f,
+};
+static EntityInfo eiEyemanBoom = {
+  EIBT_FLESH, 120.0f,
+  0.0f, 1.4f, 0.0f,
+  0.0f, 1.0f, 0.0f,
+};
+static EntityInfo eiEyemanPuke = {
+  EIBT_FLESH, 140.0f,
+  0.0f, 1.4f, 0.0f,
+  0.0f, 1.0f, 0.0f,
+};
 
-#define BITE_AIR    3.0f
-#define HIT_GROUND  2.0f
+#define BITE_AIR    4.0f
+#define HIT_GROUND  3.0f
 #define FIRE_GROUND   FLOAT3D(0.75f, 1.5f, -1.25f)
+#define HIT_BRUTE  5.0f
+
+#define EYSOUND(soundname) ((m_EecChar==EYC_B)? (SOUND_BUFF_##soundname) : (SOUND_##soundname))
 %}
 
 
@@ -45,14 +68,30 @@ properties:
   3 enum EyemanEnv m_eeEnv "Environment" 'E' = EYE_NORMAL,
   4 BOOL m_bMumbleSoundPlaying = FALSE,
   5 CSoundObject m_soMumble,
+  6 BOOL m_bExploded = FALSE,
+  7 INDEX   m_fgibTexture = TEXTURE_EYEMAN_SOLDIER,
+  8 CSoundObject m_soFlesh,
+
+  10 INDEX   m_fgibArm = MODEL_EYEMAN_ARM,
+  11 INDEX   m_fgibLeg = MODEL_EYEMAN_LEG,
+  12 INDEX   m_fgibForehead = MODEL_EYEMAN_FOREHEAD,
+  13 INDEX   m_fgibJaw = MODEL_EYEMAN_JAW,
 
 components:
   0 class   CLASS_BASE        "Classes\\EnemyFly.ecl",
   1 model   MODEL_EYEMAN      "Models\\Enemies\\Eyeman\\Eyeman.mdl",
-  2 texture TEXTURE_EYEMAN_SOLDIER    "Models\\Enemies\\Eyeman\\Eyeman4.tex",
-  3 texture TEXTURE_EYEMAN_SERGEANT   "Models\\Enemies\\Eyeman\\Eyeman5.tex",
-  5 texture TEXTURE_EYEMAN_LAVA   "Models\\Enemies\\Eyeman\\Eyeman6.tex",
+  2 texture TEXTURE_EYEMAN_BRUTE    "ModelsF\\Enemies\\BuffGnaar\\EyemanBrute.tex",
+  3 texture TEXTURE_EYEMAN_BOOM   "AREP\\Models\\EyemanBrute\\EyemanBlue.tex",
+  5 texture TEXTURE_EYEMAN_LAVA   "AREP\\Models\\EyemanBrute\\EyemanLava.tex",
+  7 texture TEXTURE_EYEMAN_PUKE   "AREP\\Models\\EyemanBrute\\EyemanPuke.tex",
+  8 texture TEXTURE_EYEMAN_SNOWF   "AREP\\Models\\EyemanBrute\\EyemanSnowF.tex",
+  9 texture TEXTURE_EYEMAN_SNOWM   "AREP\\Models\\EyemanBrute\\EyemanSnowM.tex",
+ 10 texture TEXTURE_EYEMAN_SOLDIER    "Models\\Enemies\\Eyeman\\Eyeman4.tex",
+ 11 texture TEXTURE_EYEMAN_SERGEANT   "Models\\Enemies\\Eyeman\\Eyeman5.tex",
   4 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
+  6 class   CLASS_PROJECTILE  "Classes\\Projectile.ecl",
+  
+ 12 model   MODEL_BUFF      "ModelsF\\Enemies\\BuffGnaar\\BuffGnaar.mdl",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "Models\\Enemies\\Eyeman\\Sounds\\Idle.wav",
@@ -62,12 +101,34 @@ components:
  54 sound   SOUND_PUNCH     "Models\\Enemies\\Eyeman\\Sounds\\Punch.wav",
  55 sound   SOUND_DEATH     "Models\\Enemies\\Eyeman\\Sounds\\Death.wav",
  56 sound   SOUND_MUMBLE    "Models\\Enemies\\Eyeman\\Sounds\\Mumble.wav",
+ 57 sound   SOUND_PUKE    "AREP\\Models\\EyemanBrute\\Sounds\\Puke.wav",
 
- /*
- 60 model   MODEL_EYEMAN_BODY   "Models\\Enemies\\Eyeman\\Debris\\Torso.mdl",
- 61 model   MODEL_EYEMAN_HAND   "Models\\Enemies\\Eyeman\\Debris\\Arm.mdl",
- 62 model   MODEL_EYEMAN_LEGS   "Models\\Enemies\\Eyeman\\Debris\\Leg.mdl",
- */
+ 58 sound   SOUND_MORPH    "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Morph.wav",
+ 
+ 80 sound   SOUND_BUFF_IDLE      "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Idle.wav",
+ 81 sound   SOUND_BUFF_SIGHT     "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Sight.wav",
+ 82 sound   SOUND_BUFF_WOUND     "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Wound.wav",
+ 83 sound   SOUND_BUFF_BITE      "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Bite.wav",
+ 84 sound   SOUND_BUFF_PUNCH     "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Punch.wav",
+ 85 sound   SOUND_BUFF_DEATH     "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Death.wav",
+ 86 sound   SOUND_BUFF_MUMBLE    "ModelsF\\Enemies\\BuffGnaar\\Sounds\\Mumble.wav",
+
+// ************** DEBRIS **************
+
+ 60 model   MODEL_EYEMAN_ARM   "ModelsF\\Enemies\\Eyeman\\Debris\\Arm.mdl",
+ 62 model   MODEL_EYEMAN_LEG   "ModelsF\\Enemies\\Eyeman\\Debris\\Leg.mdl",
+
+ 63 model   MODEL_EYEMAN_FOREHEAD   "ModelsF\\Enemies\\Eyeman\\Debris\\Forehead.mdl",
+ 64 model   MODEL_EYEMAN_JAW   "ModelsF\\Enemies\\Eyeman\\Debris\\Jaw.mdl",
+
+ 70 model   MODEL_BUFF_ARM   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Arm.mdl",
+ 72 model   MODEL_BUFF_LEG   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Leg.mdl",
+
+ 73 model   MODEL_BUFF_FOREHEAD   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Forehead.mdl",
+ 74 model   MODEL_BUFF_JAW   "ModelsF\\Enemies\\BuffGnaar\\Debris\\Jaw.mdl",
+
+ 65 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 66 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
 functions:
   // describe how this enemy killed player
@@ -75,9 +136,9 @@ functions:
   {
     CTString str;
     if (m_bInAir) {
-      str.PrintF(TRANS("A Gnaar bit %s to death"), strPlayerName);
+      str.PrintF(TRANS("A Gnaar devoured %s"), strPlayerName);
     } else {
-      str.PrintF(TRANS("%s was beaten up by a Gnaar"), strPlayerName);
+      str.PrintF(TRANS("%s was crushed by a Gnaar"), strPlayerName);
     }
     return str;
   }
@@ -90,14 +151,44 @@ functions:
     PrecacheSound(SOUND_PUNCH);
     PrecacheSound(SOUND_DEATH);
     PrecacheSound(SOUND_MUMBLE);
+    PrecacheSound(SOUND_PUKE);
+
+    PrecacheSound(SOUND_MORPH);
+
+    PrecacheSound(SOUND_BUFF_IDLE );
+    PrecacheSound(SOUND_BUFF_SIGHT);
+    PrecacheSound(SOUND_BUFF_WOUND);
+    PrecacheSound(SOUND_BUFF_BITE );
+    PrecacheSound(SOUND_BUFF_PUNCH);
+    PrecacheSound(SOUND_BUFF_DEATH);
+    PrecacheSound(SOUND_BUFF_MUMBLE);
+
+    PrecacheClass(CLASS_PROJECTILE, PRT_EYEMAN_ACID);
+
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_RED);
+    PrecacheModel(MODEL_EYEMAN_ARM);
+    PrecacheModel(MODEL_EYEMAN_LEG);
+    PrecacheModel(MODEL_EYEMAN_FOREHEAD);
+    PrecacheModel(MODEL_EYEMAN_JAW);
+    PrecacheModel(MODEL_BUFF_ARM);
+    PrecacheModel(MODEL_BUFF_LEG);
+    PrecacheModel(MODEL_BUFF_FOREHEAD);
+    PrecacheModel(MODEL_BUFF_JAW);
   };
 
   /* Entity info */
   void *GetEntityInfo(void) {
-    if (m_EecChar==EYC_SERGEANT) {
-      return &eiEyemanBig;
-    } else {
+    if (m_EecChar==EYC_B) {
+      return &eiEyemanBrute;
+    } if (m_EecChar==EYC_X) {
+      return &eiEyemanBoom;
+    } if (m_EecChar==EYC_P) {
+      return &eiEyemanPuke;
+    } if (m_EecChar==EYC_SOLDIER) {
       return &eiEyemanSmall;
+    } if (m_EecChar==EYC_SERGEANT) {
+      return &eiEyemanBig;
     }
   };
 
@@ -121,8 +212,10 @@ functions:
   {
     CEnemyBase::FillEntityStatistics(pes);
     switch(m_EecChar) {
-    case EYC_SERGEANT: { pes->es_strName+=" Sergeant"; } break;
-    case EYC_SOLDIER : { pes->es_strName+=" Soldier"; } break;
+    case EYC_B: { pes->es_strName+=" Brute"; } break;
+    case EYC_X : { pes->es_strName+=" Boomer"; } break;
+    case EYC_SERGEANT: { pes->es_strName+=" Female"; } break;
+    case EYC_SOLDIER : { pes->es_strName+=" Male"; } break;
     }
     if (m_bInvisible) {
       pes->es_strName+=" Invisible";
@@ -131,10 +224,16 @@ functions:
   }
 
   virtual const CTFileName &GetComputerMessageName(void) const {
+    static DECLARE_CTFILENAME(fnmBrute, "DataMP\\Messages\\Enemies\\AREP\\EyemanBruteFinal.txt");
+    static DECLARE_CTFILENAME(fnmBoom, "DataMP\\Messages\\Enemies\\AREP\\EyemanBoom.txt");
+    static DECLARE_CTFILENAME(fnmPuke, "DataMP\\Messages\\Enemies\\AREP\\EyemanPuke.txt");
     static DECLARE_CTFILENAME(fnmSergeant, "Data\\Messages\\Enemies\\EyemanGreen.txt");
     static DECLARE_CTFILENAME(fnmSoldier , "Data\\Messages\\Enemies\\EyemanPurple.txt");
     switch(m_EecChar) {
     default: ASSERT(FALSE);
+    case EYC_B: return fnmBrute;
+    case EYC_X: return fnmBoom;
+    case EYC_P: return fnmPuke;
     case EYC_SERGEANT: return fnmSergeant;
     case EYC_SOLDIER : return fnmSoldier;
     }
@@ -231,7 +330,7 @@ functions:
   void ActivateMumblingSound(void)
   {
     if (!m_bMumbleSoundPlaying) {
-      PlaySound(m_soMumble, SOUND_MUMBLE, SOF_3D|SOF_LOOP);
+      PlaySound(m_soMumble, EYSOUND(MUMBLE), SOF_3D|SOF_LOOP);
       m_bMumbleSoundPlaying = TRUE;
     }
   }
@@ -274,10 +373,12 @@ functions:
     }
   };
   FLOAT AirToGroundAnim(void) {
+    PlaySound(m_soFlesh, SOUND_MORPH, SOF_3D);
     StartModelAnim(EYEMAN_ANIM_MORPHUP, 0);
     return(GetModelObject()->GetAnimLength(EYEMAN_ANIM_MORPHUP));
   };
   FLOAT GroundToAirAnim(void) {
+    PlaySound(m_soFlesh, SOUND_MORPH, SOF_3D);
     StartModelAnim(EYEMAN_ANIM_MORPHDOWN, 0);
     return(GetModelObject()->GetAnimLength(EYEMAN_ANIM_MORPHDOWN));
   };
@@ -290,28 +391,73 @@ functions:
 
   // virtual sound functions
   void IdleSound(void) {
-    PlaySound(m_soSound, SOUND_IDLE, SOF_3D);
+    PlaySound(m_soSound, EYSOUND(IDLE), SOF_3D);
   };
   void SightSound(void) {
-    PlaySound(m_soSound, SOUND_SIGHT, SOF_3D);
+    PlaySound(m_soSound, EYSOUND(SIGHT), SOF_3D);
   };
   void WoundSound(void) {
-    PlaySound(m_soSound, SOUND_WOUND, SOF_3D);
+    PlaySound(m_soSound, EYSOUND(WOUND), SOF_3D);
   };
   void DeathSound(void) {
-    PlaySound(m_soSound, SOUND_DEATH, SOF_3D);
+    PlaySound(m_soSound, EYSOUND(DEATH), SOF_3D);
   };
 
 /************************************************************
  *                 BLOW UP FUNCTIONS                        *
  ************************************************************/
+  void BlowUpNotify(void) {
+    if (m_EecChar==EYC_X ) {
+      Explode();
+    }
+  };
+  void Explode(void) {
+    if (!m_bExploded) {
+      m_bExploded = TRUE;
+
+      // inflict damage
+      if (m_EecChar==EYC_X) {
+        FLOAT3D vSource;
+        GetEntityInfoPosition(this, eiEyemanBoom.vTargetCenter, vSource);
+        InflictDirectDamage(this, this, DMT_EXPLOSION, 1000.0f, vSource, 
+          -en_vGravityDir);
+        InflictRangeDamage(this, DMT_EXPLOSION, 20.0f, vSource, 1.0f, 6.0f);
+      }
+
+      // spawn explosion
+      CPlacement3D plExplosion = GetPlacement();
+      CEntityPointer penExplosion = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
+      ESpawnEffect eSpawnEffect;
+      eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
+      eSpawnEffect.betType = BET_BOMB;
+      eSpawnEffect.vStretch = FLOAT3D(1.0f,1.0f,1.0f);
+      penExplosion->Initialize(eSpawnEffect);
+
+      // explosion debris
+      eSpawnEffect.betType = BET_EXPLOSION_DEBRIS;
+      CEntityPointer penExplosionDebris = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
+      penExplosionDebris->Initialize(eSpawnEffect);
+
+      // explosion smoke
+      eSpawnEffect.betType = BET_EXPLOSION_SMOKE;
+      CEntityPointer penExplosionSmoke = CreateEntity(plExplosion, CLASS_BASIC_EFFECT);
+      penExplosionSmoke->Initialize(eSpawnEffect);
+	  
+      CEnemyBase::BlowUp();
+    }
+  };
+
   // spawn body parts
-  /*void BlowUp(void)
-  {
+  void BlowUp(void) {
+    if (m_EecChar==EYC_X) {
+      Explode();
+    }
+	else {
     // get your size
     FLOATaabbox3D box;
     GetBoundingBox(box);
     FLOAT fEntitySize = box.Size().MaxNorm();
+	FLOAT fDebrisSize = 0.0f;
 
     FLOAT3D vNormalizedDamage = m_vDamage-m_vDamage*(m_fBlowUpAmount/m_vDamage.Length());
     vNormalizedDamage /= Sqrt(vNormalizedDamage.Length());
@@ -320,29 +466,84 @@ functions:
 
     FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
 
+
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
+
     // spawn debris
-    Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+    Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 5.0f, 2.0f);
+	
+   if (m_EeftType == EFT_GROUND_ONLY) {
+    
+    Debris_Spawn(this, this, m_fgibArm, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibArm, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibLeg, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibLeg, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+		} else if (m_EeftType == EFT_FLY_ONLY) {
+    
+    Debris_Spawn(this, this, m_fgibForehead, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibJaw, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+		} else if (m_EeftType == EFT_FLY_GROUND_GROUND || m_EeftType == EFT_FLY_GROUND_AIR || m_EeftType == EFT_FLY_AIR_GROUND || m_EeftType == EFT_FLY_AIR_AIR) {
 
-    INDEX iTextureID = TEXTURE_EYEMAN_SOLDIER;
-    if (m_EecChar==EYC_SERGEANT)
-    {
-      iTextureID = TEXTURE_EYEMAN_SERGEANT;
-    }
+	  if (m_bInAir) {
+    
+    Debris_Spawn(this, this, m_fgibForehead, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibJaw, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+		} else {
+    
+    Debris_Spawn(this, this, m_fgibArm, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibArm, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibLeg, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibLeg, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
+		  }
+		}
 
-    Debris_Spawn(this, this, MODEL_EYEMAN_BODY, iTextureID, 0, 0, 0, 0, 0.0f,
-      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_EYEMAN_HAND, iTextureID, 0, 0, 0, 0, 0.0f,
-      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_EYEMAN_HAND, iTextureID, 0, 0, 0, 0, 0.0f,
-      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_EYEMAN_LEGS, iTextureID, 0, 0, 0, 0, 0.0f,
-      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+      // spawn splash fx (sound)
+      CPlacement3D plSplat = GetPlacement();
+      CEntityPointer penSplat = CreateEntity(plSplat, CLASS_BASIC_EFFECT);
+      ESpawnEffect ese;
+      ese.colMuliplier = C_WHITE|CT_OPAQUE;
+      ese.betType = BET_FLESH_SPLAT_FX;
+      penSplat->Initialize(ese);
 
     // hide yourself (must do this after spawning debris)
     SwitchToEditorModel();
     SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
     SetCollisionFlags(ECF_IMMATERIAL);
-  };*/
+  }
+  };
 
 /************************************************************
  *                     MOVING FUNCTIONS                     *
@@ -376,14 +577,24 @@ procedures:
     }
     StartModelAnim(EYEMAN_ANIM_MORPHATTACK, 0);
     StopMoving();
-    PlaySound(m_soSound, SOUND_BITE, SOF_3D);
+    PlaySound(m_soSound, EYSOUND(BITE), SOF_3D);
     // damage enemy
     autowait(0.4f);
     // damage enemy
     if (CalcDist(m_penEnemy) < BITE_AIR) {
       FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
       vDirection.SafeNormalize();
-      InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 3.5f, FLOAT3D(0, 0, 0), vDirection);
+      if (m_EecChar==EYC_B) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 40.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_X) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 6.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_P) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 10.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_SERGEANT) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_SOLDIER) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 10.0f, FLOAT3D(0, 0, 0), vDirection);
+		}
       // spawn blood cloud
       ESpawnEffect eSpawnEffect;
       eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
@@ -403,11 +614,19 @@ procedures:
   };
 
   GroundHit(EVoid) : CEnemyFly::GroundHit {
-    if (CalcDist(m_penEnemy) > HIT_GROUND) {
+    if (m_EecChar==EYC_B) {
+     if (CalcDist(m_penEnemy) > HIT_BRUTE) {
       m_fShootTime = _pTimer->CurrentTick() + 0.25f;
-      return EReturn();
+      return EReturn(); }
+    } else {
+     if (CalcDist(m_penEnemy) > HIT_GROUND) {
+      m_fShootTime = _pTimer->CurrentTick() + 0.25f;
+      return EReturn(); }
     }
-    StartModelAnim(EYEMAN_ANIM_ATTACK02, 0);
+    if (m_EecChar==EYC_B) {
+      StartModelAnim(BUFFGNAAR_ANIM_ATTACK03, 0); }
+    else {
+      StartModelAnim(EYEMAN_ANIM_ATTACK02, 0); }
     StopMoving();
     // damage enemy
     autowait(0.2f);
@@ -415,21 +634,82 @@ procedures:
     if (CalcDist(m_penEnemy) < HIT_GROUND) {
       FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
       vDirection.SafeNormalize();
-      InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 3.5f, FLOAT3D(0, 0, 0), vDirection);
-      PlaySound(m_soSound, SOUND_PUNCH, SOF_3D);
+      if (m_EecChar==EYC_B) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_X) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 3.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_P) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 5.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_SERGEANT) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 10.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_SOLDIER) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 5.0f, FLOAT3D(0, 0, 0), vDirection);
+		}
+      PlaySound(m_soSound, EYSOUND(PUNCH), SOF_3D);
     }
     autowait(0.3f);
     // damage enemy
     if (CalcDist(m_penEnemy) < HIT_GROUND) {
       FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
       vDirection.SafeNormalize();
-      InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 3.5f, FLOAT3D(0, 0, 0), vDirection);
-      PlaySound(m_soSound, SOUND_PUNCH, SOF_3D);
+      if (m_EecChar==EYC_B) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 20.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_X) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 3.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_P) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 5.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_SERGEANT) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 10.0f, FLOAT3D(0, 0, 0), vDirection);
+		} if (m_EecChar==EYC_SOLDIER) {
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 5.0f, FLOAT3D(0, 0, 0), vDirection);
+		}
+      PlaySound(m_soSound, EYSOUND(PUNCH), SOF_3D);
     }
     autowait(0.4f);
 
     StandingAnim();
     return EReturn();
+  };
+
+  FlyFire(EVoid) : CEnemyFly::FlyFire {
+    if (m_EecChar!=EYC_P) { return EReturn(); }
+
+    // fire projectile
+    StartModelAnim(EYEMAN_ANIM_MORPHWOUND02, 0);
+    ShootProjectile(PRT_EYEMAN_ACID, FLOAT3D(0.0f, 0.0f, 0.0f), ANGLE3D(0, 0, 0));
+    PlaySound(m_soSound, SOUND_PUKE, SOF_3D);
+    autowait(0.6f);
+    StandingAnim();
+    autowait(FRnd()/2 + _pTimer->TickQuantum);
+
+    return EReturn();
+  };
+
+  GroundFire(EVoid) : CEnemyFly::GroundFire {
+    if (m_EecChar!=EYC_P) { return EReturn(); }
+
+    // fire projectile
+    StartModelAnim(EYEMAN_ANIM_WOUND06, 0);
+    ShootProjectile(PRT_EYEMAN_ACID, FLOAT3D(0.0f, 1.3f, 0.0f), ANGLE3D(0, 0, 0));
+    PlaySound(m_soSound, SOUND_PUKE, SOF_3D);
+    autowait(0.6f);
+    StandingAnim();
+    autowait(FRnd()/2 + _pTimer->TickQuantum);
+
+    return EReturn();
+  };
+
+
+
+/************************************************************
+ *                    D  E  A  T  H                         *
+ ************************************************************/
+  Death(EVoid) : CEnemyBase::Death {
+    autocall CEnemyBase::Death() EEnd;
+    if (m_EecChar==EYC_X) {
+      Explode();
+    }
+    return EEnd();
   };
 
 /************************************************************
@@ -441,21 +721,45 @@ procedures:
     SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
-    if (m_EecChar==EYC_SERGEANT) {
-      SetHealth(90.0f);
-      m_fMaxHealth = 90.0f;
+    if (m_EecChar==EYC_B) {
+      SetHealth(250.0f);
+      m_fMaxHealth = 250.0f;
+      // damage/explode properties
+      m_fBlowUpAmount = 300.0f;
+      m_fBodyParts = 5;
+      m_fBlowUpSize = 3.4f;
+      m_fDamageWounded = 100.0f;
+    } if (m_EecChar==EYC_X) {
+      SetHealth(50.0f);
+      m_fMaxHealth = 50.0f;
+      // damage/explode properties
+      m_fBlowUpAmount = 90.0f;
+      m_fBodyParts = 5;
+      m_fBlowUpSize = 1.5f;
+      m_fDamageWounded = 15.0f;
+	} if (m_EecChar==EYC_P) {
+      SetHealth(80.0f);
+      m_fMaxHealth = 80.0f;
+      // damage/explode properties
+      m_fBlowUpAmount = 120.0f;
+      m_fBodyParts = 3;
+      m_fBlowUpSize = 1.8f;
+      m_fDamageWounded = 30.0f;
+	} if (m_EecChar==EYC_SERGEANT) {
+      SetHealth(100.0f);
+      m_fMaxHealth = 100.0f;
       // damage/explode properties
       m_fBlowUpAmount = 130.0f;
-      m_fBodyParts = 5;
-      m_fBlowUpSize = 2.5f;
-      m_fDamageWounded = 40.0f;
-    } else {
+      m_fBodyParts = 4;
+      m_fBlowUpSize = 2.0f;
+      m_fDamageWounded = 50.0f;
+    } if (m_EecChar==EYC_SOLDIER) {
       SetHealth(60.0f);
       m_fMaxHealth = 60.0f;
       // damage/explode properties
       m_fBlowUpAmount = 100.0f;
-      m_fBodyParts = 5;
-      m_fBlowUpSize = 2.0f;
+      m_fBodyParts = 2;
+      m_fBlowUpSize = 1.7f;
       m_fDamageWounded = 25.0f;
     }
     en_fDensity = 2000.0f;
@@ -466,18 +770,74 @@ procedures:
     }
 
     // set your appearance
-    SetModel(MODEL_EYEMAN);
-    if (m_EecChar==EYC_SERGEANT) {
-      SetModelMainTexture(TEXTURE_EYEMAN_SERGEANT);
+    if (m_EecChar==EYC_B) {
+      SetModel(MODEL_BUFF);
+	  m_fgibArm = MODEL_BUFF_ARM;
+	  m_fgibLeg = MODEL_BUFF_LEG;
+	  m_fgibForehead = MODEL_BUFF_FOREHEAD;
+	  m_fgibJaw = MODEL_BUFF_JAW;
+      SetModelMainTexture(TEXTURE_EYEMAN_BRUTE);
+		m_fgibTexture = TEXTURE_EYEMAN_BRUTE;
+      GetModelObject()->StretchModel(FLOAT3D(1.9f, 1.9f, 1.9f));
+      ModelChangeNotify();
+      m_iScore = 3000;
+    } if (m_EecChar==EYC_X) {
+      m_iScore = 800;
+      SetModel(MODEL_EYEMAN);
+	  m_fgibArm = MODEL_EYEMAN_ARM;
+	  m_fgibLeg = MODEL_EYEMAN_LEG;
+	  m_fgibForehead = MODEL_EYEMAN_FOREHEAD;
+	  m_fgibJaw = MODEL_EYEMAN_JAW;
+      SetModelMainTexture(TEXTURE_EYEMAN_BOOM);
+		m_fgibTexture = TEXTURE_EYEMAN_BOOM;
+      GetModelObject()->StretchModel(FLOAT3D(0.9f, 0.9f, 0.9f));
+      ModelChangeNotify();
+    } if (m_EecChar==EYC_P) {
+      m_iScore = 1200;
+      SetModel(MODEL_EYEMAN);
+	  m_fgibArm = MODEL_EYEMAN_ARM;
+	  m_fgibLeg = MODEL_EYEMAN_LEG;
+	  m_fgibForehead = MODEL_EYEMAN_FOREHEAD;
+	  m_fgibJaw = MODEL_EYEMAN_JAW;
+      SetModelMainTexture(TEXTURE_EYEMAN_PUKE);
+		m_fgibTexture = TEXTURE_EYEMAN_PUKE;
+      GetModelObject()->StretchModel(FLOAT3D(1.2f, 1.2f, 1.2f));
+      ModelChangeNotify();
+    } if (m_EecChar==EYC_SERGEANT) {
+      SetModel(MODEL_BUFF);
+	  m_fgibArm = MODEL_BUFF_ARM;
+	  m_fgibLeg = MODEL_BUFF_LEG;
+	  m_fgibForehead = MODEL_BUFF_FOREHEAD;
+	  m_fgibJaw = MODEL_BUFF_JAW;
+      m_iScore = 1000;
+       if (m_eeEnv == EYE_LAVA) {
+        SetModelMainTexture(TEXTURE_EYEMAN_LAVA);
+		m_fgibTexture = TEXTURE_EYEMAN_LAVA;
+      } if (m_eeEnv == EYE_SNOW) {
+        SetModelMainTexture(TEXTURE_EYEMAN_SNOWF);
+		m_fgibTexture = TEXTURE_EYEMAN_SNOWF;
+      } if (m_eeEnv == EYE_NORMAL) {
+        SetModelMainTexture(TEXTURE_EYEMAN_SERGEANT);
+		m_fgibTexture = TEXTURE_EYEMAN_SERGEANT;
+      }
       GetModelObject()->StretchModel(FLOAT3D(1.3f, 1.3f, 1.3f));
       ModelChangeNotify();
-      m_iScore = 1000;
-    } else {
+    } if (m_EecChar==EYC_SOLDIER) {
       m_iScore = 500;
-      if (m_eeEnv == EYE_LAVA) {
+      SetModel(MODEL_EYEMAN);
+	  m_fgibArm = MODEL_EYEMAN_ARM;
+	  m_fgibLeg = MODEL_EYEMAN_LEG;
+	  m_fgibForehead = MODEL_EYEMAN_FOREHEAD;
+	  m_fgibJaw = MODEL_EYEMAN_JAW;
+       if (m_eeEnv == EYE_LAVA) {
         SetModelMainTexture(TEXTURE_EYEMAN_LAVA);
-      } else {
+		m_fgibTexture = TEXTURE_EYEMAN_LAVA;
+      } if (m_eeEnv == EYE_SNOW) {
+        SetModelMainTexture(TEXTURE_EYEMAN_SNOWM);
+		m_fgibTexture = TEXTURE_EYEMAN_SNOWM;
+      } if (m_eeEnv == EYE_NORMAL) {
         SetModelMainTexture(TEXTURE_EYEMAN_SOLDIER);
+		m_fgibTexture = TEXTURE_EYEMAN_SOLDIER;
       }
       GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
       ModelChangeNotify();
@@ -487,38 +847,72 @@ procedures:
       m_iScore*=2;
     }
     // setup moving speed
-    m_fWalkSpeed = FRnd() + 1.5f;
+    m_fWalkSpeed = FRnd() + 3.0f;
     m_aWalkRotateSpeed = FRnd()*10.0f + 500.0f;
-    if (m_EecChar==EYC_SERGEANT) {
-      m_fAttackRunSpeed = FRnd()*2.0f + 10.0f;
+    if (m_EecChar==EYC_B) {
+      m_fAttackRunSpeed = FRnd()*2.0f + 17.5f;
+      m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseRunSpeed = FRnd()*2.0f + 17.5f;
+      m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseDistance = 6.5f;
+    } if (m_EecChar==EYC_SERGEANT) {
+      m_fAttackRunSpeed = FRnd()*2.0f + 13.0f;
+      m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseRunSpeed = FRnd()*2.0f + 13.0f;
+      m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseDistance = 4.5f;
+    } if (m_EecChar==EYC_SOLDIER) {
+      m_fAttackRunSpeed = FRnd()*2.0f + 11.0f;
+      m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseRunSpeed = FRnd()*2.0f + 11.0f;
+      m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseDistance = 3.5f;
+    } if (m_EecChar==EYC_X) {
+      m_fAttackRunSpeed = FRnd()*2.0f + 12.0f;
+      m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseRunSpeed = FRnd()*2.0f + 12.0f;
+      m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseDistance = 3.5f;
+	} if (m_EecChar==EYC_P) {
+      m_fAttackRunSpeed = FRnd()*2.0f + 8.0f;
       m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
       m_fCloseRunSpeed = FRnd()*2.0f + 10.0f;
       m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
-    } else {
-      m_fAttackRunSpeed = FRnd()*2.0f + 9.0f;
-      m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
-      m_fCloseRunSpeed = FRnd()*2.0f + 9.0f;
-      m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
-    }
+      m_fCloseDistance = 3.5f;
+	}
     // setup attack distances
     m_fAttackDistance = 100.0f;
-    m_fCloseDistance = 3.5f;
     m_fStopDistance = 1.5f;
     m_fAttackFireTime = 2.0f;
     m_fCloseFireTime = 0.5f;
     m_fIgnoreRange = 200.0f;
     // fly moving properties
-    m_fFlyWalkSpeed = FRnd()*2.0f + 3.0f;
+    m_fFlyWalkSpeed = FRnd()*2.0f + 5.0f;
     m_aFlyWalkRotateSpeed = FRnd()*20.0f + 600.0f;
-    if (m_EecChar==EYC_SERGEANT) {
-      m_fFlyAttackRunSpeed = FRnd()*2.0f + 9.5f;
+    if (m_EecChar==EYC_B) {
+      m_fFlyAttackRunSpeed = FRnd()*2.0f + 17.0f;
       m_aFlyAttackRotateSpeed = FRnd()*25 + 350.0f;
-      m_fFlyCloseRunSpeed = FRnd()*2.0f + 9.5f;
+      m_fFlyCloseRunSpeed = FRnd()*2.0f + 17.0f;
       m_aFlyCloseRotateSpeed = FRnd()*50 + 400.0f;
-    } else {
-      m_fFlyAttackRunSpeed = FRnd()*2.0f + 9.5f;
+    } if (m_EecChar==EYC_X) {
+      m_fFlyAttackRunSpeed = FRnd()*2.0f + 8.0f;
+      m_aFlyAttackRotateSpeed = FRnd()*25 + 350.0f;
+      m_fFlyCloseRunSpeed = FRnd()*2.0f + 8.0f;
+      m_aFlyCloseRotateSpeed = FRnd()*50 + 400.0f;
+	} if (m_EecChar==EYC_P) {
+      m_fFlyAttackRunSpeed = FRnd()*2.0f + 7.0f;
+      m_aFlyAttackRotateSpeed = FRnd()*25 + 350.0f;
+      m_fFlyCloseRunSpeed = FRnd()*2.0f + 9.0f;
+      m_aFlyCloseRotateSpeed = FRnd()*50 + 400.0f;
+	} if (m_EecChar==EYC_SERGEANT) {
+      m_fFlyAttackRunSpeed = FRnd()*2.0f + 12.5f;
+      m_aFlyAttackRotateSpeed = FRnd()*25 + 350.0f;
+      m_fFlyCloseRunSpeed = FRnd()*2.0f + 12.5f;
+      m_aFlyCloseRotateSpeed = FRnd()*50 + 400.0f;
+    } if (m_EecChar==EYC_SOLDIER) {
+      m_fFlyAttackRunSpeed = FRnd()*2.0f + 10.5f;
       m_aFlyAttackRotateSpeed = FRnd()*25 + 300.0f;
-      m_fFlyCloseRunSpeed = FRnd()*2.0f + 9.5f;
+      m_fFlyCloseRunSpeed = FRnd()*2.0f + 10.5f;
       m_aFlyCloseRotateSpeed = FRnd()*50 + 300.0f;
     }
     m_fGroundToAirSpeed = 2.5f;
@@ -534,6 +928,7 @@ procedures:
     m_fFlyCloseFireTime = 0.5f;
     m_fFlyIgnoreRange = 200.0f;
     m_soMumble.Set3DParameters(25.0f, 0.0f, 1.0f, 1.0f);
+    m_soFlesh.Set3DParameters(50.0f, 0.0f, 0.75f, 1.0f);
 
     // continue behavior in base class
     jump CEnemyFly::MainLoop();

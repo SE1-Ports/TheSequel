@@ -14,6 +14,9 @@ uses "EntitiesMP/EnemyBase";
 enum CannonBallType {
   0 CBT_IRON    "",
   1 CBT_NUKE    "",
+  2 CBT_WEAK    "",
+  3 CBT_DEV     "",
+  4 CBT_NUKE2    "",
 };
 
 // input parameter for launching the projectile
@@ -36,6 +39,7 @@ event EForceExplode {
 
 #define IRON_LIFE_TIME  10.0f
 #define NUKE_LIFE_TIME  5.0f
+#define WEAK_LIFE_TIME  2.0f
 
 //#define CANNONBALL_STRETCH 3.0f
 
@@ -46,11 +50,30 @@ event EForceExplode {
 #define IRON_RANGE_HOTSPOT 2.0f  //2
 #define IRON_RANGE_FALLOFF 16.0f //8
 
-#define NUKE_DAMAGE_MIN 600.0f
-#define NUKE_DAMAGE_MAX 800.0f
+#define NUKE_DAMAGE_MIN 1000.0f
+#define NUKE_DAMAGE_MAX 2000.0f
 #define NUKE_RANGE_DAMAGE (1000.0f/13)   // because we have 13 explosions
-#define NUKE_RANGE_HOTSPOT 15.0f
-#define NUKE_RANGE_FALLOFF 50.0f
+#define NUKE_RANGE_HOTSPOT 20.0f
+#define NUKE_RANGE_FALLOFF 40.0f
+
+#define WEAK_DAMAGE_MIN 20.0f
+#define WEAK_DAMAGE_MAX 50.0f
+#define WEAK_RANGE_DAMAGE (50.0f)
+#define WEAK_RANGE_HOTSPOT 4.0f
+#define WEAK_RANGE_FALLOFF 8.0f
+
+#define DEV_DAMAGE_MIN 0.0f
+#define DEV_DAMAGE_MAX 140.0f
+#define DEV_RANGE_DAMAGE (20.0f)
+#define DEV_RANGE_HOTSPOT 2.0f
+#define DEV_RANGE_FALLOFF 6.0f
+
+#define NUKE2_DAMAGE_MIN 400.0f
+#define NUKE2_DAMAGE_MAX 400.0f
+#define NUKE2_RANGE_DAMAGE (1000.0f/10)   // because we have 10 explosions
+#define NUKE2_RANGE_HOTSPOT 20.0f
+#define NUKE2_RANGE_FALLOFF 35.0f
+
 #define SOUND_RANGE 250.0f
 
 #define STRETCH_0  FLOAT3D(0.0f,0.0f,0.0f)
@@ -74,6 +97,9 @@ void CCannonBall_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   pdec->PrecacheTexture(TEX_REFL_BWRIPLES01);
   pdec->PrecacheTexture(TEX_SPEC_MEDIUM);
   pdec->PrecacheSound(SOUND_BALL_BOUNCE);
+
+  pdec->PrecacheModel(MODEL_DEV);
+  pdec->PrecacheTexture(TEXTURE_DEV);
 }
 
 %}
@@ -122,6 +148,9 @@ components:
  12 sound   SOUND_BALL_BOUNCE     "Models\\Weapons\\Cannon\\Sounds\\Bounce.wav",
 200 texture TEX_REFL_BWRIPLES01   "Models\\ReflectionTextures\\BWRiples01.tex",
 211 texture TEX_SPEC_MEDIUM       "Models\\SpecularTextures\\Medium.tex",
+
+300 model   MODEL_DEV            "ModelsF\\Weapons\\Devastator\\Projectile\\Projectile.mdl",
+301 texture TEXTURE_DEV          "ModelsF\\Weapons\\Devastator\\Projectile\\Projectile.tex",
 
 functions:
   // premoving
@@ -212,22 +241,53 @@ functions:
     //CPrintF("fSpeedRatio=%g, ctFireParticles=%d\n", fSpeedRatio, ctFireParticles);
     if( _pTimer->GetLerpedCurrentTick()-m_fStartTime>0.075)
     {
-      Particles_BeastBigProjectileTrail( this, 2.0f, 1.0f, 0.75f, ctFireParticles);
+      if( m_cbtType != CBT_DEV) {
+        Particles_BeastBigProjectileTrail( this, 2.0f, 1.0f, 0.75f, ctFireParticles); }
     }
+    if( m_cbtType == CBT_NUKE) {
+      Particles_LavaBombTrail(this, 2.0f); }
+    if( m_cbtType == CBT_NUKE2) {
+      Particles_LavaBombTrail(this, 2.0f); }
+    if( m_cbtType == CBT_DEV) {
+      Particles_RocketTrail(this, 1.0f); }
   }
 
 void Initialize(void) {
   // set appearance
   InitAsModel();
-  SetPhysicsFlags(EPF_MODEL_BOUNCING);
-  SetCollisionFlags(ECF_CANNON_BALL);
-  SetModel(MODEL_BALL);
   if( m_cbtType == CBT_IRON)
   {
+    SetCollisionFlags(ECF_CANNON_BALL);
+    SetPhysicsFlags(EPF_MODEL_BOUNCING);
+    SetModel(MODEL_BALL);
     SetModelMainTexture(TEXTURE_IRON_BALL);
   }
   else
   {
+    SetCollisionFlags(ECF_CANNON_BALL);
+    SetPhysicsFlags(EPF_MODEL_BOUNCING);
+    SetModel(MODEL_BALL);
+    SetModelMainTexture(TEXTURE_NUKE_BALL);
+  }
+  if( m_cbtType == CBT_WEAK)
+  {
+    SetCollisionFlags(ECF_CANNON_BALL);
+    SetPhysicsFlags(EPF_MODEL_BOUNCING);
+    SetModel(MODEL_BALL);
+    SetModelMainTexture(TEXTURE_IRON_BALL);
+  }
+  if( m_cbtType == CBT_DEV)
+  {
+    SetCollisionFlags(ECF_PROJECTILE_SOLID);
+    SetPhysicsFlags(EPF_PROJECTILE_FLYING);
+    SetModel(MODEL_DEV);
+    SetModelMainTexture(TEXTURE_DEV);
+  }
+  if( m_cbtType == CBT_NUKE2)
+  {
+    SetCollisionFlags(ECF_CANNON_BALL);
+    SetPhysicsFlags(EPF_MODEL_BOUNCING);
+    SetModel(MODEL_BALL);
     SetModelMainTexture(TEXTURE_NUKE_BALL);
   }
   // stretch it
@@ -240,22 +300,46 @@ void Initialize(void) {
   GetModelObject()->mo_toSpecular.SetData(GetTextureDataForComponent(TEX_SPEC_MEDIUM));
   // start moving
   LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -m_fLaunchPower), (CMovableEntity*)(CEntity*)m_penLauncher);
-  en_fBounceDampNormal   = 0.5f;
-  en_fBounceDampParallel = 0.75f;
-  en_fAcceleration = 0.0f;
-  en_fDeceleration = 5.0f;
-  en_fCollisionSpeedLimit = 40.0f;
-  en_fCollisionDamageFactor = 10.0f;
+  if (m_cbtType == CBT_DEV) {
+    en_fBounceDampNormal   = 1000.0f;
+    en_fBounceDampParallel = 1000.0f;
+    en_fAcceleration = 0.0f;
+    en_fDeceleration = 10.0f;
+    en_fCollisionSpeedLimit = 0.1f;
+    en_fCollisionDamageFactor = 1000.0f; }   
+  else {
+    en_fBounceDampNormal   = 0.5f;
+    en_fBounceDampParallel = 0.75f;
+    en_fAcceleration = 0.0f;
+    en_fDeceleration = 5.0f;
+    en_fCollisionSpeedLimit = 40.0f;
+    en_fCollisionDamageFactor = 10.0f; }
   SetHealth(50000.0f);
   GetModelObject()->PlayAnim(CANNONBALL_ANIM_FIRESLOW, 0);
 };
 
 FLOAT CalculateDamageToInflict(void)
 {
-  FLOAT fMaxDamage = IRON_DAMAGE_MAX;
-  if(m_cbtType == CBT_NUKE)
+  FLOAT fMaxDamage;
+  if(m_cbtType == CBT_IRON)
   {
     fMaxDamage = IRON_DAMAGE_MAX;
+  }
+  if(m_cbtType == CBT_NUKE)
+  {
+    fMaxDamage = NUKE_DAMAGE_MAX;
+  }
+  if(m_cbtType == CBT_WEAK)
+  {
+    fMaxDamage = WEAK_DAMAGE_MAX;
+  }
+  if(m_cbtType == CBT_DEV)
+  {
+    fMaxDamage = DEV_DAMAGE_MAX;
+  }
+  if(m_cbtType == CBT_NUKE2)
+  {
+    fMaxDamage = NUKE2_DAMAGE_MAX;
   }
 
   // speed can range from
@@ -314,12 +398,14 @@ void Explosion(FLOAT3D vCenter,
       }
       if( bHasShockWave)
       {
+       if( m_cbtType != CBT_DEV){
         // shock wave horizontal
         ese.colMuliplier = C_WHITE|CT_OPAQUE;
         ese.betType = BET_CANNONSHOCKWAVE;
         ese.vNormal = FLOAT3D(vPlaneNormal);
         ese.vStretch = vStretchShockwave;
         SpawnEffect(CPlacement3D(vOnPlane, ANGLE3D(0, 0, 0)), ese);
+		}
       }
       // shock wave vertical
       /*
@@ -398,10 +484,20 @@ void RangeDamage(void)
   if(m_cbtType == CBT_IRON) {
     InflictRangeDamage(m_penLauncher, DMT_CANNONBALL_EXPLOSION, IRON_RANGE_DAMAGE*fDamageMul,
         GetPlacement().pl_PositionVector, IRON_RANGE_HOTSPOT, IRON_RANGE_FALLOFF);
-  } else {
+  } if(m_cbtType == CBT_NUKE) {
     // nuclear explosion ...
     InflictRangeDamage(m_penLauncher, DMT_CANNONBALL_EXPLOSION, NUKE_RANGE_DAMAGE*fDamageMul,
         GetPlacement().pl_PositionVector, NUKE_RANGE_HOTSPOT, NUKE_RANGE_FALLOFF);
+  } if(m_cbtType == CBT_WEAK) {
+    InflictRangeDamage(m_penLauncher, DMT_CANNONBALL_EXPLOSION, WEAK_RANGE_DAMAGE*fDamageMul,
+        GetPlacement().pl_PositionVector, WEAK_RANGE_HOTSPOT, WEAK_RANGE_FALLOFF);
+  } if(m_cbtType == CBT_DEV) {
+    InflictRangeDamage(m_penLauncher, DMT_CANNONBALL_EXPLOSION, DEV_RANGE_DAMAGE*fDamageMul,
+        GetPlacement().pl_PositionVector, DEV_RANGE_HOTSPOT, DEV_RANGE_FALLOFF);
+  } if(m_cbtType == CBT_NUKE2) {
+    // nuclear explosion ...
+    InflictRangeDamage(m_penLauncher, DMT_CANNONBALL_EXPLOSION, NUKE2_RANGE_DAMAGE*fDamageMul,
+        GetPlacement().pl_PositionVector, NUKE2_RANGE_HOTSPOT, NUKE2_RANGE_FALLOFF);
   }
 };
 
@@ -442,11 +538,26 @@ procedures:
       return EEnd();
     }
 
-    FLOAT fWaitTime = IRON_LIFE_TIME;
-    // if this is nuke ball
+    FLOAT fWaitTime;
+    if(m_cbtType == CBT_IRON)
+    {
+      fWaitTime = IRON_LIFE_TIME;
+    }
     if(m_cbtType == CBT_NUKE)
     {
       fWaitTime = NUKE_LIFE_TIME;
+    }
+    if(m_cbtType == CBT_WEAK)
+    {
+      fWaitTime = WEAK_LIFE_TIME;
+    }
+    if(m_cbtType == CBT_DEV)
+    {
+      fWaitTime = IRON_LIFE_TIME;
+    }
+    if(m_cbtType == CBT_NUKE2)
+    {
+      fWaitTime = WEAK_LIFE_TIME;
     }
     // bounce loop
     wait(fWaitTime) {
@@ -517,7 +628,10 @@ procedures:
     m_fLaunchPower = eLaunch.fLaunchPower;
     m_cbtType = eLaunch.cbtType;
     m_fCannonBallSize = eLaunch.fSize;
-    m_tmInvisibility = 0.05f;
+    if(m_cbtType == CBT_DEV) {
+      m_tmInvisibility = 0.01f; }
+    else {
+      m_tmInvisibility = 0.05f; }
     m_bSelfExploded = FALSE;
     m_tmExpandBox = 0.0001f;
     // setup time for forced expolding
@@ -541,7 +655,8 @@ procedures:
     GetWorld()->CastRay(crRay);
 
     // can't hurt player time
-    m_fIgnoreTime = _pTimer->CurrentTick() + 0.1f;
+      m_fIgnoreTime = _pTimer->CurrentTick() + 0.1f; 
+    
 
     // bounce
     m_fStartTime = _pTimer->CurrentTick();
@@ -578,7 +693,7 @@ procedures:
       Explosion( FLOAT3D(-2.0f,1.0f,-1.5f), STRETCH_3, STRETCH_3, STRETCH_4, TRUE, FALSE, FALSE, FALSE);
       Explosion( FLOAT3D(-1.0f,0.5f,1.0f),  STRETCH_4, STRETCH_4, STRETCH_4, TRUE, FALSE, FALSE, FALSE);
     }
-    else if( m_cbtType == CBT_NUKE)
+    if( m_cbtType == CBT_NUKE)
     {
       Explosion( FLOAT3D(0.0f,0.0f,0.0f),   STRETCH_6, STRETCH_6, STRETCH_10, TRUE, TRUE,  TRUE, TRUE);
       autowait(0.15f);
@@ -605,6 +720,37 @@ procedures:
       Explosion( FLOAT3D(3.0f,2.0f,2.0f),   STRETCH_4, STRETCH_6, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
       autowait(0.125f);
       Explosion( FLOAT3D(3.0f,2.0f,2.0f),   STRETCH_4, STRETCH_6, STRETCH_10, TRUE, TRUE,  FALSE, FALSE);
+    }
+    if(m_cbtType == CBT_WEAK)
+    {
+      Explosion( FLOAT3D(0.0f,0.0f,0.0f),   STRETCH_1, STRETCH_1, STRETCH_2, TRUE, TRUE,  TRUE, TRUE);
+    }
+    if(m_cbtType == CBT_DEV)
+    {
+      Explosion( FLOAT3D(0.0f,0.0f,0.0f),   STRETCH_1, STRETCH_1, STRETCH_2, TRUE, TRUE,  TRUE, TRUE);
+    }
+    if( m_cbtType == CBT_NUKE2)
+    {
+      Explosion( FLOAT3D(0.0f,0.0f,0.0f),   STRETCH_10, STRETCH_10, STRETCH_10, TRUE, TRUE,  TRUE, TRUE);
+      autowait(0.15f);
+      Explosion( FLOAT3D(4.0f,5.0f,5.0f),   STRETCH_8, STRETCH_8, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
+      autowait(0.2f);
+      Explosion( FLOAT3D(-5.0f,3.0f,-4.0f), STRETCH_8, STRETCH_8, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
+      autowait(0.15f);
+      Explosion( FLOAT3D(-3.0f,2.0f,3.0f),  STRETCH_6, STRETCH_6, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
+      autowait(0.15f);
+      Explosion( FLOAT3D(2.0f,1.0f,4.0f),   STRETCH_6, STRETCH_6, STRETCH_10, TRUE, TRUE,  FALSE, FALSE);
+      autowait(0.2f);
+      Explosion( FLOAT3D(-2.0f,5.0f,-4.0f), STRETCH_4, STRETCH_4, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
+      autowait(0.18f);
+      Explosion( FLOAT3D(-3.0f,2.0f,2.0f),  STRETCH_4, STRETCH_4, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
+      autowait(0.25f);
+      Explosion( FLOAT3D(0.0f,4.0f,-1.0f),  STRETCH_3, STRETCH_3, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
+      autowait(0.15f);
+      Explosion( FLOAT3D(2.0f,0.0f,-3.0f),  STRETCH_2, STRETCH_2, STRETCH_10, TRUE, TRUE,  FALSE, FALSE);
+      autowait(0.25f);
+      Explosion( FLOAT3D(-1.0f,2.0f,0.0f),  STRETCH_1, STRETCH_1, STRETCH_10, TRUE, FALSE, FALSE, FALSE);
+      autowait(0.125f);
     }
 
     // cease to exist

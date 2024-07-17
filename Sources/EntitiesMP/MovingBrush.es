@@ -193,6 +193,12 @@ functions:
         InflictDirectDamage(penInflictor, this, DMT_IMPACT, 1.0f, 
           GetPlacement().pl_PositionVector, FLOAT3D(0,1,0));
       }
+      // if impact by orcus behemoth
+      if(IsOfClass(penInflictor, "Juggernaut"))
+      {
+        // recieve the damage so large to blowup
+        CMovableBrushEntity::ReceiveDamage(penInflictor, dmtType, m_fHealth*2, vHitPoint, vDirection);
+      }
     }
     else if(m_bBlowupByDamager)
     {
@@ -478,7 +484,7 @@ functions:
     // if sound entity exists
     if (m_penSoundStart!=NULL) {
       CSoundHolder &sh = (CSoundHolder&)*m_penSoundStart;
-      m_soStart.Set3DParameters(FLOAT(sh.m_rFallOffRange), FLOAT(sh.m_rHotSpotRange), sh.m_fVolume, 1.0f);
+      m_soStart.Set3DParameters(FLOAT(sh.m_rFallOffRange), FLOAT(sh.m_rHotSpotRange), sh.m_fVolume, sh.m_fPitch);
       PlaySound(m_soStart, sh.m_fnSound, sh.m_iPlayType);
     }
   };
@@ -488,7 +494,7 @@ functions:
     // if sound entity exists
     if (m_penSoundStop!=NULL) {
       CSoundHolder &sh = (CSoundHolder&)*m_penSoundStop;
-      m_soStop.Set3DParameters(FLOAT(sh.m_rFallOffRange), FLOAT(sh.m_rHotSpotRange), sh.m_fVolume, 1.0f);
+      m_soStop.Set3DParameters(FLOAT(sh.m_rFallOffRange), FLOAT(sh.m_rHotSpotRange), sh.m_fVolume, sh.m_fPitch);
       PlaySound(m_soStop, sh.m_fnSound, sh.m_iPlayType);
     }
   };
@@ -498,7 +504,7 @@ functions:
     // if sound entity exists
     if (m_penSoundFollow!=NULL) {
       CSoundHolder &sh = (CSoundHolder&)*m_penSoundFollow;
-      m_soFollow.Set3DParameters(FLOAT(sh.m_rFallOffRange), FLOAT(sh.m_rHotSpotRange), sh.m_fVolume, 1.0f);
+      m_soFollow.Set3DParameters(FLOAT(sh.m_rFallOffRange), FLOAT(sh.m_rHotSpotRange), sh.m_fVolume, sh.m_fPitch);
       PlaySound(m_soFollow, sh.m_fnSound, sh.m_iPlayType);
     }
   };
