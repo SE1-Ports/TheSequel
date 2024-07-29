@@ -45,7 +45,7 @@ name      "Mamut";
 thumbnail "Thumbnails\\Mamut.tbn";
 
 properties:
-  3 FLOAT m_fSize = 1.3f,
+  1 FLOAT m_fSize = 1.3f,
   5 BOOL m_bRunSoundPlaying = FALSE,
   4 CSoundObject m_soFeet,            // for running sound
   2 INDEX m_iCounter = 0,
@@ -121,7 +121,7 @@ functions:
 
   BOOL IsTargetValid(SLONG slPropertyOffset, CEntity *penTarget)
    {
-    if (slPropertyOffset == offsetof(CMamut, m_penSpawn1) && slPropertyOffset <= offsetof(CMamut, m_penSpawn3))
+    if (slPropertyOffset >= offsetof(CMamut, m_penSpawn1) && slPropertyOffset <= offsetof(CMamut, m_penSpawn3))
 	 {
       return ValidEnemy(penTarget);
     } 

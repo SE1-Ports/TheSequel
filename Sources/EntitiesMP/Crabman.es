@@ -26,7 +26,7 @@ static EntityInfo eiCrabmanSmall = {
 
 #define HIT_GROUND  7.0f
 #define HIT_BIG  18.0f
-#define FIRE_GROUND   FLOAT3D(0.75f, 1.5f, -1.25f)
+#define GASPOS   FLOAT3D(0.0f, 2.0f, 0.0f)
 %}
 
 
@@ -36,7 +36,10 @@ thumbnail "Thumbnails\\Crabman.tbn";
 
 properties:
   1 enum CrabChar m_CrabChar "Character" 'C' = CRAB_SOLDIER,      // character
-  2 BOOL  m_bInvulnerable = FALSE, // can we be hurt?
+  2 FLOAT m_fCloudSize  = 2.0f,
+  3 FLOAT m_fGasHS  = 5.0f,
+  4 FLOAT m_fGasFO  = 10.0f,
+  5 FLOAT m_fCloudDmg  = 20.0f,
 
 components:
   0 class   CLASS_BASE        "Classes\\EnemyBase.ecl",
@@ -103,15 +106,28 @@ functions:
     }
   };
 
+  // gas cloud
+  void GasCloud(void) {
+	  FLOAT3D vSource;
+      vSource = GetPlacement().pl_PositionVector +
+      FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+      {
+        InflictRangeDamage(this, DMT_ACID, m_fCloudDmg, vSource, m_fGasHS, m_fGasFO);
+      }
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector = pl.pl_PositionVector+GASPOS;
+	CEntityPointer penCloud = CreateEntity(pl, CLASS_BASIC_EFFECT);
+    ESpawnEffect eSpawnEffect;
+    eSpawnEffect.colMuliplier = C_WHITE|CT_OPAQUE;
+    eSpawnEffect.betType = BET_GASCLOUD;
+    eSpawnEffect.vStretch = FLOAT3D(m_fCloudSize, m_fCloudSize, m_fCloudSize);
+	penCloud->Initialize(eSpawnEffect);
+  };
+
   /* Receive damage */
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
-    
-    // while we are invulnerable, receive no damage
-    if (m_bInvulnerable) {
-      return;
-    }
 
     // crabman can't harm crabman
     if (!IsOfClass(penInflictor, "Crabman")) {
@@ -199,6 +215,7 @@ functions:
  ************************************************************/
   // spawn body parts
   void BlowUp(void) {
+    GasCloud();
     // get your size
     FLOATaabbox3D box;
     GetBoundingBox(box);
@@ -330,12 +347,17 @@ procedures:
  ************************************************************/
   // Play wound animation and falling body part
   BeWounded(EDamage eDamage) : CEnemyBase::BeWounded {
-    StopMoving();
-    StartModelAnim(CRABMAN2_ANIM_DEFEND, 0);
-    m_bInvulnerable = TRUE;
-    autowait(GetModelObject()->GetAnimLength(CRABMAN2_ANIM_DEFEND));
-    m_bInvulnerable = FALSE;
-    return EReturn();
+    GasCloud();
+    jump CEnemyBase::BeWounded(eDamage);
+  };
+
+/************************************************************
+ *                    D  E  A  T  H                         *
+ ************************************************************/
+  Death(EVoid) : CEnemyBase::Death {
+    GasCloud();
+    autocall CEnemyBase::Death() EEnd;
+    return EEnd();
   };
 
 /************************************************************
@@ -355,7 +377,11 @@ procedures:
       m_fBlowUpAmount = 130000000000.0f;
       m_fBodyParts = 5;
       m_fBlowUpSize = 2.5f;
-      m_fDamageWounded = 100.0f;
+      m_fDamageWounded = 200.0f;
+      m_fCloudSize = 4.0f;
+      m_fGasHS = 10.0f;
+      m_fGasFO = 20.0f;
+      m_fCloudDmg = 40.0f;
     } else {
       SetHealth(300.0f);
       m_fMaxHealth = 300.0f;
@@ -364,6 +390,10 @@ procedures:
       m_fBodyParts = 6.0f;
       m_fBlowUpSize = 1.0f;
       m_fDamageWounded = 100.0f;
+      m_fCloudSize = 2.0f;
+      m_fGasHS = 5.0f;
+      m_fGasFO = 10.0f;
+      m_fCloudDmg = 20.0f;
     }
     en_fDensity = 5000.0f;
 
@@ -371,25 +401,25 @@ procedures:
     SetModel(MODEL_CRABMAN);
     if (m_CrabChar==CRAB_SERGEANT) {
       SetModelMainTexture(TEXTURE_CRABMAN_SERGEANT);
-      GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
+      GetModelObject()->StretchModel(FLOAT3D(0.75f, 0.75f, 0.75f));
       AddAttachment(CRABMAN2_ATTACHMENT_EYE1, MODEL_EYE, TEXTURE_EYE);
       CModelObject *pmoEye1 = &GetModelObject()->GetAttachmentModel(CRABMAN2_ATTACHMENT_EYE1)->amo_moModelObject;
-      pmoEye1->StretchModel(FLOAT3D(2,2,2));
+      pmoEye1->StretchModel(FLOAT3D(1.5,1.5,1.5));
       AddAttachment(CRABMAN2_ATTACHMENT_EYE2, MODEL_EYE, TEXTURE_EYE);
       CModelObject *pmoEye2 = &GetModelObject()->GetAttachmentModel(CRABMAN2_ATTACHMENT_EYE2)->amo_moModelObject;
-      pmoEye2->StretchModel(FLOAT3D(2,2,2));
+      pmoEye2->StretchModel(FLOAT3D(1.5,1.5,1.5));
       ModelChangeNotify();
       m_iScore = 6000;
     } else {
       m_iScore = 3000;
       SetModelMainTexture(TEXTURE_CRABMAN_SOLDIER);
-      GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
+      GetModelObject()->StretchModel(FLOAT3D(0.35f, 0.35f, 0.35f));
       AddAttachment(CRABMAN2_ATTACHMENT_EYE1, MODEL_EYE, TEXTURE_EYE);
       CModelObject *pmoEye1 = &GetModelObject()->GetAttachmentModel(CRABMAN2_ATTACHMENT_EYE1)->amo_moModelObject;
-      pmoEye1->StretchModel(FLOAT3D(1,1,1));
+      pmoEye1->StretchModel(FLOAT3D(0.7,0.7,0.7));
       AddAttachment(CRABMAN2_ATTACHMENT_EYE2, MODEL_EYE, TEXTURE_EYE);
       CModelObject *pmoEye2 = &GetModelObject()->GetAttachmentModel(CRABMAN2_ATTACHMENT_EYE2)->amo_moModelObject;
-      pmoEye2->StretchModel(FLOAT3D(1,1,1));
+      pmoEye2->StretchModel(FLOAT3D(0.7,0.7,0.7));
       ModelChangeNotify();
     }
     StandingAnim();
@@ -397,19 +427,19 @@ procedures:
     m_fWalkSpeed = FRnd() + 1.5f;
     m_aWalkRotateSpeed = FRnd()*10.0f + 500.0f;
     if (m_CrabChar==CRAB_SERGEANT) {
-      m_fAttackRunSpeed = FRnd()*2.0f + 17.0f;
-      m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
-      m_fCloseRunSpeed = FRnd()*2.0f + 17.0f;
-      m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
-      m_fCloseDistance = 15.0f;
-      m_fStopDistance = 14.0f;
-    } else {
       m_fAttackRunSpeed = FRnd()*2.0f + 15.0f;
       m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
       m_fCloseRunSpeed = FRnd()*2.0f + 15.0f;
       m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
-      m_fCloseDistance = 7.0f;
-      m_fStopDistance = 6.0f;
+      m_fCloseDistance = 12.0f;
+      m_fStopDistance = 12.0f;
+    } else {
+      m_fAttackRunSpeed = FRnd()*2.0f + 10.0f;
+      m_aAttackRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseRunSpeed = FRnd()*2.0f + 10.0f;
+      m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 600.0f);
+      m_fCloseDistance = 5.0f;
+      m_fStopDistance = 5.0f;
     }
     // setup attack distances
     m_fAttackDistance = 100.0f;

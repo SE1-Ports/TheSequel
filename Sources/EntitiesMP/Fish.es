@@ -33,8 +33,11 @@ components:
   5 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Medium.tex",
   6 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
 
- 30 model   MODEL_DEBRIS_BODY           "ModelsF\\Enemies\\Fish\\Debris\\bod.mdl",
+ 30 model   MODEL_DEBRIS_TAIL           "ModelsF\\Enemies\\Fish\\Debris\\tail.mdl",
  31 model   MODEL_DEBRIS_JAW           "ModelsF\\Enemies\\Fish\\Debris\\jaw.mdl",
+ 35 model   MODEL_DEBRIS_FIN           "ModelsF\\Enemies\\Fish\\Debris\\fin.mdl",
+ 36 model   MODEL_DEBRIS_FIN2           "ModelsF\\Enemies\\Fish\\Debris\\fin2.mdl",
+ 37 model   MODEL_DEBRIS_HEAD           "ModelsF\\Enemies\\Fish\\Debris\\hed.mdl",
 
  33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
@@ -72,7 +75,10 @@ functions:
     PrecacheSound(SOUND_DEATHAIR);
     PrecacheSound(SOUND_ATTACK);
 
-    PrecacheModel(MODEL_DEBRIS_BODY);
+    PrecacheModel(MODEL_DEBRIS_TAIL);
+    PrecacheModel(MODEL_DEBRIS_FIN);
+    PrecacheModel(MODEL_DEBRIS_FIN2);
+    PrecacheModel(MODEL_DEBRIS_HEAD);
     PrecacheModel(MODEL_DEBRIS_JAW);
 
     PrecacheModel(MODEL_FLESH);
@@ -252,9 +258,17 @@ functions:
     // spawn debris
 	Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
 
-    Debris_Spawn(this, this, MODEL_DEBRIS_BODY, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
+    Debris_Spawn(this, this, MODEL_DEBRIS_TAIL, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_DEBRIS_JAW, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_FIN, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_FIN, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_FIN2, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_DEBRIS_HEAD, TEXTURE_FISH, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
@@ -289,6 +303,7 @@ procedures:
       m_fShootTime = _pTimer->CurrentTick() + 0.25f;
       return EReturn();
     }
+    StartModelAnim(FISH_ANIM_ATTACK, 0);
 
     // wait to allow enemy to go aoutside bite range
     autowait(0.6f);
@@ -301,7 +316,6 @@ procedures:
     moGlow.StretchModel(FLOAT3D(4.0f, 4.0f, 4.0f));
 
     // bite
-    StartModelAnim(FISH_ANIM_ATTACK, 0);
     PlaySound(m_soSound, SOUND_ATTACK, SOF_3D|SOF_NOFILTER);
     if (CalcDist(m_penEnemy)<DISTANCE_ELECTRICITY)
     {
@@ -317,9 +331,7 @@ procedures:
 
     m_bAttackingByElectricity = FALSE;
     GetModelObject()->RemoveAttachmentModel(FISH_ATTACHMENT_GLOW);
-
-    StandingAnim();
-    autowait(0.2f + FRnd()/3);
+    autowait(0.7f);
     return EReturn();
   };
 
