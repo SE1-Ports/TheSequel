@@ -1305,7 +1305,6 @@ functions:
         m_dtDestination = DT_PATHTEMPORARY;
       }
       StartPathFinding();
-      return m_bIgnoreNav==FALSE;
       return m_penPathMarker!=NULL;
     } else {
       return FALSE;
@@ -1334,7 +1333,6 @@ functions:
     }
     StartPathFinding();
 
-    return m_bIgnoreNav==FALSE;
     return m_penPathMarker!=NULL;
   }
 
@@ -3139,6 +3137,16 @@ procedures:
 	    if (eChangeSequence.faeAttackRadius2) {	
 		   m_fAttackRadius = 10000.0f;
 		}
+	    if (eChangeSequence.bCeaseAttack) {	
+           SetTargetNone();
+           call StopAttack();
+		}
+	    if (eChangeSequence.bBlind) {	
+		   m_bBlind = TRUE;
+		}
+	    if (eChangeSequence.bDeaf) {	
+		   m_bDeaf = TRUE;
+		}
 
         resume;
       }
@@ -3230,6 +3238,16 @@ procedures:
 		}
 	    if (eChangeSequence.faeAttackRadius2) {	
 		   m_fAttackRadius = 10000.0f;
+		}
+	    if (eChangeSequence.bCeaseAttack) {	
+           SetTargetNone();
+           call StopAttack();
+		}
+	    if (eChangeSequence.bBlind) {	
+		   m_bBlind = TRUE;
+		}
+	    if (eChangeSequence.bDeaf) {	
+		   m_bDeaf = TRUE;
 		}
         resume;
       }

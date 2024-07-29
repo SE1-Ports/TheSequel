@@ -57,7 +57,9 @@ enum KeyItemType {
  43 KIT_NAGAGOLD          "Naga gold",
  44 KIT_NAGAJADE          "Naga jade",
  45 KIT_NAGASILVER        "Naga silver",
- 52 KIT_JADELION2          "Jade Lion (female)",
+ 52 KIT_JADELION2         "Jade Lion (female)",
+ 58 KIT_GADA              "Vishnu's Mace",
+ 59 KIT_CONCH             "Vishnu's Conch",
 
  46 KIT_CPARMOR           "CaptainPelmen_Armor (stackable)",
  47 KIT_CPGREECEKEY       "CaptainPelmen_GreeceKey (stackable)",
@@ -132,7 +134,9 @@ const char *GetKeyName(enum KeyItemType kit)
  case KIT_NAGAGOLD          :  return TRANS("Gold naga"); break;
  case KIT_NAGAJADE          :  return TRANS("Jade naga"); break;
  case KIT_NAGASILVER        :  return TRANS("Silver naga"); break;
- case KIT_JADELION2          :  return TRANS("Jade lion female"); break;
+ case KIT_JADELION2         :  return TRANS("Jade lion female"); break;
+ case KIT_GADA              :  return TRANS("Kaumodaki"); break;
+ case KIT_CONCH             :  return TRANS("Panchajanya"); break;
 
  case KIT_CPARMOR            :  return TRANS("Muscle cuirass"); break;
  case KIT_CPGREECEKEY        :  return TRANS("Greece key"); break;
@@ -315,6 +319,12 @@ components:
 136 model   MODEL_KEYCARD5              "ModelsF\\Items\\Keys\\Keycard5\\Keycard5.mdl",
 137 texture TEXTURE_KEYCARD5            "ModelsF\\Items\\Keys\\Keycard5\\KeycardRed.tex",
 
+138 model   MODEL_GADA              "ModelsF\\Items\\Keys\\VishnuMace\\VishnuMace.mdl",
+139 texture TEXTURE_GADA            "ModelsF\\Items\\Keys\\VishnuMace\\VishnuMace.tex",
+
+140 model   MODEL_CONCH              "ModelsF\\Items\\Keys\\VishnuConch\\Conch.mdl",
+141 texture TEXTURE_CONCH            "ModelsF\\Items\\Keys\\VishnuConch\\Conch.tex",
+
  // ********* MISC *********
 250 texture TEXTURE_FLARE       "ModelsMP\\Items\\Flares\\Flare.tex",
 251 model   MODEL_FLARE         "ModelsMP\\Items\\Flares\\Flare.mdl",
@@ -401,7 +411,9 @@ functions:
     case KIT_NAGAGOLD            :
     case KIT_NAGAJADE            :
     case KIT_NAGASILVER          :
-    case KIT_JADELION2            :
+    case KIT_JADELION2           :
+    case KIT_GADA                :
+    case KIT_CONCH               :
 
     case KIT_CPARMOR            :
     case KIT_CPGREECEKEY        :
@@ -892,6 +904,22 @@ functions:
       case KIT_KEYCARD5:
         // set appearance
         AddItem(MODEL_KEYCARD5, TEXTURE_KEYCARD5, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_GADA:
+        // set appearance
+        AddItem(MODEL_GADA, TEXTURE_GADA, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_CONCH:
+        // set appearance
+        AddItem(MODEL_CONCH, TEXTURE_CONCH, 0, TEX_SPEC_MEDIUM, 0);
         // add flare
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
         StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));

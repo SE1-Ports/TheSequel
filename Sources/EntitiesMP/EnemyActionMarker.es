@@ -31,11 +31,14 @@ enum EnemySoundType {
 };
 
 enum EnemyActionType {
-  0 EAT_ANIM      "Play Animation",
-  1 EAT_SOUND     "Play Sound",
-  2 EAT_MOVE      "Move to Marker",
-  3 EAT_RADIUS    "Stand Guard",
-  4 EAT_RADIUS2   "Move Freely",
+  0 EAT_ANIM       "Play Animation",
+  1 EAT_SOUND      "Play Sound",
+  2 EAT_MOVE       "Move to Marker",
+  3 EAT_RADIUS     "Stand Guard",
+  4 EAT_RADIUS2    "Move Freely",
+  5 EAT_DISENGAGE  "Disengage",
+  6 EAT_BLIND      "Become blind",
+  7 EAT_DEAF       "Become deaf",
 };
 
 // event sent to the enemy/NPC that should do this
@@ -47,6 +50,9 @@ event EChangeSequence {
   CEntityPointer penAttackTarget,
   RANGE faeAttackRadius,
   RANGE faeAttackRadius2,
+  BOOL bCeaseAttack,
+  BOOL bBlind,
+  BOOL bDeaf,
 };
 
 class CEnemyActionMarker : CRationalEntity {
@@ -65,6 +71,9 @@ properties:
   8 enum EnemyActionType m_eatActionType  "Enemy Action Type" = EAT_ANIM,
   9 RANGE m_faeAttackRadius              = 10000.0f,
  10 RANGE m_faeAttackRadius2             = 10000.0f,
+ 11 BOOL m_bCeaseAttack                  = TRUE,
+ 12 BOOL m_bBlind                        = TRUE,
+ 13 BOOL m_bDeaf                         = TRUE,
 
 components:
 
@@ -165,6 +174,24 @@ procedures:
 	    else if (m_eatActionType==EAT_RADIUS2 && m_penEnemy!=NULL) {
           EChangeSequence eSequence;
           eSequence.faeAttackRadius2 = m_faeAttackRadius2;
+          m_penEnemy->SendEvent(eSequence);
+          resume;
+		  }
+	    else if (m_eatActionType==EAT_DISENGAGE && m_penEnemy!=NULL) {
+          EChangeSequence eSequence;
+          eSequence.bCeaseAttack = m_bCeaseAttack;
+          m_penEnemy->SendEvent(eSequence);
+          resume;
+		  }
+	    else if (m_eatActionType==EAT_BLIND && m_penEnemy!=NULL) {
+          EChangeSequence eSequence;
+          eSequence.bBlind = m_bBlind;
+          m_penEnemy->SendEvent(eSequence);
+          resume;
+		  }
+	    else if (m_eatActionType==EAT_DEAF && m_penEnemy!=NULL) {
+          EChangeSequence eSequence;
+          eSequence.bDeaf = m_bDeaf;
           m_penEnemy->SendEvent(eSequence);
           resume;
 		  }
