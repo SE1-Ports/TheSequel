@@ -49,7 +49,7 @@ components:
  53 sound   SOUND_KICK      "ModelsMP\\Enemies\\SS2\\Cerberus\\Sounds\\Melee.wav",
  54 sound   SOUND_IMPACT    "ModelsMP\\Enemies\\SS2\\Cerberus\\Sounds\\JumpAttack.wav",
  55 sound   SOUND_DEATH_STAND     "ModelsMP\\Enemies\\SS2\\Cerberus\\Sounds\\Death_Stand.wav",
- 55 sound   SOUND_DEATH_RUN       "ModelsMP\\Enemies\\SS2\\Cerberus\\Sounds\\Death_Run.wav",
+ 57 sound   SOUND_DEATH_RUN       "ModelsMP\\Enemies\\SS2\\Cerberus\\Sounds\\Death_Run.wav",
  56 sound   SOUND_RUN       "ModelsMP\\Enemies\\SS2\\Cerberus\\Sounds\\Run.wav",
 
 functions:

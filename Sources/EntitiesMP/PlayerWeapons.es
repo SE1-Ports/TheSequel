@@ -734,7 +734,7 @@ properties:
 // Plasma
 300 INDEX m_iPlasmaBarrel = 0,
 // Hydrogun
-310 INDEX m_iHydroBarrel = 0,
+311 INDEX m_iHydroBarrel = 0,
 
 400 CEntityPointer m_penRocketLauncherHoming,  // target for rocket launcher
 410 CEntityPointer m_penHydroHoming,  // target for hydrogun
