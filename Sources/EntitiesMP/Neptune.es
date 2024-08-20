@@ -2,7 +2,7 @@
 
 %{
 #include "StdH.h"
-#include "ModelsF/Enemies/Neptune/Neptune2.h"
+#include "ModelsF/Enemies/Neptune/Neptune.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -12,12 +12,9 @@ uses "EntitiesMP/BasicEffects";
 %{
 #define REMINDER_DEATTACH_FIREBALL 666
 FLOAT3D vTentacleAttackPos = FLOAT3D(0.0f, 10.0f, 5.0f);
-FLOAT3D vVomitPos = FLOAT3D(0.06f, 18.0f, -0.15f);
+FLOAT3D vVomitPos = FLOAT3D(0.06f, 19.0f, -0.15f);
 static _tmLastStandingAnim =0.0f; 
-
-#define NEP_MAX_TA 10
-FLOAT nepTriggerArray[NEP_MAX_TA] = { 0.9f, 0.8f, 0.7f, 0.6f, 0.5f,
-                                         0.4f, 0.3f, 0.2f, 0.1f, 0.05f }; 
+#define VOMIT_ANGLE (5.0f)
 
 // info structure
 static EntityInfo eiNeptune = {
@@ -36,25 +33,15 @@ properties:
   3 CEntityPointer m_penFireFX,
 
   17 CSoundObject m_soDistance,
-  
- 20 CEntityPointer m_penTrigger01 "Health 90% Trigger" ,
- 21 CEntityPointer m_penTrigger02 "Health 80% Trigger" ,
- 22 CEntityPointer m_penTrigger03 "Health 70% Trigger" ,
- 23 CEntityPointer m_penTrigger04 "Health 60% Trigger" ,
- 24 CEntityPointer m_penTrigger05 "Health 50% Trigger" ,
- 25 CEntityPointer m_penTrigger06 "Health 40% Trigger" ,
- 26 CEntityPointer m_penTrigger07 "Health 30% Trigger" ,
- 27 CEntityPointer m_penTrigger08 "Health 20% Trigger" ,
- 28 CEntityPointer m_penTrigger09 "Health 10% Trigger" ,
- 29 CEntityPointer m_penTrigger10 "Health 05% Trigger" ,
+  18 BOOL  m_bInvulnerable "Invulnerable" = FALSE,
 
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
   1 class   CLASS_PROJECTILE    "Classes\\Projectile.ecl",
   2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
 
- 10 model   MODEL_NEPTUNE         "ModelsF\\Enemies\\Neptune\\Neptune2.mdl",
- 11 texture TEXTURE_NEPTUNE       "ModelsF\\Enemies\\Neptune\\Textures\\Human_Mutant_noteeth.tex",
+ 10 model   MODEL_NEPTUNE         "ModelsF\\Enemies\\Neptune\\Neptune.mdl",
+ 11 texture TEXTURE_NEPTUNE       "ModelsF\\Enemies\\Neptune\\Human_Mutant_noteeth.tex",
 
  // ************** SOUNDS **************
  50 sound   SOUND_IDLE1      "ModelsF\\Enemies\\Neptune\\Sounds\\Idle1.wav",
@@ -67,6 +54,7 @@ components:
  57 sound   SOUND_CAST      "ModelsF\\Enemies\\Neptune\\Sounds\\Fire.wav",
  58 sound   SOUND_VOMIT     "ModelsF\\Enemies\\Neptune\\Sounds\\Vomit.wav",
  59 sound   SOUND_MELEE      "ModelsF\\Enemies\\Neptune\\Sounds\\Melee.wav",
+ 60 sound   SOUND_CAST1      "ModelsF\\Enemies\\Neptune\\Sounds\\Fire1.wav",
 
 functions:
 
@@ -93,11 +81,12 @@ functions:
     PrecacheSound(SOUND_WOUND);
     PrecacheSound(SOUND_DEATH);
     PrecacheSound(SOUND_CAST);
+    PrecacheSound(SOUND_CAST1);
     PrecacheSound(SOUND_VOMIT);
     PrecacheSound(SOUND_MELEE);
     PrecacheModel(MODEL_NEPTUNE);
     PrecacheTexture(TEXTURE_NEPTUNE);
-    PrecacheClass(CLASS_PROJECTILE, PRT_MANTAMAN_FIRE);
+    PrecacheClass(CLASS_PROJECTILE, PRT_GHOUL);
     PrecacheClass(CLASS_PROJECTILE, PRT_NEPTUNE);
   };
 
@@ -115,21 +104,12 @@ functions:
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
-
-    FLOAT fOldHealth = GetHealth();
-    CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
-    FLOAT fNewHealth = GetHealth();
-
-    CEntityPointer *penTrigger = &m_penTrigger01;
-    // see if any triggers have to be set
-    for (INDEX i=0; i<NEP_MAX_TA; i++) {
-      FLOAT fHealth = nepTriggerArray[i]*m_fMaxHealth;
-      // triggers
-      if (fHealth<=fOldHealth && fHealth>fNewHealth)
+    
+    // while we are invulnerable, receive no damage
+    if (m_bInvulnerable == TRUE) {
+      if(dmtType!=DMT_DAMAGER)
       {
-        if (&*penTrigger[i]) {
-          SendToTarget(&*penTrigger[i], EET_TRIGGER, FixupCausedToPlayer(this, m_penEnemy));
-        }
+      return;
       }
     }
 
@@ -163,14 +143,14 @@ functions:
 
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
-    StartModelAnim(NEPTUNE2_ANIM_WOUND, 0);
-    return NEPTUNE2_ANIM_WOUND;
+    StartModelAnim(NEPTUNE_ANIM_WOUND, 0);
+    return NEPTUNE_ANIM_WOUND;
   };
 
   // death
   INDEX AnimForDeath(void) {
-    StartModelAnim(NEPTUNE2_ANIM_DEATH, 0);
-    return NEPTUNE2_ANIM_DEATH;
+    StartModelAnim(NEPTUNE_ANIM_DEATH, 0);
+    return NEPTUNE_ANIM_DEATH;
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch)
@@ -180,14 +160,14 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(NEPTUNE2_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(NEPTUNE_COLLISION_BOX_PART_NAME);
     en_fDensity = 500.0f;
   };
 
   // virtual anim functions
   void StandingAnim(void) {
     //_tmLastStandingAnim = _pTimer->CurrentTick();
-    StartModelAnim(NEPTUNE2_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(NEPTUNE_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
   };
 
   void WalkingAnim(void) {
@@ -236,23 +216,39 @@ procedures:
  ************************************************************/
 
   Fire(EVoid) : CEnemyBase::Fire {
-    INDEX iRnd = IRnd()%2;
-    switch(iRnd)
+    if( GetHealth() > m_fMaxHealth/2)
     {
+     INDEX iRnd = IRnd()%2;
+     switch(iRnd)
+     {
     case 0:
-        jump Balls();
+        jump Ball();
         break;
     case 1:
         jump Vomit();
         break;
-    }
+     }
+	}
+    if( GetHealth() <= m_fMaxHealth/2)
+    {
+     INDEX iRnd = IRnd()%2;
+     switch(iRnd)
+     {
+    case 0:
+        jump Balls();
+        break;
+    case 1:
+        jump VomitMore();
+        break;
+     }
+	}
 
   };
 
   Balls(EVoid)
   {
     
-    StartModelAnim(NEPTUNE2_ANIM_ATTACK1, 0);
+    StartModelAnim(NEPTUNE_ANIM_FIRETWOARM, 0);
     
     PlaySound(m_soSound, SOUND_CAST, SOF_3D);
 
@@ -264,6 +260,24 @@ procedures:
 
       ShootProjectile(PRT_NEPTUNE, vTentacleAttackPos, ANGLE3D(AngleDeg((FRnd()-0.5)*40.0f), AngleDeg(FRnd()*-20.0f), 0));
       
+    m_fShootTime = _pTimer->CurrentTick() + m_fAttackFireTime*(0.5f);
+
+    autowait(1.0f);
+    
+    return EReturn();
+  };
+
+  Ball(EVoid)
+  {
+    
+    StartModelAnim(NEPTUNE_ANIM_FIREONEARM, 0);
+    
+    PlaySound(m_soSound, SOUND_CAST1, SOF_3D);
+
+    autowait(0.075f);
+
+      ShootProjectile(PRT_NEPTUNE, vTentacleAttackPos, ANGLE3D(AngleDeg((FRnd()-0.5)*-40.0f), AngleDeg(FRnd()*20.0f), 0));
+
     autowait(1.0f);
     
     return EReturn();
@@ -276,7 +290,7 @@ procedures:
       SetDesiredTranslation(FLOAT3D(0.0f, 0.0f, -m_fMoveSpeed));
     }
     
-    StartModelAnim(NEPTUNE2_ANIM_ATTACK2, 0);
+    StartModelAnim(NEPTUNE_ANIM_SHOUT, 0);
     autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
     
     SetDesiredTranslation(FLOAT3D(0.0f, 0.0f, 0.0f));
@@ -285,19 +299,592 @@ procedures:
 
     autowait(0.5f);
 
-    ShootProjectile(PRT_MANTAMAN_FIRE, vVomitPos, ANGLE3D(AngleDeg((FRnd()-0.5)*5.0f), AngleDeg(FRnd()*5.0f), 0));
+    // bomb 1
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(0, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
     autowait(0.1f);
-    ShootProjectile(PRT_MANTAMAN_FIRE, vVomitPos, ANGLE3D(AngleDeg((FRnd()-0.5)*-5.0f), AngleDeg(FRnd()*5.0f), 0));
+
+    // bomb 2
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
     autowait(0.1f);
-    ShootProjectile(PRT_MANTAMAN_FIRE, vVomitPos, ANGLE3D(AngleDeg((FRnd()-0.5)*-5.0f), AngleDeg(FRnd()*-5.0f), 0));
+
+    // bomb 3
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(10, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
     autowait(0.1f);
-    ShootProjectile(PRT_MANTAMAN_FIRE, vVomitPos, ANGLE3D(AngleDeg((FRnd()-0.5)*5.0f), AngleDeg(FRnd()*-5.0f), 0));
+
+    // bomb 4
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
     autowait(0.1f);
-    ShootProjectile(PRT_MANTAMAN_FIRE, vVomitPos, ANGLE3D(AngleDeg((FRnd()-0.5)*10.0f), AngleDeg(FRnd()*10.0f), 0));
+
+    // bomb 5
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(0, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
     autowait(0.1f);
-    ShootProjectile(PRT_MANTAMAN_FIRE, vVomitPos, ANGLE3D(AngleDeg((FRnd()-0.5)*-10.0f), AngleDeg(FRnd()*-10.0f), 0));
+
+    // bomb 6
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(-5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
     autowait(0.1f);
-    ShootProjectile(PRT_MANTAMAN_FIRE, vVomitPos, ANGLE3D(AngleDeg((FRnd()-0.5)*10.0f), AngleDeg(FRnd()*-10.0f), 0));
+
+    // bomb 7
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(-10, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+      
+    autowait(1.0f);
+    
+    return EReturn();
+  };
+
+  VomitMore(EVoid)
+  {
+    // SetDesiredTranslation???
+    if (m_fMoveSpeed>0.0f) {
+      SetDesiredTranslation(FLOAT3D(0.0f, 0.0f, -m_fMoveSpeed));
+    }
+    
+    StartModelAnim(NEPTUNE_ANIM_SHOUT, 0);
+    autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
+    
+    SetDesiredTranslation(FLOAT3D(0.0f, 0.0f, 0.0f));
+    
+    PlaySound(m_soSound, SOUND_VOMIT, SOF_3D);
+
+    autowait(0.5f);
+
+    // bomb 1
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(0, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 2
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 3
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(10, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 4
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 5
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(0, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 6
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(-5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 7
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(-10, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // REPEAT
+	// bomb 1
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(-5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 2
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(0, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 3
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 4
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(10, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 5
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 6
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(0, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    autowait(0.05f);
+
+    // bomb 7
+    // calculate launch velocity and heading correction for angular launch
+    FLOAT fLaunchSpeed;
+    FLOAT fRelativeHdg;
+    CalculateAngularLaunchParams(
+      GetPlacement().pl_PositionVector, vVomitPos(2)-1.5f,
+      m_penEnemy->GetPlacement().pl_PositionVector, FLOAT3D(0,0,0),
+      VOMIT_ANGLE,
+      fLaunchSpeed,
+      fRelativeHdg);
+    
+    // target enemy body
+    EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, vVomitPos, ANGLE3D(-5, VOMIT_ANGLE, 0));
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_GHOUL;
+    eLaunch.fSpeed = fLaunchSpeed;
+    penProjectile->Initialize(eLaunch);
+
+    m_fShootTime = _pTimer->CurrentTick() + m_fAttackFireTime*(0.5f);
       
     autowait(1.0f);
     
@@ -308,8 +895,8 @@ procedures:
     // close attack
     INDEX iSlashAnim;
     switch (IRnd()%2) {
-      case 0: iSlashAnim = NEPTUNE2_ANIM_MELEE1; break;
-      case 1: iSlashAnim = NEPTUNE2_ANIM_MELEE2; break;
+      case 0: iSlashAnim = NEPTUNE_ANIM_MELEE1; break;
+      case 1: iSlashAnim = NEPTUNE_ANIM_MELEE2; break;
     }
       StartModelAnim(iSlashAnim, 0);
       PlaySound(m_soSound, SOUND_MELEE, SOF_3D);
@@ -365,14 +952,14 @@ procedures:
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
 
     // damage/explode properties
-    SetHealth(25000.0f);
+    SetHealth(20000.0f);
     m_fMaxHealth = GetHealth();
     SetModelMainTexture(TEXTURE_NEPTUNE);
     m_fBlowUpAmount = 100000000.0f;
     m_fBodyParts = 4;
     m_fDamageWounded = 2500.0f;
     m_iScore = 1000000;
-    m_fLockOnEnemyTime = 3.0f;
+    m_fLockOnEnemyTime = 1.0f;
 
     // set stretch factor
     GetModelObject()->StretchModel(FLOAT3D(1.75f, 1.75f, 1.75f));

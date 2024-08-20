@@ -4862,7 +4862,7 @@ void NeptuneProjectile(void) {
   // set appearance
   InitAsModel();
   SetPhysicsFlags(EPF_PROJECTILE_FLYING);
-  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
   SetModel(MODEL_MANTAMAN_FIRE);
   SetModelMainTexture(TEXTURE_MANTAMAN_FIRE);
   GetModelObject()->StretchModel(FLOAT3D(2.0f, 2.0f, 2.0f));
@@ -4884,7 +4884,7 @@ void NeptuneProjectile(void) {
   m_pmtMove = PMT_GUIDED;
   m_fGuidedMaxSpeedFactor = 30.0f;
   m_aRotateSpeed = 175.0f;
-  SetHealth(20.0f);
+  SetHealth(10.0f);
 };
 
 
