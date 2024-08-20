@@ -152,6 +152,12 @@ functions:
     {
       fDamageAmmount*=0.333f;
     }
+    
+    // waterman takes less damage from bullets:
+    if(dmtType==DMT_ACID)
+    {
+      fDamageAmmount*=0.0f;
+    }
 
     // can't harm own class
     if (!IsOfClass(penInflictor, "Waterman")) {

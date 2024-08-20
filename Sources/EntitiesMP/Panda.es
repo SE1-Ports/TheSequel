@@ -41,6 +41,9 @@ properties:
  27 CEntityPointer m_penTrigger08 "Health 20% Trigger" ,
  28 CEntityPointer m_penTrigger09 "Health 10% Trigger" ,
  29 CEntityPointer m_penTrigger10 "Health 05% Trigger" ,
+ 
+ 30 BOOL  m_bInvulnerable "Shielded" = FALSE,
+ 31 FLOAT m_fShieldHealth "Shield loss health" = 12999.0f,
 
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
@@ -129,6 +132,14 @@ functions:
   void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
+    
+    // while we are invulnerable, receive no damage
+    if (m_bInvulnerable == TRUE) {
+      if(dmtType!=DMT_DAMAGER  && GetHealth() >= m_fShieldHealth)
+      {
+      return;
+      }
+    }
 
     FLOAT fOldHealth = GetHealth();
     CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
@@ -286,7 +297,7 @@ procedures:
  ************************************************************/
   Fire(EVoid) : CEnemyBase::Fire
   {
-      if( GetHealth() > m_fMaxHealth/2)
+      if( GetHealth() > m_fShieldHealth)
       {
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           StartModelAnim(PANDA_ANIM_ATTACKTHROW, 0);   
@@ -295,7 +306,7 @@ procedures:
             ShootProjectile(PRT_BEAST_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(-25, 0, 0));
       }
       
-      if( GetHealth() <= m_fMaxHealth/2)
+      if( GetHealth() <= m_fShieldHealth)
       {
           PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
           StartModelAnim(PANDA_ANIM_ATTACKTHROW, 0); 
@@ -358,7 +369,7 @@ procedures:
       GetModelObject()->StretchModel(FLOAT3D(-1.0f, 1.0f, -1.0f));
     StandingAnim();
     // setup moving speed
-    m_fAttackRunSpeed = 11.0f;//8
+    m_fAttackRunSpeed = 14.0f;//8
     m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
     m_fWalkSpeed = FRnd()*2 + 7.0f;
     m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);

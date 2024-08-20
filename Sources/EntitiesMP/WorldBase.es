@@ -473,7 +473,7 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_astSurfaceTypes[22].st_fJumpSlopeCos = Cos(45.0f);
   pwo->wo_astSurfaceTypes[22].st_fClimbSlopeCos = Cos(45.0f);
   pwo->wo_astSurfaceTypes[22].st_iWalkDamageType = DMT_ACID;
-  pwo->wo_astSurfaceTypes[22].st_fWalkDamageAmount = 1.0f;
+  pwo->wo_astSurfaceTypes[22].st_fWalkDamageAmount = 2.0f;
   pwo->wo_astSurfaceTypes[22].st_tmWalkDamageFrequency = 0.5f;
   
   ASSERT(9==SURFACE_SAND);
