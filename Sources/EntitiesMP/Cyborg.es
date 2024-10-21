@@ -335,12 +335,21 @@ functions:
   void EnemyPostInit(void) 
   {
     // set sound default parameters
+    if (m_bQuiet) {
+    m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFeet.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFire1.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFire2.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFire3.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFire4.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else {
     m_soSound.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
     m_soFeet.Set3DParameters(50.0f, 5.0f, 1.0f, 1.0f);
     m_soFire1.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
     m_soFire2.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
     m_soFire3.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
     m_soFire4.Set3DParameters(120.0f, 30.0f, 1.0f, 1.0f);
+	}
   };
 
 /************************************************************

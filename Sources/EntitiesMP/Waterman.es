@@ -322,6 +322,10 @@ functions:
   // adjust sound and watcher parameters here if needed
   void EnemyPostInit(void) 
   {
+    if (m_bQuiet) { 
+      m_soBackground.Set3DParameters(0.0f, 0.0f, 3.0f, 1.0f);
+      m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else
     if (m_wtrType==WTR_HUGE)
     {
       m_soBackground.Set3DParameters(100.0f, 0.0f, 3.0f, 1.0f);

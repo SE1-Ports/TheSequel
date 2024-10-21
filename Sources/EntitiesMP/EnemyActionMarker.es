@@ -39,6 +39,7 @@ enum EnemyActionType {
   5 EAT_DISENGAGE  "Disengage",
   6 EAT_BLIND      "Become blind",
   7 EAT_DEAF       "Become deaf",
+  8 EAT_TELEPORT   "Teleport",
 };
 
 // event sent to the enemy/NPC that should do this
@@ -53,6 +54,7 @@ event EChangeSequence {
   BOOL bCeaseAttack,
   BOOL bBlind,
   BOOL bDeaf,
+  CEntityPointer penTeleport,
 };
 
 class CEnemyActionMarker : CRationalEntity {
@@ -192,6 +194,12 @@ procedures:
 	    else if (m_eatActionType==EAT_DEAF && m_penEnemy!=NULL) {
           EChangeSequence eSequence;
           eSequence.bDeaf = m_bDeaf;
+          m_penEnemy->SendEvent(eSequence);
+          resume;
+		  }
+	    else if (m_eatActionType==EAT_TELEPORT && m_penEnemy!=NULL) {
+          EChangeSequence eSequence;
+          eSequence.penTeleport = m_penTarget;
           m_penEnemy->SendEvent(eSequence);
           resume;
 		  }

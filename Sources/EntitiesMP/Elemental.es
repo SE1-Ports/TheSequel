@@ -912,6 +912,12 @@ functions:
   // adjust sound and watcher parameters here if needed
   void EnemyPostInit(void) 
   {
+    if (m_bQuiet) {
+      m_soBackground.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+      m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+      m_soFireL.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+      m_soFireR.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    } else {
     if (m_EecChar==ELC_LARGE && m_EetType==ELT_LAVA)
     {
       m_soBackground.Set3DParameters(400.0f, 0.0f, 1.0f, 1.0f);
@@ -926,6 +932,7 @@ functions:
       m_soFireL.Set3DParameters(200.0f, 0.0f, 1.0f, 1.0f);
       m_soFireR.Set3DParameters(200.0f, 0.0f, 1.0f, 1.0f);
     }
+   }
   };
 
 /************************************************************

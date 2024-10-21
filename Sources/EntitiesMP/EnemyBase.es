@@ -129,6 +129,7 @@ properties:
  93 FLOAT m_tmReflexMin "Reflex Min" = 0.0f,  // how much to wait before reacting on spotting the player
  94 FLOAT m_tmReflexMax "Reflex Max" = 0.0f,
  95 FLOAT m_fActivityRange "Activity Range" = 0.0f,
+ 96 BOOL  m_bQuiet "Quiet" = FALSE,    // quiet
 
  // random values variables
 106 BOOL m_bApplyRandomStretch "Apply random stretch" = FALSE,       // apply random stretch
@@ -3147,7 +3148,12 @@ procedures:
 	    if (eChangeSequence.bDeaf) {	
 		   m_bDeaf = TRUE;
 		}
-
+	    if (eChangeSequence.penTeleport) {	
+           m_penMarker = eChangeSequence.penTeleport;
+           CPlacement3D pl = m_penMarker->GetPlacement();
+           pl.pl_PositionVector += FLOAT3D(0, 0.01f, 0)*m_penMarker->en_mRotation;
+           Teleport(pl);
+		}
         resume;
       }
     }
@@ -3249,6 +3255,12 @@ procedures:
 	    if (eChangeSequence.bDeaf) {	
 		   m_bDeaf = TRUE;
 		}
+	    if (eChangeSequence.penTeleport) {	
+           m_penMarker = eChangeSequence.penTeleport;
+           CPlacement3D pl = m_penMarker->GetPlacement();
+           pl.pl_PositionVector += FLOAT3D(0, 0.01f, 0)*m_penMarker->en_mRotation;
+           Teleport(pl);
+		}
         resume;
       }
     }
@@ -3313,7 +3325,10 @@ procedures:
     m_vStartPosition = GetPlacement().pl_PositionVector;
 
     // set sound default parameters
-    m_soSound.Set3DParameters(80.0f, 5.0f, 1.0f, 1.0f);
+    if (m_bQuiet) {
+     m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f); }
+    else {
+     m_soSound.Set3DParameters(80.0f, 5.0f, 1.0f, 1.0f); }
 
     // adjust falldown and step up values
     en_fStepUpHeight = m_fStepHeight+0.01f;

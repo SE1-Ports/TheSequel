@@ -784,12 +784,21 @@ functions:
   // adjust sound and watcher parameters here if needed
   void EnemyPostInit(void) 
   {
+    if (m_bQuiet) {
+    m_soFire1.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
+    m_soFire2.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
+    m_soFire3.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
+    m_soVoice.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
+    m_soChirp.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
+    m_soLaser.Set3DParameters(0.0f, 0.0f, 3.0f, 1.0f);
+	} else {
     m_soFire1.Set3DParameters(600.0f, 150.0f, 2.0f, 1.0f);
     m_soFire2.Set3DParameters(600.0f, 150.0f, 2.0f, 1.0f);
     m_soFire3.Set3DParameters(600.0f, 150.0f, 2.0f, 1.0f);
     m_soVoice.Set3DParameters(600.0f, 150.0f, 2.0f, 1.0f);
     m_soChirp.Set3DParameters(150.0f, 50.0f, 2.0f, 1.0f);
     m_soLaser.Set3DParameters(300.0f, 200.0f, 3.0f, 1.0f);
+	}
   }
 
   void FireLaser(void)

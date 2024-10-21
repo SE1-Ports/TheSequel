@@ -382,7 +382,11 @@ functions:
   void EnemyPostInit(void) 
   {
     // set sound default parameters
+    if (m_bQuiet) { 
+    m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else { 
     m_soSound.Set3DParameters(150.0f, 50.0f, 1.0f, 1.0f);
+	}
   };
 
  /************************************************************
@@ -654,7 +658,11 @@ procedures:
       WarningMessage(TRANS("Cannot load Animations\\BasicEffects.ani: %s"), strError);
     }
     PlayLightAnim(LIGHT_ANIM_NONE, 0);
+    if (m_bQuiet) { 
+    m_soFeet.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else {
     m_soFeet.Set3DParameters(150.0f, 5.0f, 1.0f, 1.0f);
+	}
     m_bRunSoundPlaying = FALSE;
 
     // continue behavior in base class

@@ -284,11 +284,19 @@ functions:
   // adjust sound and watcher parameters here if needed
   void EnemyPostInit(void) 
   {
+    if (m_bQuiet) { 
     // set sound default parameters
+    m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFire1.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFire2.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soGrunt.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else {
     m_soSound.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
     m_soFire1.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
     m_soFire2.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
     m_soGrunt.Set3DParameters(100.0f, 10.0f, 1.0f, 1.0f);
+	}
+
   };
 
   // damage anim

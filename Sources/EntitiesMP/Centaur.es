@@ -323,10 +323,14 @@ functions:
   // adjust sound and watcher parameters here if needed
   void EnemyPostInit(void) 
   {
-    // set sound default parameters
+    if (m_bQuiet) {
+    m_soFeet.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else {
     m_soFeet.Set3DParameters(100.0f, 50.0f, 1.0f, 1.0f);
-    m_bRunSoundPlaying = FALSE;
     m_soSound.Set3DParameters(100.0f, 50.0f, 1.0f, 1.0f);
+	}
+    m_bRunSoundPlaying = FALSE;
   };
 
 procedures:

@@ -125,7 +125,7 @@ functions:
       if (IsDerivedFromClass(pen, "Enemy Base")) {
         CEnemyBase *penEnemy = (CEnemyBase *)pen;
         // if not template
-        if (!penEnemy->m_bTemplate) {
+        if ((!penEnemy->m_bTemplate) && (penEnemy->m_bCountAsKill)) {
           // count one
           m_ctEnemiesInWorld++;
 		      // if this is a woman kamikaze carrier, add another one to count
@@ -139,11 +139,13 @@ functions:
         // if not teleporting
         if (penSpawner->m_estType!=EST_TELEPORTER) {
           // add total count
+         if (penSpawner->m_bCountAsKill) {
           m_ctEnemiesInWorld+=penSpawner->m_ctTotal;
           // if this spawner points to a woman kamikaze carrier template, increase count once more
           if (penSpawner->m_penTarget) {
             if (IsOfClass(penSpawner->m_penTarget, "Woman")) {
               if (((CWoman *)&*penSpawner->m_penTarget)->m_bEnemyAttached) { m_ctEnemiesInWorld+=penSpawner->m_ctTotal; }
+			  }
             }
           }
         }
@@ -153,11 +155,13 @@ functions:
         // if not teleporting
         if (penLauncher->m_estType!=ELT_TELEPORTER) {
           // add total count
+         if (penLauncher->m_bCountAsKill) {
           m_ctEnemiesInWorld+=penLauncher->m_ctTotal;
           // if this spawner points to a woman kamikaze carrier template, increase count once more
           if (penLauncher->m_penTarget) {
             if (IsOfClass(penLauncher->m_penTarget, "Woman")) {
               if (((CWoman *)&*penLauncher->m_penTarget)->m_bEnemyAttached) { m_ctEnemiesInWorld+=penLauncher->m_ctTotal; }
+			  }
             }
           }
         }
@@ -167,11 +171,13 @@ functions:
         // if not teleporting
         if (penProjer->m_estType!=EPT_TELEPORTER) {
           // add total count
+         if (penProjer->m_bCountAsKill) {
           m_ctEnemiesInWorld+=penProjer->m_ctTotal;
           // if this spawner points to a woman kamikaze carrier template, increase count once more
           if (penProjer->m_penTarget) {
             if (IsOfClass(penProjer->m_penTarget, "Woman")) {
               if (((CWoman *)&*penProjer->m_penTarget)->m_bEnemyAttached) { m_ctEnemiesInWorld+=penProjer->m_ctTotal; }
+			  }
             }
           }
         }

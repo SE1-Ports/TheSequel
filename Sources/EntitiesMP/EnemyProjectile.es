@@ -57,6 +57,8 @@ properties:
 
  62 FLOAT3D m_vProjSource = FLOAT3D( 0,0,0),
 
+ 70 BOOL m_bCountAsKill "Count as kill" = TRUE,
+
  
 
 components:

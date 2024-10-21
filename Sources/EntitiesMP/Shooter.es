@@ -67,6 +67,8 @@ properties:
 
  80 FLOAT   m_bDamage "Bullet damage" = 5.0f,
  82 FLOAT   m_bJitter "Bullet jitter" = 1000.0f,
+
+ 23 BOOL m_bInvisible "Invisible" = FALSE,    // make it editor model
  
 {
   CEntity *penBullet;     // bullet
@@ -482,6 +484,10 @@ procedures:
   Main() {
     // init as model
     CModelHolder2::InitModelHolder();
+
+    if (m_bInvisible) {
+      SwitchToEditorModel();
+    }
 
     if (m_fHealth>0.0f) {
       SetHealth(m_fHealth);

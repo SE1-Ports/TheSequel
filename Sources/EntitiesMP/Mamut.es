@@ -408,9 +408,14 @@ functions:
   // adjust sound and watcher parameters here if needed
   void EnemyPostInit(void) 
   {
-  m_soFeet.Set3DParameters(300.0f, 50.0f, 1.0f, 1.0f);
-    m_bRunSoundPlaying = FALSE;
+    if (m_bQuiet) { 
+    m_soFeet.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soSound.Set3DParameters(0.0f, 0.0f, 1.5f, 1.0f);
+	} else { 
+    m_soFeet.Set3DParameters(300.0f, 50.0f, 1.0f, 1.0f);
     m_soSound.Set3DParameters(160.0f, 50.0f, 1.5f, 1.0f);
+	} 
+    m_bRunSoundPlaying = FALSE;
   };
 
  /************************************************************

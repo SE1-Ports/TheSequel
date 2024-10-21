@@ -363,9 +363,15 @@ functions:
   // adjust sound and watcher parameters here if needed
   void EnemyPostInit(void) 
   {
+    if (m_bQuiet) {
+    m_soFire.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soVoice.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else {
     m_soFire.Set3DParameters(600.0f, 150.0f, 2.0f, 1.0f);
     m_soVoice.Set3DParameters(600.0f, 150.0f, 2.0f, 1.0f);
     m_soSound.Set3DParameters(600.0f, 150.0f, 2.0f, 1.0f);
+	}
   };
 
   void LaunchTwister(FLOAT3D vEnemyOffset)

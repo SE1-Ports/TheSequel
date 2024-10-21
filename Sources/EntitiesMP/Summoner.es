@@ -1373,10 +1373,17 @@ procedures:
       otherwise (): { resume; }
     }
 
+    if (m_bQuiet) {
+    m_soExplosion.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
+    m_soSound.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
+    m_soChant.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
+    m_soTeleport.Set3DParameters(0.0f, 0.0f, 3.0f, 1.0f);
+	} else {
     m_soExplosion.Set3DParameters(1500.0f, 1000.0f, 2.0f, 1.0f);
     m_soSound.Set3DParameters(1500.0f, 1000.0f, 2.0f, 1.0f);
     m_soChant.Set3DParameters(1500.0f, 1000.0f, 2.0f, 1.0f);
     m_soTeleport.Set3DParameters(1500.0f, 1000.0f, 3.0f, 1.0f);
+	}
     m_iTaunt = 0;
 
     //PlaySound(m_soSound, SOUND_APPEAR, SOF_3D);
