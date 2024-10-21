@@ -112,6 +112,11 @@ static CTextureObject _toBulletMetal;
 static CTextureObject _toBulletEnergy;
 static CTextureObject _toPlasmaProjectileSpray;
 
+static CTextureObject _toBlueLaser;
+static CTextureObject _toYellowLaser;
+static CTextureObject _toGreenLaser;
+static CTextureObject _toVioletLaser;
+
 struct FlameThrowerParticleRenderingData {
   INDEX ftprd_iFrameX;
   INDEX ftprd_iFrameY;
@@ -280,6 +285,11 @@ void InitParticles(void)
     _toBulletMetal.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayMetal.tex"));
     _toBulletEnergy.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayEnergy.tex"));
     _toPlasmaProjectileSpray.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\PlasmaProjectileSpill.tex"));
+	
+    _toBlueLaser.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\LaserBlue.tex"));
+    _toGreenLaser.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\LaserGreen.tex"));
+    _toYellowLaser.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\LaserYellow.tex"));
+    _toVioletLaser.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\LaserViolet.tex"));
 
     
     ((CTextureData*)_toLavaTrailGradient              .GetData())->Force(TEX_STATIC|TEX_CONSTANT);
@@ -1616,6 +1626,37 @@ INDEX Particles_FireBreath(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT
       afStarsPositions[iFlame][2])*10;
     FLOAT3D vPos = Lerp( vSource, vFocus+vRnd, fT);
     FLOAT fSize = 5.0f*fT+5.0f;
+    UBYTE ub = CalculateRatio( fT, 0.0f, 1.0f, 0.1f, 0.2f)*255;
+    Particle_RenderSquare( vPos, fSize, fT*(1.0f+afStarsPositions[iFlame*3][1])*360.0f, RGBToColor(ub,ub,ub)|0xFF);
+    ctRendered++;
+  }
+  // all done
+  Particle_Flush();
+  return ctRendered;
+}
+
+
+INDEX Particles_FireBreath2(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT tmStart, FLOAT tmStop, FLOAT fFlameLife, INDEX ctFlames, FLOAT fSize)
+{
+  Particle_PrepareTexture( &_toFlamethrowerTrail01, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+
+  FLOAT fNow = _pTimer->GetLerpedCurrentTick();
+  INDEX ctRendered = 0;
+  FLOAT tmFlameDelta = 0.25f;
+  FLOAT3D vFocus = Lerp( vSource, vTarget, 0.25f);
+  for( INDEX iFlame=0; iFlame<ctFlames; iFlame++)
+  {
+    FLOAT tmFakeStart = tmStart+iFlame*tmFlameDelta+afStarsPositions[iFlame*2][0]*tmFlameDelta;
+    FLOAT fPassedTime = fNow-tmFakeStart;
+    if(fPassedTime<0.0f || fPassedTime>fFlameLife || tmFakeStart>tmStop) continue;
+    // calculate fraction part
+    FLOAT fT=fPassedTime/fFlameLife;
+    fT=fT-INDEX(fT);
+    // lerp position
+    FLOAT3D vRnd = FLOAT3D( afStarsPositions[iFlame][0],afStarsPositions[iFlame][1],
+      afStarsPositions[iFlame][2])*10;
+    FLOAT3D vPos = Lerp( vSource, vFocus+vRnd, fT);
     UBYTE ub = CalculateRatio( fT, 0.0f, 1.0f, 0.1f, 0.2f)*255;
     Particle_RenderSquare( vPos, fSize, fT*(1.0f+afStarsPositions[iFlame*3][1])*360.0f, RGBToColor(ub,ub,ub)|0xFF);
     ctRendered++;
@@ -5277,6 +5318,162 @@ void Particles_ExotechLarvaLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget)
   colColor = C_RED|0xff;
   Particle_RenderLine( vSource, vMid, 0.5f, colColor);
   Particle_RenderLine( vMid, vTarget, 0.5f, colColor);
+  
+  Particle_Flush();
+
+  // begin-end flares
+  Particle_PrepareTexture(&_toWater, PBT_ADDALPHA);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  Particle_RenderSquare( vSource, 0.5, 0.0f, colColor);
+  Particle_RenderSquare( vTarget, 0.5, 0.0f, colColor);
+  Particle_Flush();
+  
+}
+
+void Particles_WhiteLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+{
+  Particle_PrepareTexture(&_toLightning, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  
+  COLOR colColor;
+  FLOAT3D vMid;
+  
+  vMid = (vSource - vTarget).Normalize();
+  vMid = vTarget + vMid * 2.5f;
+
+  colColor = C_WHITE|0xff;
+  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
+  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
+  
+  Particle_Flush();
+
+  // begin-end flares
+  Particle_PrepareTexture(&_toWater, PBT_ADDALPHA);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  Particle_RenderSquare( vSource, 0.5, 0.0f, colColor);
+  Particle_RenderSquare( vTarget, 0.5, 0.0f, colColor);
+  Particle_Flush();
+  
+}
+
+void Particles_RedLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+{
+  Particle_PrepareTexture(&_toLarvaLaser, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  
+  COLOR colColor;
+  FLOAT3D vMid;
+  
+  vMid = (vSource - vTarget).Normalize();
+  vMid = vTarget + vMid * 2.5f;
+
+  colColor = C_WHITE|0xff;
+  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
+  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
+  
+  Particle_Flush();
+
+  // begin-end flares
+  Particle_PrepareTexture(&_toWater, PBT_ADDALPHA);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  Particle_RenderSquare( vSource, 0.5, 0.0f, colColor);
+  Particle_RenderSquare( vTarget, 0.5, 0.0f, colColor);
+  Particle_Flush();
+  
+}
+
+void Particles_BlueLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+{
+  Particle_PrepareTexture(&_toBlueLaser, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  
+  COLOR colColor;
+  FLOAT3D vMid;
+  
+  vMid = (vSource - vTarget).Normalize();
+  vMid = vTarget + vMid * 2.5f;
+
+  colColor = C_WHITE|0xff;
+  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
+  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
+  
+  Particle_Flush();
+
+  // begin-end flares
+  Particle_PrepareTexture(&_toWater, PBT_ADDALPHA);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  Particle_RenderSquare( vSource, 0.5, 0.0f, colColor);
+  Particle_RenderSquare( vTarget, 0.5, 0.0f, colColor);
+  Particle_Flush();
+  
+}
+
+void Particles_GreenLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+{
+  Particle_PrepareTexture(&_toGreenLaser, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  
+  COLOR colColor;
+  FLOAT3D vMid;
+  
+  vMid = (vSource - vTarget).Normalize();
+  vMid = vTarget + vMid * 2.5f;
+
+  colColor = C_WHITE|0xff;
+  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
+  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
+  
+  Particle_Flush();
+
+  // begin-end flares
+  Particle_PrepareTexture(&_toWater, PBT_ADDALPHA);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  Particle_RenderSquare( vSource, 0.5, 0.0f, colColor);
+  Particle_RenderSquare( vTarget, 0.5, 0.0f, colColor);
+  Particle_Flush();
+  
+}
+
+void Particles_YellowLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+{
+  Particle_PrepareTexture(&_toYellowLaser, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  
+  COLOR colColor;
+  FLOAT3D vMid;
+  
+  vMid = (vSource - vTarget).Normalize();
+  vMid = vTarget + vMid * 2.5f;
+
+  colColor = C_WHITE|0xff;
+  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
+  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
+  
+  Particle_Flush();
+
+  // begin-end flares
+  Particle_PrepareTexture(&_toWater, PBT_ADDALPHA);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  Particle_RenderSquare( vSource, 0.5, 0.0f, colColor);
+  Particle_RenderSquare( vTarget, 0.5, 0.0f, colColor);
+  Particle_Flush();
+  
+}
+
+void Particles_VioletLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+{
+  Particle_PrepareTexture(&_toVioletLaser, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  
+  COLOR colColor;
+  FLOAT3D vMid;
+  
+  vMid = (vSource - vTarget).Normalize();
+  vMid = vTarget + vMid * 2.5f;
+
+  colColor = C_WHITE|0xff;
+  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
+  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
   
   Particle_Flush();
 

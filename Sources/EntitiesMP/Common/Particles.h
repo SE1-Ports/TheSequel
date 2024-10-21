@@ -46,6 +46,7 @@ void DECL_DLL Particles_FlameThrower(const CPlacement3D &plLeader, const CPlacem
 void DECL_DLL Particles_FlameThrowerStart(const CPlacement3D &plPipe, FLOAT fStartTime, FLOAT fStopTime);
 void DECL_DLL Particles_Twister( CEntity *pen, FLOAT fStretch, FLOAT fStartTime, FLOAT fFadeOutStartTime, FLOAT fParticleStretch);
 INDEX DECL_DLL Particles_FireBreath(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT tmStart, FLOAT tmStop);
+INDEX DECL_DLL Particles_FireBreath2(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT tmStart, FLOAT tmStop, FLOAT fFlameLife, INDEX ctFlames, FLOAT fSize);
 INDEX DECL_DLL Particles_Regeneration(CEntity *pen, FLOAT tmStart, FLOAT tmStop, FLOAT fYFactor, BOOL bDeath);
 
 void DECL_DLL Particles_Stardust(CEntity *pen, FLOAT fSize, FLOAT fHeight, enum ParticleTexture ptTexture, INDEX ctParticles);
@@ -138,6 +139,12 @@ void DECL_DLL Particles_SummonerProjectileFly(CEntity *pen, FLOAT fSize, FLOAT f
 void DECL_DLL Particles_SummonerProjectileExplode(CEntity *pen, FLOAT fSize, FLOAT fBeginTime, FLOAT fDuration, FLOAT fTimeAdjust);
 void DECL_DLL Particles_SummonerExplode(CEntity *pen, FLOAT3D vCenter, FLOAT fArea, FLOAT fSize, FLOAT fBeginTime, FLOAT fDuration);
 void DECL_DLL Particles_ExotechLarvaLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget);
+void DECL_DLL Particles_WhiteLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
+void DECL_DLL Particles_RedLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
+void DECL_DLL Particles_BlueLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
+void DECL_DLL Particles_GreenLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
+void DECL_DLL Particles_YellowLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
+void DECL_DLL Particles_VioletLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
 void DECL_DLL Particles_Smoke(CEntity *pen, FLOAT3D vOffset, INDEX ctCount, FLOAT fLife, FLOAT fSpread, FLOAT fStretchAll, FLOAT fYSpeed);
 void DECL_DLL Particles_Windblast( CEntity *pen, FLOAT fStretch, FLOAT fFadeOutStartTime);
 void DECL_DLL Particles_CollectEnergy(CEntity *pen, FLOAT tmStart, FLOAT tmStop);
