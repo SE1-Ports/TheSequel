@@ -3900,7 +3900,7 @@ functions:
 
     CPlayerActionMarker *ppam = GetActionMarker();
     ASSERT( ppam != NULL);
-    if( ppam->m_paaAction == PAA_LOGO_FIRE_MINIGUN || ppam->m_paaAction == PAA_LOGO_FIRE_INTROSE)
+    if( ppam->m_paaAction == PAA_LOGO_FIRE_MINIGUN || ppam->m_paaAction == PAA_LOGO_FIRE_INTROSE || ppam->m_paaAction == PAA_FIRE_MINIGUN)
     {
       if( m_tmMinigunAutoFireStart != -1)
       {
@@ -3925,6 +3925,11 @@ functions:
           {
             aDP+=(tmDelta-2.5f)*4.0f;
           }
+        }
+        if(ppam->m_paaAction == PAA_FIRE_MINIGUN)
+        {
+          FLOAT fRatio=CalculateRatio(tmDelta,0.25,5,0.1f,0.1f);
+          aDP=2.0f*sin(tmDelta*200.0f)*fRatio;
         }
         paAction.pa_aRotation = ANGLE3D(aDH/_pTimer->TickQuantum, aDP/_pTimer->TickQuantum,0);
       }
@@ -4328,6 +4333,12 @@ functions:
          en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_SNOW_NO_IMPACT )) {
         iSoundWalkL = SOUND_WALK_SNOW_L;
         iSoundWalkR = SOUND_WALK_SNOW_R;
+      } else if (en_pbpoStandOn!=NULL && 
+        (en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_WATER ||
+         en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_ACID ||
+         en_pbpoStandOn->bpo_bppProperties.bpp_ubSurfaceType==SURFACE_FLESH)) {
+        iSoundWalkL = SOUND_WATERWALK_L;
+        iSoundWalkR = SOUND_WATERWALK_R;
       }
       else {
       }
@@ -6289,6 +6300,39 @@ procedures:
 
     return EReturn();
   }
+  
+  FireMinigun(EVoid) 
+  {
+    // rotate
+    CPlacement3D pl = GetActionMarker()->GetPlacement();
+    pl.pl_PositionVector += FLOAT3D(0, 0.01f, 0)*GetActionMarker()->en_mRotation;
+    en_plViewpoint.pl_OrientationAngle(1) = 20.0f;
+    en_plLastViewpoint.pl_OrientationAngle = en_plViewpoint.pl_OrientationAngle;
+
+    
+    // stand in pose
+    StartModelAnim(PLAYER_ANIM_INTRO, AOF_LOOPING);
+    // remember time for rotating view start
+    m_tmMinigunAutoFireStart = _pTimer->CurrentTick();
+    // wait some time for fade in and to look from left to right with out firing
+    //autowait(0.75f);
+    ((CPlayerWeapons&)*m_penWeapons).SendEvent(EFireWeapon());
+    autowait(3.5f);
+    ((CPlayerWeapons&)*m_penWeapons).SendEvent(EReleaseWeapon());
+
+    // stop minigun shaking
+    CModelObject &moBody = GetModelObject()->GetAttachmentModel(PLAYER_ATTACHMENT_TORSO)->amo_moModelObject;
+
+    autowait(0.5f);
+
+    // stop rotating body
+    m_tmMinigunAutoFireStart = -1;
+    autowait(0.5f);
+    IFeel_StopEffect(NULL);
+    autowait(0.5f);
+
+    return EReturn();
+  }
 
   AutoStoreWeapon(EVoid) 
   {
@@ -6360,10 +6404,52 @@ procedures:
         ESelectWeapon eSelect;
         eSelect.iWeapon = 1;
         ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
+      } else if (GetActionMarker()->m_paaAction==PAA_SELECT_8) {
+        // order playerweapons to select weapon
+        ESelectWeapon eSelect;
+        eSelect.iWeapon = 8;
+        ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
+      } else if (GetActionMarker()->m_paaAction==PAA_SELECT_7) {
+        // order playerweapons to select weapon
+        ESelectWeapon eSelect;
+        eSelect.iWeapon = 7;
+        ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
+      } else if (GetActionMarker()->m_paaAction==PAA_SELECT_6) {
+        // order playerweapons to select weapon
+        ESelectWeapon eSelect;
+        eSelect.iWeapon = 6;
+        ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
+      } else if (GetActionMarker()->m_paaAction==PAA_SELECT_5) {
+        // order playerweapons to select weapon
+        ESelectWeapon eSelect;
+        eSelect.iWeapon = 5;
+        ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
+      } else if (GetActionMarker()->m_paaAction==PAA_SELECT_4) {
+        // order playerweapons to select weapon
+        ESelectWeapon eSelect;
+        eSelect.iWeapon = 4;
+        ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
+      } else if (GetActionMarker()->m_paaAction==PAA_SELECT_3) {
+        // order playerweapons to select weapon
+        ESelectWeapon eSelect;
+        eSelect.iWeapon = 3;
+        ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
+      } else if (GetActionMarker()->m_paaAction==PAA_SELECT_2) {
+        // order playerweapons to select weapon
+        ESelectWeapon eSelect;
+        eSelect.iWeapon = 2;
+        ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
+      } else if (GetActionMarker()->m_paaAction==PAA_SELECT_9) {
+        // order playerweapons to select weapon
+        ESelectWeapon eSelect;
+        eSelect.iWeapon = 9;
+        ((CPlayerWeapons&)*m_penWeapons).SendEvent(eSelect);
       } else if (GetActionMarker()->m_paaAction==PAA_LOGO_FIRE_INTROSE) {
         autocall LogoFireMinigun() EReturn;
       } else if (GetActionMarker()->m_paaAction==PAA_LOGO_FIRE_MINIGUN) {
         autocall LogoFireMinigun() EReturn;
+      } else if (GetActionMarker()->m_paaAction==PAA_FIRE_MINIGUN) {
+        autocall FireMinigun() EReturn;
       // if should appear here
       } else if (GetActionMarker()->m_paaAction==PAA_TELEPORT) {
         autocall AutoTeleport() EReturn;

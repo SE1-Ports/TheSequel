@@ -731,7 +731,11 @@ procedures:
     
     m_fMaxHealth = GetHealth();
     StandingAnim();
+    if (m_bQuiet) {
+    m_soMumble.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else {
     m_soMumble.Set3DParameters(80.0f, 5.0f, 1.0f, 1.0f);
+	}
 
     // continue behavior in base class
     jump CEnemyBase::MainLoop();

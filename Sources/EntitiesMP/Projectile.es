@@ -5518,7 +5518,7 @@ void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
 {
  
   // cannonball immediately destroys demons fireball
-  if (m_prtType==PRT_DEMON_FIREBALL && dmtType==DMT_CANNONBALL)
+  if (m_prtType==PRT_DEMON_FIREBALL && (dmtType==DMT_CANNONBALL || (dmtType==DMT_BULLET && fDamageAmmount>100.0f)))
   {
     fDamageAmmount*=10001.0f;
   }

@@ -33,8 +33,17 @@ enum PlayerAutoAction {
  24 PAA_NOGRAVITY         "NoGravity",        // deactivate gravity influence for player
  25 PAA_TURNONGRAVITY     "TurnOnGravity",    // turn on gravity
  26 PAA_LOGO_FIRE_INTROSE "SE Logo Fire",       // for SE intro
- 27 PAA_INTROSE_SELECT_WEAPON "SE Logo draw weapon",
+ 27 PAA_INTROSE_SELECT_WEAPON "Draw Weapon 1",
  28 PAA_STOPANDWAIT       "StopAndWait",      // stop immediately and wait
+ 29 PAA_FIRE_MINIGUN      "Fire",      // fire minigun
+ 30 PAA_SELECT_8     "Draw Weapon 8",
+ 31 PAA_SELECT_7     "Draw Weapon 7",
+ 32 PAA_SELECT_6     "Draw Weapon 6",
+ 33 PAA_SELECT_5     "Draw Weapon 5",
+ 34 PAA_SELECT_4     "Draw Weapon 4",
+ 35 PAA_SELECT_3     "Draw Weapon 3",
+ 36 PAA_SELECT_2     "Draw Weapon 2",
+ 37 PAA_SELECT_9     "Draw Weapon 9",
 };
 
 class CPlayerActionMarker: CMarker {

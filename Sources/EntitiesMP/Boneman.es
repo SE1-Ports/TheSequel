@@ -440,7 +440,11 @@ procedures:
 
     // set stretch factors for height and width
     CEnemyBase::SizeModel();
+    if (m_bQuiet) {
+    m_soFeet.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else {
     m_soFeet.Set3DParameters(80.0f, 5.0f, 1.0f, 1.0f);
+	}
     m_bRunSoundPlaying = FALSE;
 
     // continue behavior in base class

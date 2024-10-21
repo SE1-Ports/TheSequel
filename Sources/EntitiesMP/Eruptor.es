@@ -34,6 +34,8 @@ properties:
  26 BOOL m_bShootInArc      "Er Shoot In Arc" 'S' = TRUE,
  
  27 FLOAT m_fProjectileStretch "Er projectile stretch" =  1.0f,   // strecth
+ 
+ 30 BOOL m_bInvisible "Invisible" = FALSE,    // make it editor model
 
 components:
   1 class   CLASS_PROJECTILE      "Classes\\Projectile.ecl",
@@ -242,6 +244,10 @@ procedures:
   Main(EVoid) {
     // init as model
     CModelHolder2::InitModelHolder();
+
+    if (m_bInvisible) {
+      SwitchToEditorModel();
+    }
 
     // limit values
     if (m_fTime <= 0.0f) { m_fTime = 0.05f; }

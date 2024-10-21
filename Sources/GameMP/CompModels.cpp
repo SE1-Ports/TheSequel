@@ -96,7 +96,7 @@
 #include "ModelsF/Enemies/Runner/Runner.h"
 #include "ModelsF/Enemies/RobotDog/robot_dog.h"
 #include "ModelsF/Enemies/Mecha/Mecha.h"
-#include "ModelsF/Enemies/Neptune/Neptune2.h"
+#include "ModelsF/Enemies/Neptune/Neptune.h"
 #include "ModelsF/Enemies/Juggernaut/Mesh/Mesh.h"
 #include "ModelsF/Enemies/Panda/Panda.h"
 #include "ModelsF/Enemies/BuffGnaar2/BuffGnaar.h"
@@ -1473,9 +1473,9 @@ extern void SetupCompModel_t(const CTString &strName)
   // Let's divide it in half
 
    if (strName=="Neptune") {
-    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Neptune\\Neptune2.mdl"));
-    pmo->PlayAnim(NEPTUNE2_ANIM_IDLE, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Neptune\\Textures\\Human_Mutant_noteeth.tex"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Neptune\\Neptune.mdl"));
+    pmo->PlayAnim(NEPTUNE_ANIM_IDLE, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Neptune\\Human_Mutant_noteeth.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-18.0f,-30.0), ANGLE3D(180,0,0));
     
     pmo->StretchModel(FLOAT3D(2,2,2));

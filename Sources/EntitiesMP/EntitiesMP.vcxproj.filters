@@ -702,6 +702,15 @@
     <ClCompile Include="Hivebrain.cpp">
       <Filter>Source Files\Entity sources</Filter>
     </ClCompile>
+    <ClCompile Include="Beam.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="LarvaOffspring2.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Mental.cpp">
+      <Filter>Source Files\Entity sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\Common.h">
@@ -1352,6 +1361,15 @@
       <Filter>Class Files\TheSequel</Filter>
     </CustomBuild>
     <CustomBuild Include="Hivebrain.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Beam.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="LarvaOffspring2.es">
+      <Filter>Class Files\TheSequel</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Mental.es">
       <Filter>Class Files\TheSequel</Filter>
     </CustomBuild>
   </ItemGroup>

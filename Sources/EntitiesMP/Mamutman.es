@@ -368,8 +368,13 @@ functions:
   void EnemyPostInit(void) 
   {
     // set sound default parameters
+    if (m_bQuiet) { 
+    m_soFire1.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFire2.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+	} else {
     m_soFire1.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
     m_soFire2.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
+	}
   };
 
 /************************************************************

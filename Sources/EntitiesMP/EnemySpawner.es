@@ -54,6 +54,8 @@ properties:
  60 CEntityPointer m_penTacticsHolder  "Tactics Holder",
  61 BOOL m_bTacticsAutostart           "Tactics autostart" = TRUE,
 
+ 70 BOOL m_bCountAsKill "Count as kill" = TRUE,
+
  
 
 components:

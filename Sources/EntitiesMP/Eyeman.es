@@ -966,8 +966,13 @@ procedures:
     m_fFlyAttackFireTime = 2.0f;
     m_fFlyCloseFireTime = 0.5f;
     m_fFlyIgnoreRange = 200.0f;
+    if (m_bQuiet) {
+    m_soMumble.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soFlesh.Set3DParameters(0.0f, 0.0f, 0.75f, 1.0f);
+	} else {
     m_soMumble.Set3DParameters(25.0f, 0.0f, 1.0f, 1.0f);
     m_soFlesh.Set3DParameters(50.0f, 0.0f, 0.75f, 1.0f);
+	}
 
     // continue behavior in base class
     jump CEnemyFly::MainLoop();
