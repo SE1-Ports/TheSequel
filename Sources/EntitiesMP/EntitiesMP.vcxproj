@@ -6524,6 +6524,35 @@ copy "$(OutDir)$(TargetName).lib" "$(SolutionDir)..\Bin\Debug\" &gt;nul</Command
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug_TSE110|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Airman.es">
+      <FileType>Document</FileType>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_TSE110|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug_TSE105|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug_TSE107|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_TSE105|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug_TFE105|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_TSE107|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_TFE105|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug_TSE110|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_TSE110|Win32'">$(ProjectName)\%(RelativeDir)%(Filename).es</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug_TSE105|Win32'">$(ProjectName)\%(RelativeDir)%(Filename).es</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug_TSE107|Win32'">$(ProjectName)\%(RelativeDir)%(Filename).es</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_TSE105|Win32'">$(ProjectName)\%(RelativeDir)%(Filename).es</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug_TFE105|Win32'">$(ProjectName)\%(RelativeDir)%(Filename).es</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_TSE107|Win32'">$(ProjectName)\%(RelativeDir)%(Filename).es</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_TFE105|Win32'">$(ProjectName)\%(RelativeDir)%(Filename).es</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug_TSE110|Win32'">$(ProjectName)\%(RelativeDir)%(Filename).es</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_TSE110|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug_TSE105|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug_TSE107|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_TSE105|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug_TFE105|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_TSE107|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_TFE105|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug_TSE110|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)\%(RelativeDir)%(Filename).es"</Command>
+    </CustomBuild>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

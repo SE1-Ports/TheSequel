@@ -114,6 +114,7 @@
 #include "ModelsF/Enemies/Mamutman/Mamutman.h"
 #include "ModelsF/Enemies/Mamutman/Gun.h"
 #include "ModelsF/t3dgm/HiveBrain/HiveBrain.h"
+#include "ModelsF/Enemies/Airman/Airman.h"
 
 #include "ModelsMP/Weapons/PlasmaThrower/LaserItem.h"
 #include "Models/Weapons/GhostBuster/GhostBusterItem.h"
@@ -2036,6 +2037,20 @@ extern void SetupCompModel_t(const CTString &strName)
     //_fFOV = tmp_af[9];
     //CPrintF("%f %f %f : %f : %f\n", tmp_af[5],tmp_af[6],tmp_af[7], tmp_af[8], tmp_af[9]);
     //_vLightDir = FLOAT3D( tmp_af[2], tmp_af[3], tmp_af[4]);
+
+    pmo->StretchModel(FLOAT3D(14.0f, 14.0f, 14.0f));
+    _fFloorY = -2.0f;
+    _bHasFloor = TRUE;
+
+    _iParticleType = PARTICLES_AIR_ELEMENTAL;
+
+  } else if (strName=="Airman") {
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Airman\\Airman.mdl"));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\AirElemental\\Elemental.tex"));
+    pmo->PlayAnim(AIRMAN_ANIM_IDLE, AOF_LOOPING);
+    
+    _plModel = CPlacement3D(FLOAT3D(-1.0f, -13.0f, -52.0f), ANGLE3D(170.0f, 0.0f, 0.0f));
+    _fFOV = 50.0f;
 
     pmo->StretchModel(FLOAT3D(14.0f, 14.0f, 14.0f));
     _fFloorY = -2.0f;

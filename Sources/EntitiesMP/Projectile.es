@@ -130,6 +130,8 @@ enum ProjectileType {
  134 PRT_HUANMAN2_FIRE          "Huanman new",   // huanman fire
  135 PRT_NUKE                   "Nuke ball",   // nuke ball
  136 PRT_LARVA_HIVEBRAIN        "HiveBrain Projectile", //hivebrain projectile
+ 137 PRT_AIRELEMENTAL_WIND_SMALL     "Wind Blast Small", //air elemental wind blast small
+ 138 PRT_AIRELEMENTAL_WIND_HUGE     "Wind Blast Huge", //air elemental wind blast small
 };
 
 enum ProjectileMovingType {
@@ -478,6 +480,8 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheClass(CLASS_FLAME);
     break;
   case PRT_AIRELEMENTAL_WIND:
+  case PRT_AIRELEMENTAL_WIND_SMALL:
+  case PRT_AIRELEMENTAL_WIND_HUGE:
     pdec->PrecacheModel(MODEL_WINDBLAST);
     pdec->PrecacheTexture(TEXTURE_WINDBLAST);    
     break;
@@ -1403,6 +1407,12 @@ functions:
         break;
       case PRT_AIRELEMENTAL_WIND:
         Particles_Windblast(this, m_fStretch/4.0f, m_fStartTime+3.0f);
+        break;
+      case PRT_AIRELEMENTAL_WIND_SMALL:
+        Particles_Windblast(this, m_fStretch/2.0f, m_fStartTime+1.0f);
+        break;
+      case PRT_AIRELEMENTAL_WIND_HUGE:
+        Particles_Windblast(this, m_fStretch/8.0f, m_fStartTime+6.0f);
         break;
 
       case PRT_SCORP_BIG_PROJECTILE: Particles_BeastProjectileTrail( this, 2.0f, 0.1f, 10); break;
@@ -3685,7 +3695,7 @@ void LarvaBrain(void) {
   
   SetModel(MODEL_LARVA_TAIL);
   SetModelMainTexture(TEXTURE_LARVA_TAIL);
-  GetModelObject()->StretchModel(FLOAT3D(2.0f, 2.0f, 2.0f));
+  GetModelObject()->StretchModel(FLOAT3D(4.0f, 4.0f, 4.0f));
 
   ModelChangeNotify();
   // play the flying sound
@@ -3756,8 +3766,56 @@ void WindBlast(void) {
   // start moving
   LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
-  m_fFlyTime = 5.0f;
+  m_fFlyTime = 10.0f;
   m_fDamageAmount = 20.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_SLIDING;
+}
+
+void WindBlastSmall(void) {
+  // set appearance
+  InitAsEditorModel();
+  SetPhysicsFlags(EPF_MODEL_SLIDING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetModel(MODEL_WINDBLAST);
+  SetModelMainTexture(TEXTURE_WINDBLAST);
+  GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 10.0f;
+  m_fSoundRange = 0.0f;
+  m_bExplode = FALSE;
+  m_bLightSource = FALSE;
+  m_bCanHitHimself = FALSE;
+  m_bCanBeDestroyed = FALSE;
+  m_fWaitAfterDeath = 0.0f;
+  m_pmtMove = PMT_SLIDING;
+}
+
+void WindBlastHuge(void) {
+  // set appearance
+  InitAsEditorModel();
+  SetPhysicsFlags(EPF_MODEL_SLIDING);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetFlags(GetFlags() | ENF_SEETHROUGH);
+  SetModel(MODEL_WINDBLAST);
+  SetModelMainTexture(TEXTURE_WINDBLAST);
+  GetModelObject()->StretchModel(FLOAT3D(6.0f, 6.0f, 6.0f));
+  ModelChangeNotify();
+  // start moving
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, 0));
+  m_fFlyTime = 10.0f;
+  m_fDamageAmount = 30.0f;
   m_fSoundRange = 0.0f;
   m_bExplode = FALSE;
   m_bLightSource = FALSE;
@@ -5401,6 +5459,10 @@ void ProjectileTouch(CEntityPointer penHit)
     {
       bSpawnFlame=FALSE;
     }
+    if (IsOfClass(penHit, "Airman"))
+    {
+      bSpawnFlame=FALSE;
+    }
 
     EntityInfo *pei=(EntityInfo *)penHit->GetEntityInfo();
     if(pei!=NULL && pei->Eeibt==EIBT_ICE)
@@ -5421,6 +5483,22 @@ void ProjectileTouch(CEntityPointer penHit)
   
   // don't damage the same entity twice (wind blast)
   } else if (m_prtType==PRT_AIRELEMENTAL_WIND) {
+    if (penHit==m_penLastDamaged) {
+      return;   
+    } else  {
+      m_penLastDamaged=penHit;
+    }
+    InflictDirectDamage(penHit, m_penLauncher, DMT_PROJECTILE, m_fDamageAmount*fDamageMul,
+               GetPlacement().pl_PositionVector, vDirection);
+  } else if (m_prtType==PRT_AIRELEMENTAL_WIND_SMALL) {
+    if (penHit==m_penLastDamaged) {
+      return;   
+    } else  {
+      m_penLastDamaged=penHit;
+    }
+    InflictDirectDamage(penHit, m_penLauncher, DMT_PROJECTILE, m_fDamageAmount*fDamageMul,
+               GetPlacement().pl_PositionVector, vDirection);
+  } else if (m_prtType==PRT_AIRELEMENTAL_WIND_HUGE) {
     if (penHit==m_penLastDamaged) {
       return;   
     } else  {
@@ -5518,7 +5596,7 @@ void ReceiveDamage(CEntity *penInflictor, enum DamageType dmtType,
 {
  
   // cannonball immediately destroys demons fireball
-  if (m_prtType==PRT_DEMON_FIREBALL && (dmtType==DMT_CANNONBALL || (dmtType==DMT_BULLET && fDamageAmmount>100.0f)))
+  if (m_prtType==PRT_DEMON_FIREBALL && dmtType==DMT_CANNONBALL)
   {
     fDamageAmmount*=10001.0f;
   }
@@ -6061,6 +6139,13 @@ procedures:
           if (m_prtType==PRT_AIRELEMENTAL_WIND && IsDerivedFromClass((CEntity *)&*(epass.penOther), "MovableEntity")) {
             resume;
           }
+          if (m_prtType==PRT_AIRELEMENTAL_WIND_SMALL && IsDerivedFromClass((CEntity *)&*(epass.penOther), "MovableEntity")) {
+            resume;
+          }
+          // wind blast passes through movable entities
+          if (m_prtType==PRT_AIRELEMENTAL_WIND_HUGE && IsDerivedFromClass((CEntity *)&*(epass.penOther), "MovableEntity")) {
+            resume;
+          }
           
           stop;
         }
@@ -6309,6 +6394,8 @@ procedures:
       case PRT_HUANMAN2_FIRE: Huanman2Projectile(); break;
       case PRT_NUKE: NukeBall(); break;
       case PRT_LARVA_HIVEBRAIN: LarvaBrain(); break;
+      case PRT_AIRELEMENTAL_WIND_SMALL: WindBlastSmall(); break;
+      case PRT_AIRELEMENTAL_WIND_HUGE: WindBlastHuge(); break;
       default: ASSERTALWAYS("Unknown projectile type");
     }
 
