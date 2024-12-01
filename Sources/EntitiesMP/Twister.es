@@ -147,13 +147,21 @@ functions:
   void SpinEntity(CEntity *pen) {
     
     // don't spin air elemental and other twisters and any items
-    if (IsOfClass(pen, "AirElemental") || IsOfClass(pen, "Twister")
+    if (IsOfClass(pen, "AirElemental") || IsOfClass(pen, "Twister") || IsOfClass(pen, "Airman")
         || IsDerivedFromClass(pen, "Item")) {
       return;
     }
     // don't spin air elementals wind blast
     if (IsOfClass(pen, "Projectile")) {
       if (((CProjectile *)&*pen)->m_prtType==PRT_AIRELEMENTAL_WIND)
+      {
+        return; 
+      }
+      if (((CProjectile *)&*pen)->m_prtType==PRT_AIRELEMENTAL_WIND_SMALL)
+      {
+        return; 
+      }
+      if (((CProjectile *)&*pen)->m_prtType==PRT_AIRELEMENTAL_WIND_HUGE)
       {
         return; 
       }
