@@ -46,7 +46,6 @@ properties:
   23 CSoundObject m_soFire3,
   24 CSoundObject m_soFire4,
 
-  30 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
@@ -450,7 +449,6 @@ procedures:
     en_fDensity = 30000.0f;
 
     m_sptType = SPT_ELECTRICITY_SPARKS_NO_BLOOD;
-    m_bBoss = m_bBeBoss;
 
     // set your appearance
       SetModel(MODEL_MECHA);

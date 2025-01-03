@@ -34,7 +34,6 @@ thumbnail "Thumbnails\\Cyclops.tbn";
 properties:
   1 enum CycType m_cycType     "Character" 'C' = CYC_GREEN,
   2 INDEX m_iCounter = 0,
-  3 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   6 INDEX   m_fgibTexture = TEXTURE_CYCLOPS_GREEN,
 
 components:
@@ -394,7 +393,6 @@ procedures:
     m_fStopDistance = 3.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
-    m_bBoss = m_bBeBoss;
     m_fStopDistance = 5.0f;
     m_fCloseDistance = 7.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);

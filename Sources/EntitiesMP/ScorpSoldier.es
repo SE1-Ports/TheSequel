@@ -57,7 +57,6 @@ properties:
   1 enum ScorpType m_ssType     "Character" 'C' = SS_SMALL,
   2 enum ScorpSkin m_ssSkin     "Type"      'Y' = SS_NEW,
   3 INDEX m_iCounter = 0,
-  4 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   5 INDEX   m_fgibTexture = TEXTURE_SMALL,
 
 components:
@@ -563,11 +562,9 @@ procedures:
     m_fAttackDistance = 100.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
-    m_bBoss = m_bBeBoss;
     m_fStopDistance = 3.0f;
     m_fCloseDistance = 3.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
-    m_bBoss = m_bBeBoss;
 
     // damage/explode properties
     if (m_ssType == SS_SMALL)

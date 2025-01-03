@@ -78,7 +78,6 @@ properties:
   3 enum AttType m_attType "Type" 'Y' = ATT_BOTH,
   4 enum AirmanState m_AirStartState   "State" 'S' = AIRS_NORMAL,
   5 enum AirmanState m_AirCurrentState = AIRS_NORMAL,
-  7 BOOL m_bAirBoss  "Boss" 'B' = FALSE,
   8 CSoundObject m_soBackground,  // sound channel for background noise
  21 CSoundObject m_soPoof,  // sound channel for death noise
 
@@ -843,7 +842,6 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     en_fDensity = 100.0f;
     m_sptType = SPT_AIRSPOUTS;
-    m_bBoss = m_bAirBoss;
 
     // set your appearance
     SetModel(MODEL_AIRMAN);

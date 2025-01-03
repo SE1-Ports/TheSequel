@@ -74,7 +74,6 @@ thumbnail "Thumbnails\\Albino.tbn";
 properties:
   1 enum AlbinoType m_acType "Character" 'C' = AT_NORMAL,
   2 INDEX m_iCounter = 0,
-  3 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   6 CTString m_strMessage "!JAREP V0.01b" = "Oct 8th 2020",     // message
 
 components:
@@ -609,7 +608,6 @@ procedures:
     m_fStopDistance = 0.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
-    m_bBoss = m_bBeBoss;
     m_fStopDistance = 5.0f;
     m_fCloseDistance = 7.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);

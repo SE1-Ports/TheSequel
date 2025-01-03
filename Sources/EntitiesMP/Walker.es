@@ -80,7 +80,6 @@ properties:
   3 FLOAT m_fSize = 1.0f,
   4 BOOL m_bWalkSoundPlaying = FALSE,
   5 FLOAT m_fThreatDistance = 5.0f,
-  6 BOOL m_bWaBoss  "Boss" 'B' = FALSE,
   7 CTString m_strMessage "!JAREP V0.01b" = "Oct 8th 2020",     // message
 
   10 CSoundObject m_soFeet,
@@ -831,7 +830,6 @@ procedures:
     en_fDensity = 3000.0f;
 
     m_sptType = SPT_ELECTRICITY_SPARKS;
-	m_bBoss = m_bWaBoss;
 
     // set your appearance
     if (m_EwcChar==WLC_SERGEANT) {

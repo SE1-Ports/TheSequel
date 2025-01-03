@@ -146,7 +146,7 @@ properties:
 
 142 FLOAT m_iScore = -100000,        // how many points this enemy gives when killed
 143 FLOAT m_fMaxHealth = -1.0f,      // must set this because of crosshair colorizing
-144 BOOL  m_bBoss = FALSE,           // set for bosses (for health display)
+144 BOOL  m_bBoss  "Boss" 'B' = FALSE,           // set for bosses (for health display)
 
 145 FLOAT m_fSpiritStartTime = 0.0f, // time when spirit effect has started
 
@@ -176,6 +176,7 @@ properties:
 
 190 BOOL m_bCountAsKill "Count as kill" = TRUE,
 191 BOOL m_bIgnoreNav   "Ignore NavMarkers" = FALSE,
+192 FLOAT m_fHealthMultiplier "Health multiplier" =  1.0f,         // stretch multiplier
 
   {
     TIME m_tmPredict;  // time to predict the entity to

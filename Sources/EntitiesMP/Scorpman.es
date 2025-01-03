@@ -57,7 +57,6 @@ properties:
   4 FLOAT m_fFireTime = 0.0f,           // time to fire bullets
   5 CAnimObject m_aoLightAnimation,     // light animation object
   6 BOOL m_bSleeping "Sleeping" 'S' = FALSE,  // set to make scorpman sleep initally
-  7 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   8 INDEX   m_fgibTexture = TEXTURE_SOLDIER,
   
 {
@@ -640,7 +639,6 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     en_tmMaxHoldBreath = 25.0f;
     en_fDensity = 3000.0f;
-    m_bBoss = m_bBeBoss;
 
     // set your appearance
     SetModel(MODEL_SCORPMAN);

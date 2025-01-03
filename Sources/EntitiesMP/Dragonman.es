@@ -33,7 +33,6 @@ properties:
   7 CEntityPointer m_penFlame,
   8 BOOL m_bBurnEnemy = FALSE,
   9 FLOAT m_fFireTime = 0.0f,
- 10 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
 
 components:
   0 class   CLASS_BASE        "Classes\\EnemyFly.ecl",
@@ -421,7 +420,6 @@ procedures:
     m_fMaxHealth = 500.0f;
     en_tmMaxHoldBreath = 25.0f;
     en_fDensity = 4000.0f;
-    m_bBoss = m_bBeBoss;
     
     m_sptType = SPT_BLOOD;
 

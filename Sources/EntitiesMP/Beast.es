@@ -54,7 +54,6 @@ thumbnail "Thumbnails\\Beast.tbn";
 properties:
   1 enum BeastType m_bcType     "Character" 'C' = BT_NORMAL,
   2 INDEX m_iCounter = 0,
-  3 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
 
   4 enum BeastVer m_bcVer     "Version" 'V' = BTV_FE,
   6 INDEX   m_fgibTexture = TEXTURE_BEAST_NORMAL,
@@ -650,7 +649,6 @@ procedures:
     m_fStopDistance = 0.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
-    m_bBoss = m_bBeBoss;
     m_fStopDistance = 5.0f;
     m_fCloseDistance = 7.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);

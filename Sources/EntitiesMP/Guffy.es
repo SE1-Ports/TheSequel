@@ -47,7 +47,6 @@ properties:
   6 BOOL  m_bEnemyToTheLeft = FALSE,
 
   7 INDEX m_iCounter = 0,
-  8 BOOL m_bGuBoss  "Boss" 'B' = FALSE,
 
   10 CSoundObject m_soGrunt,
   11 CSoundObject m_soFire1,
@@ -629,7 +628,6 @@ procedures:
     SetCollisionFlags(ECF_MODEL);
     SetFlags(GetFlags()|ENF_ALIVE);
     en_fDensity = 2000.0f;
-    m_bBoss = m_bGuBoss;
     en_tmMaxHoldBreath = 25.0f;
 
     // set your appearance

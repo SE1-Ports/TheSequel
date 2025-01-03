@@ -36,7 +36,6 @@ properties:
   4 CSoundObject m_soFeet,            // for running sound
   5 BOOL m_bRunSoundPlaying = FALSE,
   6 enum RamEnv m_ramChar "Environment" 'E' = RAM_FIRE,      // character
-  7 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   8 INDEX   m_fgibTexture = TEXTURE_RAM_FIRE,
   
 components:
@@ -403,7 +402,6 @@ procedures:
     m_fMaxHealth = 400.0f;
     en_fDensity = 2000.0f;
     m_sptType = SPT_STONES;
-    m_bBoss = m_bBeBoss;
 
     // set your appearance
     SetModel(MODEL_RAM);
