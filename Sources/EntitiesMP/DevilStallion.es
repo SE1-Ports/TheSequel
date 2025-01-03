@@ -36,7 +36,6 @@ properties:
   7 CEntityPointer m_penFlame,
   8 BOOL m_bBurnEnemy = FALSE,
   9 FLOAT m_fFireTime = 0.0f,
- 10 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
 
   4 CSoundObject m_soWings,            // for running sound
   5 BOOL m_bFlySoundPlaying = FALSE,
@@ -523,7 +522,6 @@ procedures:
     m_fMaxHealth = 500.0f;
     en_tmMaxHoldBreath = 60.0f;
     en_fDensity = 4000.0f;
-    m_bBoss = m_bBeBoss;
     
     m_sptType = SPT_BLOOD;
 

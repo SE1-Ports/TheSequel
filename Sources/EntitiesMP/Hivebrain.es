@@ -55,7 +55,6 @@ properties:
   1 INDEX   m_fgibTexture = TEXTURE_SMALL,
   2 enum HiveBrainType m_hbType     "Character" 'C' = HB_SMALL,
   3 CEntityPointer m_penSpawn1  "Spawn Template" 'T',
-  4 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
 
  10 CEntityPointer m_penMarkerNew "1st Grid Marker",
  11 CEntityPointer m_penMarkerOld,
@@ -703,7 +702,6 @@ procedures:
 	m_EeftType=EFT_FLY_ONLY;
     m_sptType = SPT_SLIME;
     SetModel(MODEL_HIVEBRAIN);
-    m_bBoss = m_bBeBoss;
     
 
     if (m_hbType == HB_SMALL) {

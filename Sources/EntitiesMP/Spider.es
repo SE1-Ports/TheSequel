@@ -3,6 +3,7 @@
 %{
 #include "StdH.h"
 #include "ModelsMP/Enemies/SS3/SpiderSmall/SpiderSmall.h"
+#include "ModelsMP/Enemies/SS3/SpiderBig/SpiderBig.h"
 #include "EntitiesMP/WorldSettingsController.h"
 #include "EntitiesMP/BackgroundViewer.h"
 %}
@@ -20,6 +21,7 @@ enum SpiderState {
   0 SPS_NORMAL        "Normal",
   1 SPS_EGG           "Egg",
   2 SPS_GROUND        "Underground",
+  3 SPS_HANG          "Hanging",
 };
 
 %{ 
@@ -28,7 +30,9 @@ enum SpiderState {
 #define HUGE_STRETCH 3.0f
 
 #define ELECPOS FLOAT3D(0.0f, 1.75f, 0.0f)*m_fSize;
-#define HATCHLING_SPAWN   (FLOAT3D(0.0f, 3.0f, 0.0f)*HUGE_STRETCH)
+#define HATCHLING_SPAWN   (FLOAT3D(0.0f, 2.0f, 0.0f)*HUGE_STRETCH)
+
+#define DISTANCE_ELECTRICITY   10.0f*m_fCloseDistance
 
 #define SPIDERSOUND(soundname) ((m_spType==SP_SMALL)? (SOUND_SMALL_##soundname) : (m_spType==SP_BIG)? (SOUND_BIG_##soundname) : (SOUND_HUGE_##soundname))
 
@@ -57,7 +61,6 @@ thumbnail "Thumbnails\\Spider.tbn";
 properties:
   1 enum SpiderType m_spType     "Character" 'C' = SP_SMALL,
   2 INDEX m_iCounter = 0,
-  3 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   4 FLOAT m_fSize = 1.0f,
 
   5 BOOL m_bAttackingByElectricity = FALSE,
@@ -77,14 +80,19 @@ properties:
  16 BOOL m_bRunSoundPlaying = FALSE,
  17 INDEX   m_fgibTexture = TEXTURE_SPIDER_SMALL,
 
+  18 INDEX   m_fgib1 = MODEL_LEG,
+  19 INDEX   m_fgib2 = MODEL_TAIL1,
+  20 INDEX   m_fgib3 = MODEL_TAIL2,
+
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
   2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
 
  10 model   MODEL_SPIDER           "ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmall.mdl",
- 11 texture TEXTURE_SPIDER_SMALL   "ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmall.tex",
- 12 texture TEXTURE_SPIDER_BIG     "ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmallRedBlue.tex",
- 13 texture TEXTURE_SPIDER_HUGE    "ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmallGreenBlue.tex",
+ 22 model   MODEL_SPIDER_BIG       "ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBig.mdl",
+ 11 texture TEXTURE_SPIDER_SMALL   "ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmallRedBlue.tex",
+ 12 texture TEXTURE_SPIDER_BIG     "ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBigBlueRed.tex",
+ 13 texture TEXTURE_SPIDER_HUGE    "ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBigBlue.tex",
 
  14 model   MODEL_ELECTRICITY           "ModelsMP\\Enemies\\ExotechLarva\\Projectile\\Projectile.mdl",
  15 texture TEXTURE_ELECTRICITY   "ModelsMP\\Enemies\\ExotechLarva\\Projectile\\Projectile.tex",
@@ -92,6 +100,10 @@ components:
  16 model   MODEL_LEG             "ModelsMP\\Enemies\\SS3\\SpiderSmall\\Debris\\Leg.mdl",
  17 model   MODEL_TAIL1             "ModelsMP\\Enemies\\SS3\\SpiderSmall\\Debris\\Tail.mdl",
  18 model   MODEL_TAIL2             "ModelsMP\\Enemies\\SS3\\SpiderSmall\\Debris\\Tail2.mdl",
+
+ 19 model   MODEL_LEGBIG             "ModelsMP\\Enemies\\SS3\\SpiderBig\\Debris\\Leg.mdl",
+ 20 model   MODEL_TAILBIG             "ModelsMP\\Enemies\\SS3\\SpiderBig\\Debris\\Tail.mdl",
+ 21 model   MODEL_JAW                  "ModelsMP\\Enemies\\SS3\\SpiderBig\\Debris\\Jaw.mdl",
 
 // ************** SOUNDS **************
  50 sound   SOUND_SMALL_IDLE      "ModelsMP\\Enemies\\SS3\\SpiderSmall\\Sounds\\Small\\Idle.wav",
@@ -178,6 +190,10 @@ functions:
     PrecacheModel(MODEL_TAIL1);
     PrecacheModel(MODEL_TAIL2);
 
+    PrecacheModel(MODEL_LEGBIG);
+    PrecacheModel(MODEL_TAILBIG);
+    PrecacheModel(MODEL_JAW);
+
     PrecacheClass(CLASS_BASIC_EFFECT, BET_GIZMO_SPLASH_FX);
   };
 
@@ -237,7 +253,10 @@ functions:
   INDEX AnimForDamage(FLOAT fDamage) {
     m_bAttackingByElectricity = FALSE;
     INDEX iAnim;
-    iAnim = SPIDERSMALL_ANIM_WOUND;
+    if(m_spType==SP_SMALL ) {
+      iAnim = SPIDERSMALL_ANIM_WOUND; }
+    else  {
+      iAnim = SPIDERBIG_ANIM_WOUND; }
     StartModelAnim(iAnim, 0);
     DeactivateRunningSound();
     return iAnim;
@@ -246,14 +265,17 @@ functions:
   // death
   INDEX AnimForDeath(void) {
     INDEX iAnim;
-    iAnim = SPIDERSMALL_ANIM_DEATH;
+    if(m_spType==SP_SMALL ) {
+      iAnim = SPIDERSMALL_ANIM_DEATH; }
+    else  {
+      iAnim = SPIDERBIG_ANIM_DEATH; }
     StartModelAnim(iAnim, 0);
     DeactivateRunningSound();
     return iAnim;
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
-    if(GetModelObject()->GetAnim()==SPIDERSMALL_ANIM_DEATH)
+    if(GetModelObject()->GetAnim()==SPIDERSMALL_ANIM_DEATH || SPIDERBIG_ANIM_DEATH)
     {
       vStretch=FLOAT3D(1,1,2)*2.0f;
       return 0.3f;
@@ -262,7 +284,10 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(SPIDERSMALL_COLLISION_BOX_DEATH);
+    if(m_spType==SP_SMALL ) {
+    ChangeCollisionBoxIndexWhenPossible(SPIDERSMALL_COLLISION_BOX_PART_NAME); }
+    else  {
+    ChangeCollisionBoxIndexWhenPossible(SPIDERBIG_COLLISION_BOX_PART_NAME ); }
     m_bAttackingByElectricity = FALSE;
     en_fDensity = 500.0f;
   };
@@ -277,8 +302,18 @@ functions:
       plLarva = GetLerpedPlacement();
       MakeRotationMatrix(m, plLarva.pl_OrientationAngle);   
       // render one lightning toward enemy
-      FLOAT3D m_vElectricitySource = plLarva.pl_PositionVector + ELECPOS;
+         FLOAT3D m_vElectricitySource = plLarva.pl_PositionVector + ELECPOS;
       Particles_Ghostbuster(m_vElectricitySource, m_vElectricityTarget, 32, 1.0f);
+
+      // random lightnings arround
+      for( INDEX i=0; i<4; i++)
+      {
+        FLOAT3D vDirection = m_vElectricitySource;
+        vDirection(1) += ((FLOAT(rand())/RAND_MAX)-0.5f) * m_fCloseDistance;
+        vDirection(2) += ((FLOAT(rand())/RAND_MAX)-0.5f) * m_fCloseDistance;
+        vDirection(3) += ((FLOAT(rand())/RAND_MAX)-0.5f) * m_fCloseDistance;
+        Particles_Ghostbuster(m_vElectricitySource, vDirection, 32, 1.0f);
+      }
     }
     CEnemyBase::RenderParticles();
   }
@@ -286,12 +321,20 @@ functions:
   // virtual anim functions
   void StandingAnim(void)
   {
+    if(m_spType==SP_SMALL ) {
       switch (m_spCurrentState) {
         case SPS_NORMAL: StartModelAnim(SPIDERSMALL_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART); break;
-        case SPS_EGG: StartModelAnim(SPIDERSMALL_ANIM_HATCH_02_POSE, AOF_LOOPING|AOF_NORESTART); break;
-        //case SPS_GROUND:
+        case SPS_EGG: StartModelAnim(SPIDERSMALL_ANIM_HATCHPOSE, AOF_LOOPING|AOF_NORESTART); break;
         default: StartModelAnim(SPIDERSMALL_ANIM_UNDERGROUND, AOF_LOOPING|AOF_NORESTART); break;
 		}
+	  }
+    else {
+      switch (m_spCurrentState) {
+        case SPS_NORMAL: StartModelAnim(SPIDERBIG_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART); break;
+        case SPS_EGG: StartModelAnim(SPIDERBIG_ANIM_HATCHPOSE, AOF_LOOPING|AOF_NORESTART); break;
+        default: StartModelAnim(SPIDERBIG_ANIM_UNDERGROUND, AOF_LOOPING|AOF_NORESTART); break;
+		}
+	  }
     DeactivateRunningSound();
   };
 
@@ -301,7 +344,10 @@ functions:
   }
 
   void WalkingAnim(void) {
-    StartModelAnim(SPIDERSMALL_ANIM_WALK_DISCONTINIOUS, AOF_LOOPING|AOF_NORESTART);
+    if(m_spType==SP_SMALL ) {
+      StartModelAnim(SPIDERSMALL_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);}
+    else  {
+      StartModelAnim(SPIDERBIG_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);}
     ActivateRunningSound();
   };
 
@@ -407,12 +453,12 @@ functions:
     FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
 
     // spawn debris
-      ULONG ulFleshModel   = MODEL_LEG;
+      ULONG ulFleshModel   = m_fgib1;
 	  
     Debris_Begin(EIBT_FLESH, DPT_GOOTRAIL, BET_GOOSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
-    Debris_Spawn(this, this, MODEL_TAIL1, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+    Debris_Spawn(this, this, m_fgib2, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-	Debris_Spawn(this, this, MODEL_TAIL2, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
+	Debris_Spawn(this, this, m_fgib3, m_fgibTexture, 0, 0, 0, IRnd()%4, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 
     Debris_Begin(EIBT_FLESH, DPT_GOOTRAIL, BET_GOOSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
@@ -473,7 +519,7 @@ procedures:
       }
       otherwise() : { resume; }
     }
-    StartModelAnim(SPIDERSMALL_ANIM_HATCH_02, 0);
+    StartModelAnim(SPIDERSMALL_ANIM_HATCH, 0);
     return EReturn();
   };
 
@@ -486,8 +532,13 @@ procedures:
     SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     ChangeCollisionBoxIndexWhenPossible(SPIDERSMALL_COLLISION_BOX_PART_NAME);
     PlaySound(m_soSound, SPIDERSOUND(SIGHT), SOF_3D);
-    StartModelAnim(SPIDERSMALL_ANIM_HATCH_02, 0);
-    autowait(GetModelObject()->GetAnimLength(SPIDERSMALL_ANIM_HATCH_02));
+    INDEX iAnim;
+    if(m_spType==SP_SMALL ) {
+       iAnim = SPIDERSMALL_ANIM_HATCH; }
+	else {
+       iAnim = SPIDERBIG_ANIM_HATCH; }
+    StartModelAnim(iAnim, 0);
+    autowait(GetModelObject()->GetAnimLength(iAnim));
     return EReturn();
   };
 
@@ -498,8 +549,29 @@ procedures:
     SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
     ChangeCollisionBoxIndexWhenPossible(SPIDERSMALL_COLLISION_BOX_PART_NAME);
     PlaySound(m_soSound, SOUND_DIGOUT, SOF_3D);
-    StartModelAnim(SPIDERSMALL_ANIM_DIGOUT, 0);
-    autowait(GetModelObject()->GetAnimLength(SPIDERSMALL_ANIM_DIGOUT));
+    INDEX iAnim;
+    if(m_spType==SP_SMALL ) {
+       iAnim = SPIDERSMALL_ANIM_DIGOUT; }
+	else {
+       iAnim = SPIDERBIG_ANIM_DIGOUT; }
+    StartModelAnim(iAnim, 0);
+    autowait(GetModelObject()->GetAnimLength(iAnim));
+    return EReturn();
+  };
+
+  // plane to normal
+  HangToNormal(EVoid) {
+    m_spCurrentState = SPS_NORMAL;
+    SwitchToModel();
+    SetPhysicsFlags(EPF_MODEL_WALKING|EPF_HASLUNGS);
+    ChangeCollisionBoxIndexWhenPossible(SPIDERSMALL_COLLISION_BOX_PART_NAME);
+    INDEX iAnim;
+    if(m_spType==SP_SMALL ) {
+       iAnim = SPIDERSMALL_ANIM_CLIMBDOWN; }
+	else {
+       iAnim = SPIDERBIG_ANIM_CLIMBDOWN; }
+    StartModelAnim(iAnim, 0);
+    autowait(GetModelObject()->GetAnimLength(iAnim));
     return EReturn();
   };
 
@@ -517,6 +589,10 @@ procedures:
     {
       autocall GroundToNormal() EReturn;
     }
+    else if (m_spCurrentState==SPS_HANG)
+    {
+      autocall HangToNormal() EReturn;
+    }
     jump CEnemyBase::InitializeAttack();
   };
 
@@ -526,10 +602,10 @@ procedures:
 
     if( m_spType == SP_SMALL)
     {
-      StartModelAnim(SPIDERSMALL_ANIM_FIRE_MOUTH, 0);  
+      StartModelAnim(SPIDERSMALL_ANIM_FIRE, 0);  
       PlaySound(m_soSound, SPIDERSOUND(FIRE), SOF_3D);
 
-      autowait(0.6f);
+      autowait(0.7f);
 
     if (IsVisible(m_penEnemy)) {
       m_vElectricityTarget = m_penEnemy->GetPlacement().pl_PositionVector;
@@ -537,7 +613,7 @@ procedures:
       m_vElectricityTarget = m_vPlayerSpotted;
     }
 
-      autowait(0.2f);
+      autowait(0.1f);
       {
       m_bAttackingByElectricity = TRUE;
       m_tmElectricityTimeStart = _pTimer->CurrentTick(); 
@@ -549,6 +625,15 @@ procedures:
          crRay.cr_bPhysical = FALSE;
          crRay.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
          GetWorld()->CastRay(crRay);
+
+	  // AOE
+	  FLOAT3D vSource;
+      vSource = GetPlacement().pl_PositionVector +
+      FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+      {
+           InflictRangeDamage(this, DMT_BURNING, 5, vSource, 4, 8);
+		   }
+
       // if entity is hit
          if( crRay.cr_penHit != NULL)
          {
@@ -570,10 +655,10 @@ procedures:
 
     if( m_spType == SP_BIG)
     {
-      StartModelAnim(SPIDERSMALL_ANIM_FIRE_MOUTH, 0);  
+      StartModelAnim(SPIDERBIG_ANIM_FIRE, 0);  
       PlaySound(m_soSound, SPIDERSOUND(FIRE), SOF_3D);
 
-      autowait(0.6f);
+      autowait(0.7f);
 
     if (IsVisible(m_penEnemy)) {
       m_vElectricityTarget = m_penEnemy->GetPlacement().pl_PositionVector;
@@ -581,7 +666,7 @@ procedures:
       m_vElectricityTarget = m_vPlayerSpotted;
     }
 
-      autowait(0.2f);
+      autowait(0.1f);
       {
       m_bAttackingByElectricity = TRUE;
       m_tmElectricityTimeStart = _pTimer->CurrentTick(); 
@@ -593,13 +678,22 @@ procedures:
          crRay.cr_bPhysical = FALSE;
          crRay.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
          GetWorld()->CastRay(crRay);
+
+	  // AOE
+	  FLOAT3D vSource;
+      vSource = GetPlacement().pl_PositionVector +
+      FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+      {
+           InflictRangeDamage(this, DMT_BURNING, 20, vSource, 5, 10);
+		   }
+
       // if entity is hit
          if( crRay.cr_penHit != NULL)
          {
       FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
       vDirection.Normalize();
         // damage enemy
-           InflictDirectDamage(m_penEnemy, this, DMT_BURNING, 25.0f, FLOAT3D(0, 0, 0), vDirection);
+           InflictDirectDamage(m_penEnemy, this, DMT_BURNING, 15.0f, FLOAT3D(0, 0, 0), vDirection);
         // push target away
            FLOAT3D vSpeed;
            GetHeadingDirection(0.0f, vSpeed);
@@ -607,7 +701,7 @@ procedures:
            KickEntity(m_penEnemy, vSpeed);
          }
     }
-      autowait(0.3f);
+      autowait(0.8f);
 
     m_bAttackingByElectricity = FALSE;
     }
@@ -615,14 +709,14 @@ procedures:
     if( m_spType == SP_HUGE)
     {
       m_bSpawnEnabled = TRUE;
-      StartModelAnim(SPIDERSMALL_ANIM_FIRE_MOUTH, 0);  
+      StartModelAnim(SPIDERBIG_ANIM_FIRE, 0);  
       PlaySound(m_soSound, SPIDERSOUND(FIRE), SOF_3D);
 
       autowait(0.8f);
 
       SpawnHatchling();
 
-      autowait(0.3f);
+      autowait(0.8f);
 	}
 
     MaybeSwitchToAnotherPlayer();
@@ -636,7 +730,10 @@ procedures:
   Hit(EVoid) : CEnemyBase::Hit {
     // close attack
     DeactivateRunningSound();
-    StartModelAnim(SPIDERSMALL_ANIM_MELEE, 0);
+    if(m_spType==SP_SMALL ) {
+       StartModelAnim(SPIDERSMALL_ANIM_MELEE, 0); }
+    else  {
+       StartModelAnim(SPIDERBIG_ANIM_MELEE, 0); }
     autowait(0.25f);
     PlaySound(m_soSound, SPIDERSOUND(KICK), SOF_3D);
     if (CalcDist(m_penEnemy) < m_fCloseDistance) {
@@ -651,7 +748,7 @@ procedures:
       }
     }
 
-    autowait(0.1f);
+    autowait(0.4f);
     MaybeSwitchToAnotherPlayer();
     return EReturn();
   };
@@ -669,7 +766,6 @@ procedures:
 
     en_fDensity = 1100.0f;
     // set your appearance
-    SetModel(MODEL_SPIDER);
     StandingAnim();
 
     // setup moving speed
@@ -681,23 +777,26 @@ procedures:
     m_fAttackDistance = 40.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
-    m_bBoss = m_bBeBoss;
-    m_fStopDistance = 4.0f;
-    m_fCloseDistance = 4.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
 
     // damage/explode properties
     if (m_spType == SP_SMALL)
     {
-      m_fAttackRunSpeed = 7.0f;//6
+      m_fAttackRunSpeed = 5.0f;//6
       m_aAttackRotateSpeed = AngleDeg(3600.0f);
       SetHealth(25.0f);
+      SetModel(MODEL_SPIDER);
       SetModelMainTexture(TEXTURE_SPIDER_SMALL);
 	     m_fgibTexture = TEXTURE_SPIDER_SMALL;
+		 m_fgib1 = MODEL_LEG;
+		 m_fgib2 = MODEL_TAIL1;
+		 m_fgib3 = MODEL_TAIL2;
       m_fBlowUpAmount = 50.0f;
       m_fBodyParts = 6;
       m_fDamageWounded = 10.0f;
       m_iScore = 500;//500
+      m_fStopDistance = 4.0f;
+      m_fCloseDistance = 4.0f;
       // set stretch factor
       GetModelObject()->StretchModel(FLOAT3D(SMALL_STRETCH, SMALL_STRETCH, SMALL_STRETCH));
       m_fSize = 1.0f,
@@ -708,11 +807,15 @@ procedures:
     }
     else if (m_spType == SP_BIG)
     {
-      m_fAttackRunSpeed = 11.0f;//8
+      m_fAttackRunSpeed = 9.0f;//8
       m_aAttackRotateSpeed = AngleDeg(600.0f);
       SetHealth(250.0f);
+      SetModel(MODEL_SPIDER_BIG);
       SetModelMainTexture(TEXTURE_SPIDER_BIG);
 	     m_fgibTexture = TEXTURE_SPIDER_BIG;
+		 m_fgib1 = MODEL_LEGBIG;
+		 m_fgib2 = MODEL_TAILBIG;
+		 m_fgib3 = MODEL_JAW;
       m_fBlowUpAmount = 300.0f;//500
       m_fBodyParts = 6;
       m_fDamageWounded = 100.0f;//500
@@ -729,9 +832,10 @@ procedures:
     }
     else // HUGE
     {
-      m_fAttackRunSpeed = 17.0f;
+      m_fAttackRunSpeed = 12.0f;
       m_aAttackRotateSpeed = AngleDeg(600.0f);
       SetHealth(1000.0f);
+      SetModel(MODEL_SPIDER_BIG);
       SetModelMainTexture(TEXTURE_SPIDER_HUGE);
 	     m_fgibTexture = TEXTURE_SPIDER_HUGE;
       m_fBlowUpAmount = 2000.0f;//500
@@ -761,12 +865,12 @@ procedures:
 	  }
     if (m_spType == SP_BIG)
     {
-      CModelObject *pmoFire = &GetModelObject()->GetAttachmentModel(SPIDERSMALL_ATTACHMENT_ELECTRICITY)->amo_moModelObject;
+      CModelObject *pmoFire = &GetModelObject()->GetAttachmentModel(SPIDERBIG_ATTACHMENT_ELECTRICITY)->amo_moModelObject;
       pmoFire->StretchModel(FLOAT3D(2.0, 2.0, 2.0));
 	  }
     if (m_spType == SP_HUGE)
     {
-      CModelObject *pmoFire = &GetModelObject()->GetAttachmentModel(SPIDERSMALL_ATTACHMENT_ELECTRICITY)->amo_moModelObject;
+      CModelObject *pmoFire = &GetModelObject()->GetAttachmentModel(SPIDERBIG_ATTACHMENT_ELECTRICITY)->amo_moModelObject;
       pmoFire->StretchModel(FLOAT3D(8.0, 8.0, 8.0));
 	  }
 
@@ -780,6 +884,9 @@ procedures:
         SetPhysicsFlags(SPIDERSMALL_COLLISION_BOX_PART_NAME);
         break;
       case SPS_GROUND:
+        SetPhysicsFlags(EPF_MODEL_IMMATERIAL|EPF_MOVABLE);
+        break;
+      case SPS_HANG:
         SetPhysicsFlags(EPF_MODEL_IMMATERIAL|EPF_MOVABLE);
         break;
     }

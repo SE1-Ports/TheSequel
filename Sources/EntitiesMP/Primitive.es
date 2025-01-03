@@ -42,7 +42,6 @@ thumbnail "Thumbnails\\Primitive.tbn";
 properties:
   1 enum PrChar m_PrType     "Character" 'C' = PR_SHIELD,
   2 INDEX m_iCounter = 0,
-  3 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   4 BOOL m_bMumbleSoundPlaying = FALSE,
   5 CSoundObject m_soMumble,
   6 BOOL m_bShielded = FALSE,
@@ -654,7 +653,6 @@ procedures:
     m_fAttackDistance = 500.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
-    m_bBoss = m_bBeBoss;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
 
     // damage/explode properties

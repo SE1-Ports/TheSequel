@@ -67,7 +67,6 @@ properties:
   3 enum WaterEnv m_wtrEnv "Environment" 'E' = WTR_NORMAL,
   4 enum WatermanState m_WtrStartState   "State" 'S' = WTRS_NORMAL,
   5 enum WatermanState m_WtrCurrentState = WTRS_NORMAL,
-  7 BOOL m_bWtrBoss  "Boss" 'B' = FALSE,
   8 CSoundObject m_soBackground,  // sound channel for background noise
   9 BOOL m_bSpawnOnBlowUp                 "Blowup spawn" 'B' = TRUE,
  10 BOOL m_bSpawned = FALSE,
@@ -690,7 +689,6 @@ procedures:
     } else {
        en_fDensity = 900.0f;
 	   }
-    m_bBoss = m_bWtrBoss;
     // set your appearance
     SetModel(MODEL_WATERMAN);
     AddAttachment(WATERMAN_ATTACHMENT_BODY_FLARE, MODEL_FLARE, TEXTURE_FLARE);

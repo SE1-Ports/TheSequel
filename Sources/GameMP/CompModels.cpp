@@ -87,6 +87,7 @@
 #include "ModelsMP/Enemies/SS2/ScorpSoldier/ScorpNoGun.h"
 #include "ModelsMP/Enemies/SS2/Spawner/Spawner.h"
 #include "ModelsMP/Enemies/SS3/SpiderSmall/SpiderSmall.h"
+#include "ModelsMP/Enemies/SS3/SpiderBig/SpiderBig.h"
 #include "ModelsMP/Enemies/SS2/MechaSpider/Legs.h"
 #include "ModelsMP/Enemies/SS2/MechaSpider/Body.h"
 #include "ModelsMP/Enemies/SS2/Tank/TankBod.h"
@@ -1005,7 +1006,7 @@ extern void SetupCompModel_t(const CTString &strName)
   } else if (strName=="SpiderSmall") {
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmall.mdl"));
     pmo->PlayAnim(SPIDERSMALL_ANIM_IDLE, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmall.tex"));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmallRedBlue.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-1.0f,-4.0)*2/3, ANGLE3D(160.0f, 0.0f, 0.0f));
     _vLightDir = FLOAT3D( 0.2f, -0.2f, -0.2f);
     _colLight = C_lGRAY;
@@ -1019,15 +1020,15 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="SpiderBig") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmall.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBig.mdl"));
     pmo->PlayAnim(SPIDERSMALL_ANIM_IDLE, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmallRedBlue.tex"));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBigBlueRed.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-8.1f)*2/3, ANGLE3D(160.0f, 0.0f, 0.0f));
     _vLightDir = FLOAT3D( 0.2f, -0.2f, -0.2f);
     _colLight = C_lGRAY;
     _colAmbient = C_vdGRAY;
 
-    AddAttachment_t(pmo, SPIDERSMALL_ATTACHMENT_ELECTRICITY, 
+    AddAttachment_t(pmo, SPIDERBIG_ATTACHMENT_ELECTRICITY, 
       CTFILENAME("ModelsMP\\Enemies\\ExotechLarva\\Projectile\\Projectile.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\ExotechLarva\\Projectile\\Projectile.tex"));
 
@@ -1035,15 +1036,15 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="SpiderHuge") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmall.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBig.mdl"));
     pmo->PlayAnim(SPIDERSMALL_ANIM_IDLE, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderSmall\\SpiderSmallGreenBlue.tex"));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBigBlue.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-6.0f,-24.3f)*2/3, ANGLE3D(160.0f, 0.0f, 0.0f));
     _vLightDir = FLOAT3D( 0.2f, -0.2f, -0.2f);
     _colLight = C_lGRAY;
     _colAmbient = C_vdGRAY;
 
-    AddAttachment_t(pmo, SPIDERSMALL_ATTACHMENT_ELECTRICITY, 
+    AddAttachment_t(pmo, SPIDERBIG_ATTACHMENT_ELECTRICITY, 
       CTFILENAME("ModelsMP\\Enemies\\ExotechLarva\\Projectile\\Projectile.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\ExotechLarva\\Projectile\\Projectile.tex"));
 

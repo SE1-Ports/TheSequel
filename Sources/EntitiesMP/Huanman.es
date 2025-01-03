@@ -44,7 +44,6 @@ thumbnail "Thumbnails\\Huan.tbn";
 properties:
   1 enum HuanChar m_HuType     "Character" 'C' = HUAN_SMALL,
   2 INDEX m_iCounter = 0,
-  3 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   5 INDEX   m_fgibTexture = TEXTURE_HUAN_SMALL,
 
 components:
@@ -462,7 +461,6 @@ procedures:
     m_fAttackDistance = 500.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
-    m_bBoss = m_bBeBoss;
     m_fStopDistance = 5.0f;
     m_fCloseDistance = 5.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);

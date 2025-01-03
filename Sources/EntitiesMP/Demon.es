@@ -50,7 +50,6 @@ properties:
   1 enum DemonType m_deType     "Character" 'C' = DE_NORMAL,
   2 INDEX m_iCounter = 0,
   3 CEntityPointer m_penFireFX,
-  4 BOOL m_bDeBoss  "Boss" 'B' = FALSE,
   5 BOOL m_bSleeping "Statue" 'S' = FALSE,
   6 BOOL  m_bInvulnerable = FALSE,
   8 FLOAT3D m_vSpellTarget = FLOAT3D( 0,0,0),
@@ -845,7 +844,6 @@ procedures:
     m_fAttackFireTime = 5.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 800.0f;
-    m_bBoss = m_bDeBoss;
     m_fStopDistance = 5.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
 

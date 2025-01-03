@@ -51,7 +51,6 @@ thumbnail "Thumbnails\\SpiderMech.tbn";
 
 properties:
   1 enum SpmType m_spmType "Type" 'Y' = SPM_SOLDIER,
-  3 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   4 BOOL m_bWalkSoundPlaying = FALSE,
 
   10 CSoundObject m_soFire1,
@@ -711,7 +710,6 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     en_tmMaxHoldBreath = 5.0f;
     m_sptType = SPT_GOO;
-    m_bBoss = m_bBeBoss;
 
     // set your appearance
     SetModel(MODEL_LEGS);

@@ -66,7 +66,6 @@ thumbnail "Thumbnails\\CEC.tbn";
 properties:
   1 FLOAT m_fHealth            "Health" = 100.0f,
   2 BOOL m_bInvisible "Invisible" 'I'=FALSE,
-  3 BOOL m_bCecBoss  "Boss" 'B' = TRUE,
   4 enum SprayParticlesType m_penSpray "Blood Type" = SPT_BLOOD, // type of particles
   5 FLOAT m_iCecScore                  "Score" = 100.0f,
   6 FLOAT m_iCecSpeed                  "Speed" = 10.0f,
@@ -702,7 +701,6 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     en_fDensity = 1000;
     m_fBlowUpSize = m_fCecBlowUpSize;
-    m_bBoss = m_bCecBoss;
 	m_bRenderParticles = m_bRenderParticles;
 
     // set your appearance

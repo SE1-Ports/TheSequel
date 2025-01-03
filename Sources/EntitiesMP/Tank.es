@@ -41,7 +41,6 @@ properties:
   2 INDEX m_iLoopCounter = 0,
   3 FLOAT m_fSize = 1.0f,
   4 BOOL m_bWalkSoundPlaying = FALSE,
-  5 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
 
   10 CSoundObject m_soFeet,
   11 CSoundObject m_soFire1,
@@ -766,7 +765,6 @@ procedures:
     m_fAttackFireTime = 6.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 1000.0f;
-    m_bBoss = m_bBeBoss;
 
     // continue behavior in base class
     jump CEnemyBase::MainLoop();

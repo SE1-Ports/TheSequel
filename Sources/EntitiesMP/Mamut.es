@@ -51,7 +51,6 @@ properties:
   2 INDEX m_iCounter = 0,
   3 CEntityPointer m_penFireFX,
   6 enum MtEnv m_mtChar "Environment" 'E' = MT_SUMMER,
-  7 BOOL m_bBeBoss  "Boss" 'B' = FALSE,
   8 enum MtType m_mtType "Type" 'Y' = MT_NORMAL,
   9 FLOAT3D m_vTarget = FLOAT3D(0.0f, 0.0f, 0.0f),
  10 FLOAT3D m_vFiringPos      = FLOAT3D(0.0f, 0.0f, 0.0f),
@@ -633,7 +632,6 @@ Fire(EVoid) : CEnemyBase::Fire {
     en_tmMaxHoldBreath = 60.0f;
 
     en_fDensity = 50000.0f;
-    m_bBoss = m_bBeBoss;
     // set your appearance
     SetModel(MODEL_MAMUT);
     m_fSize = 1.3f;
