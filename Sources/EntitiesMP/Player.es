@@ -1124,10 +1124,12 @@ properties:
  161 FLOAT m_tmInvulnerability = 0.0f, 
  162 FLOAT m_tmSeriousDamage   = 0.0f, 
  163 FLOAT m_tmSeriousSpeed    = 0.0f, 
+ 164 FLOAT m_tmSeriousJump    = 0.0f, 
  166 FLOAT m_tmInvisibilityMax    = 30.0f,
  167 FLOAT m_tmInvulnerabilityMax = 30.0f,
  168 FLOAT m_tmSeriousDamageMax   = 40.0f,
  169 FLOAT m_tmSeriousSpeedMax    = 20.0f,
+ 170 FLOAT m_tmSeriousJumpMax    = 20.0f,
 
  180 FLOAT m_tmChainShakeEnd = 0.0f, // used to determine when to stop shaking due to chainsaw damage
  181 FLOAT m_fChainShakeStrength = 1.0f, // strength of shaking
@@ -3394,6 +3396,9 @@ functions:
       case PUIT_SPEED   :  m_tmSeriousSpeed    = tmNow + m_tmSeriousSpeedMax;
         ItemPicked(TRANS("^cFF9400Serious Speed"), 0);
         return TRUE;
+      case PUIT_JUMP   :  m_tmSeriousJump    = tmNow + m_tmSeriousJumpMax;
+        ItemPicked(TRANS("^cFF9400Serious Jump"), 0);
+        return TRUE;
       case PUIT_BOMB    :
         m_iSeriousBombCount++;
         ItemPicked(TRANS("^cFF0000Serious Bomb!"), 0);
@@ -3972,6 +3977,8 @@ functions:
 
   void ActiveActions(const CPlayerAction &paAction)
   {
+      const FLOAT tmNow = _pTimer->CurrentTick();
+
     // translation
     FLOAT3D vTranslation = paAction.pa_vTranslation;
     // turbo speed cheat
@@ -3986,10 +3993,15 @@ functions:
     }
 
     // enable faster moving (but not higher jumping!) if having SerousSpeed powerup
-    const TIME tmDelta = m_tmSeriousSpeed - _pTimer->CurrentTick();
-    if( tmDelta>0 && m_fAutoSpeed==0.0f) { 
+    if (m_tmSeriousSpeed>tmNow) {
       vTranslation(1) *= 2.0f;
       vTranslation(3) *= 2.0f;
+    }
+
+    // enable higher jumping if having SerousJump powerup
+    const TIME tmDelta = m_tmSeriousJump - _pTimer->CurrentTick();
+    if( tmDelta>0 && m_fAutoSpeed==0.0f) { 
+      vTranslation(2) *= 2.5f;
     }
     
     en_fAcceleration = plr_fAcceleration;
@@ -5025,6 +5037,7 @@ functions:
     m_tmInvulnerability = 0.0f, 
     m_tmSeriousDamage   = 0.0f, 
     m_tmSeriousSpeed    = 0.0f, 
+    m_tmSeriousJump    = 0.0f, 
 
     // initialize animator
     ((CPlayerAnimator&)*m_penAnimator).Initialize();
@@ -5446,6 +5459,9 @@ functions:
         }
         if (m_tmSeriousSpeed>tmNow) {
           Particles_RunAfterBurner(this, m_tmSeriousSpeed, 0.3f, 0);
+        }
+        if (m_tmSeriousJump>tmNow) {
+          Particles_RunAfterBurner(this, m_tmSeriousJump, 0.3f, 0);
         }
       }
     }
