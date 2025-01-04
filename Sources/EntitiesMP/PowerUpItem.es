@@ -14,6 +14,7 @@ enum PowerUpItemType {
   2 PUIT_DAMAGE   "SeriousDamage",
   3 PUIT_SPEED    "SeriousSpeed",
   4 PUIT_BOMB     "SeriousBomb",
+  5 PUIT_JUMP     "SeriousJump",
 };
 
 // event for sending through receive item
@@ -52,6 +53,10 @@ components:
 // ********* SERIOUS BOMB *********
  40 model   MODEL_BOMB      "ModelsMP\\Items\\PowerUps\\SeriousBomb\\SeriousBomb.mdl",
  41 texture TEXTURE_BOMB    "ModelsMP\\Items\\PowerUps\\SeriousBomb\\SeriousBomb.tex",
+
+// ********* SERIOUS JUMP *********
+ 60 model   MODEL_JUMP      "ModelsMP\\Items\\PowerUps\\SeriousJump\\SeriousJump.mdl",
+ 61 texture TEXTURE_JUMP    "ModelsMP\\Items\\PowerUps\\SeriousJump\\SeriousJump.tex",
 
  // ********* MISC *********
  50 texture TEXTURE_SPECULAR_STRONG  "ModelsMP\\SpecularTextures\\Strong.tex",
@@ -98,6 +103,7 @@ functions:
     case PUIT_INVULNER:  pes->es_strName += " invulnerability";  break;
     case PUIT_DAMAGE  :  pes->es_strName += " serious damage";   break;
     case PUIT_SPEED   :  pes->es_strName += " serious speed";    break;
+    case PUIT_JUMP    :  pes->es_strName += " serious jump";    break;
     case PUIT_BOMB    :  pes->es_strName = "Serious Bomb!"; 
     }
     return TRUE;
@@ -126,6 +132,9 @@ functions:
         break;
       case PUIT_BOMB:
         Particles_Atomic(this, 2.0f*0.75f, 2.0f*0.95f, PT_STAR05, 12);
+        break;
+      case PUIT_JUMP:
+        Particles_Stardust( this, 1.0f*0.75f, 0.75f*0.75f, PT_STAR08, 128);
         break;
     }
   }
@@ -180,6 +189,15 @@ functions:
         AddFlare( MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );  // add flare
         StretchItem( FLOAT3D(1.0f*3.0f, 1.0f*3.0f, 1.0f*3.0));
         break;
+      case PUIT_JUMP:
+        StartModelAnim( ITEMHOLDER_ANIM_SMALLOSCILATION, AOF_LOOPING|AOF_NORESTART);
+        ForceCollisionBoxIndexChange( ITEMHOLDER_COLLISION_BOX_BIG);
+        m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 40.0f; 
+        m_strDescription.PrintF("SeriousJump");
+        AddItem(  MODEL_JUMP, TEXTURE_JUMP, 0, 0, 0);  // set appearance
+        AddFlare( MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );  // add flare
+        StretchItem( FLOAT3D(1.0f*0.75f, 1.0f*0.75f, 1.0f*0.75));
+        break;
     }
   };
 
@@ -223,6 +241,7 @@ procedures:
           case PUIT_DAMAGE:   IFeel_PlayEffect("PU_Invulnerability"); break;
           case PUIT_SPEED:    IFeel_PlayEffect("PU_FastShoes"); break; 
           case PUIT_BOMB:     IFeel_PlayEffect("PU_SeriousBomb"); break; 
+          case PUIT_JUMP:     IFeel_PlayEffect("PU_FastShoes"); break; 
         }
       }
       
