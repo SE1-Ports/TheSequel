@@ -1021,7 +1021,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="SpiderBig") {
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBig.mdl"));
-    pmo->PlayAnim(SPIDERSMALL_ANIM_IDLE, AOF_LOOPING);
+    pmo->PlayAnim(SPIDERBIG_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBigBlueRed.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-8.1f)*2/3, ANGLE3D(160.0f, 0.0f, 0.0f));
     _vLightDir = FLOAT3D( 0.2f, -0.2f, -0.2f);
@@ -1037,7 +1037,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="SpiderHuge") {
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBig.mdl"));
-    pmo->PlayAnim(SPIDERSMALL_ANIM_IDLE, AOF_LOOPING);
+    pmo->PlayAnim(SPIDERBIG_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS3\\SpiderBig\\SpiderBigBlue.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-6.0f,-24.3f)*2/3, ANGLE3D(160.0f, 0.0f, 0.0f));
     _vLightDir = FLOAT3D( 0.2f, -0.2f, -0.2f);
