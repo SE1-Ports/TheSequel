@@ -560,9 +560,10 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON);
     break;
   case PRT_GRUNT_PROJECTILE_SNIPER:
-    pdec->PrecacheModel(MODEL_GRUNT_PROJECTILE           );
-    pdec->PrecacheTexture(TEXTURE_GRUNT_PROJECTILE_03    );
+    pdec->PrecacheModel(MODEL_HYDROGUN           );
+    pdec->PrecacheTexture(TEXTURE_GUFFY_PROJECTILE    );
     pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_LASERWAVE);
+    pdec->PrecacheClass(CLASS_BLOOD_SPRAY);
     pdec->PrecacheSound(SOUND_FLYING02  );
     break;
   case PRT_BOMB:
@@ -3428,17 +3429,16 @@ void GruntSniperLaser(void) {
   }
   // set appearance
   InitAsModel();
-  SetPhysicsFlags(EPF_PROJECTILE_FLYING);
-  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
-  SetFlags(GetFlags() | ENF_SEETHROUGH);
-  SetModel(MODEL_GRUNT_PROJECTILE);
+  SetPhysicsFlags(EPF_MODEL_FREE_FLYING);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetModel(MODEL_HYDROGUN);
   CModelObject *pmo = GetModelObject();
   if(pmo != NULL)
   {
-    pmo->PlayAnim(GRUNTPROJECTILE_ANIM_DEFAULT, 0);
+    pmo->PlayAnim(GUFFYPROJECTILE_ANIM_ROTATE01, AOF_LOOPING);
   }
-  SetModelMainTexture(TEXTURE_GRUNT_PROJECTILE_03);
-  GetModelObject()->StretchModel(FLOAT3D(1.5f, 1.5f, 1.5f));
+  SetModelMainTexture(TEXTURE_GUFFY_PROJECTILE);
+  GetModelObject()->StretchModel(FLOAT3D(0.6f, 0.6f, 0.6f));
   // play the flying sound
   m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
   PlaySound(m_soEffect, SOUND_FLYING02, SOF_3D|SOF_LOOP);
@@ -3446,19 +3446,19 @@ void GruntSniperLaser(void) {
   LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -40.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   m_fFlyTime = 5.0f;
-  m_fDamageAmount = 10.0f;
+  m_fDamageAmount = 7.0f;
   m_fSoundRange = 0.0f;
   m_bExplode = FALSE;
   m_bLightSource = TRUE;
   m_bCanHitHimself = FALSE;
-  m_bCanBeDestroyed = FALSE;
+  m_bCanBeDestroyed = TRUE;
   m_fWaitAfterDeath = 0.0f;
   m_tmExpandBox = 0.1f;
   // time when laser ray becomes visible
   m_tmInvisibility = 0.025f;
   m_pmtMove = PMT_GUIDED;
-  m_fGuidedMaxSpeedFactor = 40.0f;
-  m_aRotateSpeed = 80.0f;
+  m_fGuidedMaxSpeedFactor = 30.0f;
+  m_aRotateSpeed = 90.0f;
   SetHealth(10.0f);
 };
 
@@ -6477,6 +6477,7 @@ procedures:
       case PRT_GRUNTBOMB: GruntBombExplosion(); break;
       case PRT_NUKE: NukeExplosion(); break;
       case PRT_LARVA_HIVEBRAIN: LarvaBrainExplosion(); break;
+      case PRT_GRUNT_PROJECTILE_SNIPER: HydroExplosion(); break;
     }
 
     // wait after death

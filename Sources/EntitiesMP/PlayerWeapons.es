@@ -2126,7 +2126,8 @@ functions:
                 IsOfClass(crRay.cr_penHit, "Sentry") ||
                 IsOfClass(crRay.cr_penHit, "Spawner"))    {sptType=SPT_ELECTRICITY_SPARKS; fPower=30.0f;}
             if( IsOfClass(crRay.cr_penHit, "AirElemental") ||
-			    IsOfClass(crRay.cr_penHit, "Waterman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f;}
+			    IsOfClass(crRay.cr_penHit, "Waterman") ||
+			    IsOfClass(crRay.cr_penHit, "Airman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f;}
             if( IsOfClass(crRay.cr_penHit, "CannonRotating") ||
                 IsOfClass(crRay.cr_penHit, "CannonStatic"))    {sptType=SPT_WOOD;}
             if( IsOfClass(crRay.cr_penHit, "ModelHolder2"))
@@ -2277,7 +2278,8 @@ functions:
                 IsOfClass(crRay.cr_penHit, "Sentry") ||
                 IsOfClass(crRay.cr_penHit, "Spawner"))    {sptType=SPT_ELECTRICITY_SPARKS; fPower=30.0f;}
             if( IsOfClass(crRay.cr_penHit, "AirElemental") ||
-			    IsOfClass(crRay.cr_penHit, "Waterman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f;}
+			    IsOfClass(crRay.cr_penHit, "Waterman") ||
+			    IsOfClass(crRay.cr_penHit, "Airman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f;}
             if( IsOfClass(crRay.cr_penHit, "CannonRotating") ||
                 IsOfClass(crRay.cr_penHit, "CannonStatic"))    {sptType=SPT_WOOD;}
             if( IsOfClass(crRay.cr_penHit, "ModelHolder2"))
@@ -2709,10 +2711,116 @@ functions:
   };
   
   // fire plasma alt
-  void FirePlasmaRayAlt(void) {
+  void FirePlasmaRayAlt1(void) {
     // laser start position
     CPlacement3D plPlasmaRay;
-    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 12);
+    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 2);
+    plPlasmaRay.Rotate_Airplane(ANGLE3D(0,3,0));
+    // create laser projectile
+    CEntityPointer penLaser = CreateEntity(plPlasmaRay, CLASS_PROJECTILE);
+    // init and launch laser projectile
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = m_penPlayer;
+    eLaunch.prtType = PRT_PLASMABOLT;
+    penLaser->Initialize(eLaunch);
+  };
+  
+  // fire plasma alt
+  void FirePlasmaRayAlt2(void) {
+    // laser start position
+    CPlacement3D plPlasmaRay;
+    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 2);
+    plPlasmaRay.Rotate_Airplane(ANGLE3D(3,1.5,0));
+    // create laser projectile
+    CEntityPointer penLaser = CreateEntity(plPlasmaRay, CLASS_PROJECTILE);
+    // init and launch laser projectile
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = m_penPlayer;
+    eLaunch.prtType = PRT_PLASMABOLT;
+    penLaser->Initialize(eLaunch);
+  };
+  
+  // fire plasma alt
+  void FirePlasmaRayAlt3(void) {
+    // laser start position
+    CPlacement3D plPlasmaRay;
+    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 2);
+    plPlasmaRay.Rotate_Airplane(ANGLE3D(6,0,0));
+    // create laser projectile
+    CEntityPointer penLaser = CreateEntity(plPlasmaRay, CLASS_PROJECTILE);
+    // init and launch laser projectile
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = m_penPlayer;
+    eLaunch.prtType = PRT_PLASMABOLT;
+    penLaser->Initialize(eLaunch);
+  };
+  
+  // fire plasma alt
+  void FirePlasmaRayAlt4(void) {
+    // laser start position
+    CPlacement3D plPlasmaRay;
+    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 2);
+    plPlasmaRay.Rotate_Airplane(ANGLE3D(3,-1.5,0));
+    // create laser projectile
+    CEntityPointer penLaser = CreateEntity(plPlasmaRay, CLASS_PROJECTILE);
+    // init and launch laser projectile
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = m_penPlayer;
+    eLaunch.prtType = PRT_PLASMABOLT;
+    penLaser->Initialize(eLaunch);
+  };
+  
+  // fire plasma alt
+  void FirePlasmaRayAlt5(void) {
+    // laser start position
+    CPlacement3D plPlasmaRay;
+    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 2);
+    plPlasmaRay.Rotate_Airplane(ANGLE3D(0,-3,0));
+    // create laser projectile
+    CEntityPointer penLaser = CreateEntity(plPlasmaRay, CLASS_PROJECTILE);
+    // init and launch laser projectile
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = m_penPlayer;
+    eLaunch.prtType = PRT_PLASMABOLT;
+    penLaser->Initialize(eLaunch);
+  };
+  
+  // fire plasma alt
+  void FirePlasmaRayAlt6(void) {
+    // laser start position
+    CPlacement3D plPlasmaRay;
+    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 2);
+    plPlasmaRay.Rotate_Airplane(ANGLE3D(-3,-1.5,0));
+    // create laser projectile
+    CEntityPointer penLaser = CreateEntity(plPlasmaRay, CLASS_PROJECTILE);
+    // init and launch laser projectile
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = m_penPlayer;
+    eLaunch.prtType = PRT_PLASMABOLT;
+    penLaser->Initialize(eLaunch);
+  };
+  
+  // fire plasma alt
+  void FirePlasmaRayAlt7(void) {
+    // laser start position
+    CPlacement3D plPlasmaRay;
+    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 2);
+    plPlasmaRay.Rotate_Airplane(ANGLE3D(-6,0,0));
+    // create laser projectile
+    CEntityPointer penLaser = CreateEntity(plPlasmaRay, CLASS_PROJECTILE);
+    // init and launch laser projectile
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = m_penPlayer;
+    eLaunch.prtType = PRT_PLASMABOLT;
+    penLaser->Initialize(eLaunch);
+  };
+  
+  // fire plasma alt
+  void FirePlasmaRayAlt8(void) {
+    // laser start position
+    CPlacement3D plPlasmaRay;
+    CalcWeaponPositionImprecise(FLOAT3D(wpn_fFX[WEAPON_PLASMA],wpn_fFY[WEAPON_PLASMA], 0), plPlasmaRay, TRUE, 2);
+    plPlasmaRay.Rotate_Airplane(ANGLE3D(-3,1.5,0));
     // create laser projectile
     CEntityPointer penLaser = CreateEntity(plPlasmaRay, CLASS_PROJECTILE);
     // init and launch laser projectile
@@ -6447,21 +6555,21 @@ procedures:
       PlaySound(pl.m_soWeapon0, SOUND_PLASMA_FIRE_ALT, SOF_3D|SOF_VOLUMETRIC);
       autowait(m_moWeapon.GetAnimLength(LASER_ANIM_FIRE)/2);
       m_moWeapon.PlayAnim(LASER_ANIM_FIRE, AOF_LOOPING|AOF_NORESTART);
-      FirePlasmaRayAlt();
-      FirePlasmaRayAlt();
-      FirePlasmaRayAlt();
-      FirePlasmaRayAlt();
-      FirePlasmaRayAlt();
-      FirePlasmaRayAlt();
-      FirePlasmaRayAlt();
-      FirePlasmaRayAlt();
+      FirePlasmaRayAlt1();
+      FirePlasmaRayAlt2();
+      FirePlasmaRayAlt3();
+      FirePlasmaRayAlt4();
+      FirePlasmaRayAlt5();
+      FirePlasmaRayAlt6();
+      FirePlasmaRayAlt7();
+      FirePlasmaRayAlt8();
       if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("Plasma_fire");}
-      DecAmmo(m_iPlasma, 5);
+      DecAmmo(m_iPlasma, 8);
       // sound
       SpawnRangeSound(20.0f);
       autowait(0.5f);
       // no plasma -> change weapon
-      if (m_iPlasma<=4) { SelectNewWeapon(); }
+      if (m_iPlasma<=7) { SelectNewWeapon(); }
     } else {
       ASSERTALWAYS("Plasma - Auto weapon change not working.");
       m_bFireWeapon = m_bHasAmmo = FALSE;
