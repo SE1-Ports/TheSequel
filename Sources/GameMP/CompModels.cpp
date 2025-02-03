@@ -1188,6 +1188,24 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->StretchModel(FLOAT3D(1.5f,1.5f,1.5f));
     _bHasFloor = TRUE;
 
+  } else if (strName=="WalkerCP") {
+    pmo->SetData_t(CTFILENAME("Models\\Enemies\\Walker\\Walker.mdl"));
+    pmo->PlayAnim(WALKER_ANIM_WALKBIG, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Walker\\WalkerBlack.tex"));
+    AddAttachment_t(pmo, WALKER_ATTACHMENT_ROCKETLAUNCHER_LT, 
+      CTFILENAME("Models\\Enemies\\Walker\\RocketLauncher.mdl"), 0,
+      CTFILENAME("ModelsMP\\Enemies\\Walker\\RocketLauncherBlack.tex"),
+      CTFILENAME(""),
+      CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
+    AddAttachment_t(pmo, WALKER_ATTACHMENT_ROCKETLAUNCHER_RT, 
+      CTFILENAME("Models\\Enemies\\Walker\\RocketLauncher.mdl"), 0,
+      CTFILENAME("ModelsMP\\Enemies\\Walker\\RocketLauncherBlack.tex"),
+      CTFILENAME(""),
+      CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,-7.0f,-19.0), ANGLE3D(210,0,0));
+    pmo->StretchModel(FLOAT3D(2,2,2));
+    _bHasFloor = TRUE;
+
   } else if (strName=="Lurker") {
     pmo->SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\Lurker\\Lurker.mdl"));
     pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));

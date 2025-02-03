@@ -45,6 +45,7 @@ enum WalkerChar {
   1 WLC_SERGEANT  "Sergeant",   // sergeant
   2 WLC_CANNON	  "Artillery",  // cannon
   3 WLC_MG   	  "Gunner",     // gunner
+  4 WLC_CP   	  "CaptainPelmen",     // gunner
 };
 
 %{
@@ -59,6 +60,7 @@ static EntityInfo eiWalker = {
 #define SIZE_SERGEANT  (1.0f)
 #define SIZE_CANNON    (1.5f)
 #define SIZE_MG        (0.8f)
+#define SIZE_CP        (1.75f)
 #define FIRE_LEFT_ARM	   FLOAT3D(-2.5f, 5.0f, 0.0f)
 #define FIRE_LEFT_CANNON   FLOAT3D(-2.5f, 5.0f, -1.0f)
 #define FIRE_RIGHT_ARM	   FLOAT3D(+2.5f, 5.0f, 0.0f)
@@ -110,11 +112,13 @@ components:
  13 texture TEXTURE_WALKER_SERGEANT   "Models\\Enemies\\Walker\\Walker01.tex",
  14 texture TEXTURE_WALKER_CANNON     "ModelsMP\\JAREP01\\Rakanishu\\Walker\\Walker03.tex",
  21 texture TEXTURE_WALKER_MG         "ModelsMP\\Enemies\\Walker\\WalkerYellow.tex",
+ 27 texture TEXTURE_WALKER_CP         "ModelsMP\\Enemies\\Walker\\WalkerBlack.tex",
 
  15 model   MODEL_LASER               "Models\\Enemies\\Walker\\Laser.mdl",
  16 texture TEXTURE_LASER             "Models\\Enemies\\Walker\\Laser.tex",
  17 model   MODEL_ROCKETLAUNCHER      "Models\\Enemies\\Walker\\RocketLauncher.mdl",
  18 texture TEXTURE_ROCKETLAUNCHER    "Models\\Enemies\\Walker\\RocketLauncher.tex",
+ 28 texture TEXTURE_ROCKETLAUNCHERCP  "ModelsMP\\Enemies\\Walker\\RocketLauncherBlack.tex",
  19 model   MODEL_CANNONWALKER        "ModelsMP\\JAREP01\\Rakanishu\\Walker\\CannonWalker.mdl", // weapon 
  20 texture TEXTURE_CANNONWALKER      "ModelsMP\\JAREP01\\Rakanishu\\Walker\\CannonWalker.tex", // weapon
 
@@ -163,12 +167,14 @@ functions:
     static DECLARE_CTFILENAME(fnmSergeant, "Data\\Messages\\Enemies\\WalkerBig.txt");
 	static DECLARE_CTFILENAME(fnmCannon,   "DataMP\\Messages\\Enemies\\JAREP01\\WalkerLarge.txt");
 	static DECLARE_CTFILENAME(fnmMg,       "DataMP\\Messages\\Enemies\\JAREP01\\WalkerMG.txt");
+	static DECLARE_CTFILENAME(fnmCp,       "DataF\\Messages\\Enemies\\WalkerCP.txt");
     switch(m_EwcChar) {
     default: ASSERT(FALSE);
     case WLC_SOLDIER:   return fnmSoldier;
     case WLC_SERGEANT:  return fnmSergeant;
 	case WLC_CANNON:    return fnmCannon;
 	case WLC_MG:        return fnmMg;
+	case WLC_CP:        return fnmCp;
     }
   }
   // overridable function to get range for switching to another player
@@ -260,6 +266,22 @@ functions:
       PrecacheTexture(TEXTURE_CANNONWALKER);
       // projectile
       PrecacheClass(CLASS_CANNONBALL, CBT_IRON);
+    } else if (m_EwcChar==WLC_CP)
+    {
+      PrecacheModel(MODEL_WALKER);
+	  // sounds
+      PrecacheSound(SOUND_SERGEANT_IDLE);
+      PrecacheSound(SOUND_SERGEANT_SIGHT);
+      PrecacheSound(SOUND_SERGEANT_DEATH);
+      PrecacheSound(SOUND_SERGEANT_FIRE_ROCKET);
+      PrecacheSound(SOUND_SERGEANT_WALK);
+      // model's texture
+      PrecacheTexture(TEXTURE_WALKER_CP);
+      // weapon
+      PrecacheModel(MODEL_ROCKETLAUNCHER);
+      PrecacheTexture(TEXTURE_ROCKETLAUNCHERCP);
+      // projectile
+      PrecacheClass(CLASS_PROJECTILE, PRT_WALKER_ROCKET);
     }
   };
   /* Entity info */
@@ -306,7 +328,7 @@ functions:
   }
   void WalkingAnim(void) {
     ActivateWalkingSound();
-    if (m_EwcChar==WLC_SERGEANT || m_EwcChar==WLC_CANNON) {
+    if (m_EwcChar==WLC_SERGEANT || m_EwcChar==WLC_CANNON || m_EwcChar==WLC_CP) {
       StartModelAnim(WALKER_ANIM_WALKBIG, AOF_LOOPING|AOF_NORESTART);
     } else {
       StartModelAnim(WALKER_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
@@ -707,6 +729,43 @@ procedures:
       }
 	}
 
+    // pelmen rockets
+    if (m_EwcChar==WLC_CP) {
+      StartModelAnim(WALKER_ANIM_FIRERIGHT, AOF_LOOPING);
+      ShootProjectile(PRT_WALKER_ROCKET, FIRE_RIGHT_ARM*m_fSize, ANGLE3D(0, 0, 0));
+      PlaySound(m_soFire1, SOUND_SERGEANT_FIRE_ROCKET, SOF_3D);
+      if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+        m_fLockOnEnemyTime = 1.0f;
+      } else {
+        m_fLockOnEnemyTime = 0.5f;
+      }
+      autocall CEnemyBase::LockOnEnemy() EReturn;
+      StartModelAnim(WALKER_ANIM_FIRELEFT, AOF_LOOPING);
+      ShootProjectile(PRT_WALKER_ROCKET, FIRE_LEFT_ARM*m_fSize, ANGLE3D(0, 0, 0));
+      PlaySound(m_soFire2, SOUND_SERGEANT_FIRE_ROCKET, SOF_3D);
+      if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+        m_fLockOnEnemyTime = 1.0f;
+      } else {
+        m_fLockOnEnemyTime = 0.5f;
+      }
+      autocall CEnemyBase::LockOnEnemy() EReturn;
+      StartModelAnim(WALKER_ANIM_FIRERIGHT, AOF_LOOPING);
+      ShootProjectile(PRT_WALKER_ROCKET, FIRE_RIGHT_ARM*m_fSize, ANGLE3D(-10, 0, 0));
+      PlaySound(m_soFire1, SOUND_SERGEANT_FIRE_ROCKET, SOF_3D);
+      if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
+        m_fLockOnEnemyTime = 1.0f;
+      } else {
+        m_fLockOnEnemyTime = 0.5f;
+      }
+      autocall CEnemyBase::LockOnEnemy() EReturn;
+      StartModelAnim(WALKER_ANIM_FIRELEFT, AOF_LOOPING);
+      ShootProjectile(PRT_WALKER_ROCKET, FIRE_LEFT_ARM*m_fSize, ANGLE3D(10, 0, 0));
+      PlaySound(m_soFire2, SOUND_SERGEANT_FIRE_ROCKET, SOF_3D);
+
+//      m_fLockOnEnemyTime = 0.25f;
+//      autocall CEnemyBase::LockOnEnemy() EReturn;
+      } 
+
     StopMoving();
 
     MaybeSwitchToAnotherPlayer();
@@ -780,6 +839,14 @@ procedures:
       }
       PlaySound(m_soFire2, SOUND_GUNNER_FIRE_BULLET, SOF_3D);
     }
+    if (m_EwcChar==WLC_CP) {
+      if (IRnd()&1) {
+        FireDeathRocket(FIRE_DEATH_RIGHT*m_fSize);
+      } else {
+        FireDeathRocket(FIRE_DEATH_LEFT*m_fSize);
+      }
+      PlaySound(m_soSound, SOUND_SERGEANT_FIRE_ROCKET, SOF_3D);
+    }
     autowait(0.25f);
 
     FLOAT fStretch=2.0f;
@@ -826,6 +893,9 @@ procedures:
     } else if (m_EwcChar==WLC_CANNON) {
       SetHealth(1500.0f);
       m_fMaxHealth = 1500.0f;
+    } else if (m_EwcChar==WLC_CP) {
+      SetHealth(9000.0f);
+      m_fMaxHealth = 9000.0f;
     }
     en_fDensity = 3000.0f;
 
@@ -900,13 +970,29 @@ procedures:
       AddAttachment(WALKER_ATTACHMENT_ROCKETLAUNCHER_RT, MODEL_CANNONWALKER, TEXTURE_CANNONWALKER);
       GetModelObject()->StretchModel(FLOAT3D(1.5f,1.5f,1.5f));
       ModelChangeNotify();
-      CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(WALKERCANNON_ATTACHMENT_CANNON_RT)->amo_moModelObject;
+      CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(WALKER_ATTACHMENT_ROCKETLAUNCHER_RT)->amo_moModelObject;
       pmoRight->StretchModel(FLOAT3D(-1.5f,1.5f,1.5f));
       m_fBlowUpAmount = 1E10f;
       //m_fBlowUpAmount = 100.0f;
       //m_bRobotBlowup = TRUE;
       m_iScore = 10000;
       m_fThreatDistance = 25;
+      m_fAttackFireTime = 6.0f;
+    } else if (m_EwcChar==WLC_CP) {
+      SetModel(MODEL_WALKER);
+	  m_fSize = 1.75f;
+      SetModelMainTexture(TEXTURE_WALKER_CP);
+      AddAttachment(WALKER_ATTACHMENT_ROCKETLAUNCHER_LT, MODEL_ROCKETLAUNCHER, TEXTURE_ROCKETLAUNCHERCP);
+      AddAttachment(WALKER_ATTACHMENT_ROCKETLAUNCHER_RT, MODEL_ROCKETLAUNCHER, TEXTURE_ROCKETLAUNCHERCP);
+      GetModelObject()->StretchModel(FLOAT3D(1.75f,1.75f,1.75f));
+      ModelChangeNotify();
+      CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(WALKERCANNON_ATTACHMENT_CANNON_RT)->amo_moModelObject;
+      pmoRight->StretchModel(FLOAT3D(-1.75f,1.75f,1.75f));
+      m_fBlowUpAmount = 1E10f;
+      //m_fBlowUpAmount = 100.0f;
+      //m_bRobotBlowup = TRUE;
+      m_iScore = 50000;
+      m_fThreatDistance = 50;
       m_fAttackFireTime = 6.0f;
     }
     if (m_fStepHeight==-1) {

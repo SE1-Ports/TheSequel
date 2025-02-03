@@ -1156,6 +1156,7 @@ properties:
   ULONG ulReleasedButtons;
 
   BOOL  bUseButtonHeld;
+  BOOL m_bSecondaryButtonHeld; // only ever used to do sniper zooming
 
   // listener
   CSoundListener sliSound;
@@ -1370,6 +1371,7 @@ functions:
   {
     // clear flying shells data array
     bUseButtonHeld = FALSE;
+    m_bSecondaryButtonHeld = FALSE;
     ClearShellLaunchData();
     ClearBulletSprayLaunchData();
     ClearGoreSprayLaunchData();
@@ -3678,7 +3680,7 @@ functions:
     CPlayerWeapons *penWeapon = GetPlayerWeapons();
     if ((penWeapon->m_iCurrentWeapon == WEAPON_SNIPER) || (penWeapon->m_iCurrentWeapon == WEAPON_TOMMYGUN))
     {
-      if (bUseButtonHeld && m_ulFlags&PLF_ISZOOMING)
+      if (m_bSecondaryButtonHeld && m_ulFlags&PLF_ISZOOMING)
       {
         penWeapon->m_fSniperFOVlast = penWeapon->m_fSniperFOV;
         penWeapon->m_fSniperFOV -= penWeapon->m_fSnipingZoomSpeed;
@@ -3689,7 +3691,7 @@ functions:
           if(_pNetwork->IsPlayerLocal(this)) {IFeel_StopEffect("SniperZoom");}
         }
       }
-      if (ulReleasedButtons&PLACT_USE_HELD)
+      if (ulReleasedButtons&PLACT_FIRE_SECONDARY)
       {
          penWeapon->m_fSniperFOVlast = penWeapon->m_fSniperFOV;
          PlaySound(m_soSniperZoom, SOUND_SILENCE, SOF_3D);
@@ -4481,6 +4483,33 @@ functions:
     }
   };
 
+  void PressSecondaryFire(BOOL b)
+  {
+    m_bSecondaryButtonHeld = b;
+
+    if (m_bSecondaryButtonHeld) {
+      CPlayerWeapons* penWeapon = GetPlayerWeapons();
+
+      // penWeapon->m_iWantedWeapon==WEAPON_SNIPER) =>
+      // make sure that weapon transition is not in progress
+      if (penWeapon->m_iCurrentWeapon==WEAPON_SNIPER && 
+          penWeapon->m_iWantedWeapon==WEAPON_SNIPER) {
+        if (m_ulFlags&PLF_ISZOOMING) {
+          m_ulFlags&=~PLF_ISZOOMING;
+          penWeapon->m_bSniping = FALSE;
+          penWeapon->m_fSniperFOVlast = penWeapon->m_fSniperFOV = penWeapon->m_fSniperMaxFOV;
+          PlaySound(m_soSniperZoom, SOUND_SILENCE, SOF_3D);
+        }
+        else {
+          penWeapon->m_bSniping = TRUE;
+          m_ulFlags|=PLF_ISZOOMING;
+          penWeapon->m_fSniperFOVlast = penWeapon->m_fSniperFOV = penWeapon->m_fMinimumZoomFOV;
+          PlaySound(m_soSniperZoom, SOUND_SNIPER_ZOOM, SOF_3D|SOF_LOOP);
+        }
+      }
+    }
+  }
+
 
   // Buttons actions
   void ButtonsActions( CPlayerAction &paAction)
@@ -4527,26 +4556,6 @@ functions:
     if (ulReleasedButtons&PLACT_FIRE) {
       ((CPlayerWeapons&)*m_penWeapons).SendEvent(EReleaseWeapon());
     }
-    // if secondary fire is pressed
-    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_PLASMA))) {
-      ((CPlayerWeapons&)*m_penWeapons).SendEvent(ESecFireWeapon());
-    }
-    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_GRENADELAUNCHER))) {
-      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EClusterGrenade());
-    }
-    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_ROCKETLAUNCHER))) {
-      ((CPlayerWeapons&)*m_penWeapons).SendEvent(ESecFireWeapon());
-    }
-    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_IRONCANNON))) {
-      ((CPlayerWeapons&)*m_penWeapons).SendEvent(ENukeBall());
-    }
-    if (((ulNewButtons&PLACT_FIRE_SECONDARY && ((CPlayerWeapons&)*m_penWeapons).m_iCurrentWeapon==WEAPON_DOUBLESHOTGUN))) {
-      ((CPlayerWeapons&)*m_penWeapons).SendEvent(ESecFireWeapon());
-    }
-    // if secondary fire is released
-    if (ulReleasedButtons&PLACT_FIRE_SECONDARY) {
-      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EReleaseSecFireWeapon());
-    }
     // if fire bomb is pressed
     if (ulNewButtons&PLACT_FIREBOMB) {
       if (m_iSeriousBombCount>0 && m_tmSeriousBombFired+4.0f<_pTimer->CurrentTick()) {
@@ -4559,6 +4568,15 @@ functions:
         CEntityPointer penBomb = CreateEntity(GetPlacement(), CLASS_SERIOUSBOMB);
         penBomb->Initialize(esb);
       }
+    }
+    
+    // secondary fire
+    if (ulNewButtons&PLACT_FIRE_SECONDARY)  {
+      ((CPlayerWeapons&)*m_penWeapons).SendEvent(ESecFireWeapon());
+    }
+
+    if (ulReleasedButtons&PLACT_FIRE_SECONDARY) {
+      ((CPlayerWeapons&)*m_penWeapons).SendEvent(EReleaseSecFireWeapon());
     }
     
     

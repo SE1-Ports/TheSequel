@@ -79,6 +79,11 @@ properties:
   12 CSoundObject m_soFire3,
   13 CSoundObject m_soFire4,
 
+  15 BOOL m_bRenderElectricity = FALSE,                   // if electricity particles are rendered
+  16 FLOAT3D m_vBeamSource = FLOAT3D( 0,0,0),      // position of electricity ray target
+  17 FLOAT3D m_vBeamTarget = FLOAT3D( 0,0,0),      // position of electricity ray target
+  18 FLOAT m_tmTemp = 0,
+
 // class internal
     
 components:
@@ -151,6 +156,18 @@ functions:
       return &eiGruntHeavy;
     }
   };
+
+  // render particles
+  void RenderParticles(void)
+  {
+    if( m_bRenderElectricity)
+    {
+      // calculate electricity ray source pos
+      Particles_GreenLaser(this, m_vBeamSource, m_vBeamTarget, 0.1f);
+    }
+
+    CEnemyBase::RenderParticles();
+  }
 
   virtual const CTFileName &GetComputerMessageName(void) const {
     static DECLARE_CTFILENAME(fnmSoldier,     "DataMP\\Messages\\Enemies\\GruntSoldier.txt");
@@ -536,10 +553,56 @@ procedures:
   // Sniper attack
   SniperAttack(EVoid) {
     StandingAnimFight();
-    autowait(0.2f + FRnd()*0.25f);
 
+    // start fireing electricity
+      const FLOATmatrix3D &m = GetRotationMatrix();
+      m_vBeamSource=GetPlacement().pl_PositionVector+FIREPOS_SNIPER*m;
+
+      // target enemy body
+      EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+      GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, m_vBeamTarget);
+
+      // fire electricity beam
+      m_bRenderElectricity = TRUE;
+      m_tmTemp = _pTimer->CurrentTick();
+      while(_pTimer->CurrentTick() < m_tmTemp+1.0f)
+      {
+        wait(_pTimer->TickQuantum) {
+          on (EBegin): {
+            // correct electricity beam target
+            FLOAT3D vNewTarget;
+            EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
+            GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vNewTarget);
+            FLOAT3D vDiff = vNewTarget-m_vBeamTarget;
+            // if we have valid length
+            if( vDiff.Length() > 1.0f)
+            {
+              // calculate adjustment
+              m_vBeamTarget = m_vBeamTarget+vDiff.Normalize()*10.0f*_pTimer->TickQuantum;
+            }
+
+            // cast ray
+            CCastRay crRay( this, m_vBeamSource, m_vBeamTarget);
+            crRay.cr_bHitTranslucentPortals = FALSE;
+            crRay.cr_bPhysical = FALSE;
+            crRay.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
+            GetWorld()->CastRay(crRay);
+
+            resume;
+          };
+          on (ETimer): { stop; };
+        }
+	}
+      m_bRenderElectricity = FALSE;
+
+    // calculate predicted position
+    FLOAT3D vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
+    FLOAT3D vSpeedDst = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
+    m_vDesiredPosition = CalculatePredictedPosition(GetPlacement().pl_PositionVector, vTarget, 120,
+	 vSpeedDst, GetPlacement().pl_PositionVector(0) );
+    // shoot predicted propelled projectile
     StartModelAnim(ZORGPRO_ANIM_FIRE, 0);
-    ShootProjectile(PRT_GRUNT_PROJECTILE_SNIPER, FIREPOS_SNIPER, ANGLE3D(0, 0, 0));
+    ShootPredictedProjectile(PRT_GRUNT_PROJECTILE_SNIPER, m_vDesiredPosition, FIREPOS_SNIPER, ANGLE3D(0, 0, 0));
     PlaySound(m_soFire1, SOUND_SNIPERFIRE, SOF_3D);
     
 

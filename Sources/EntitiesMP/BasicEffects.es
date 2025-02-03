@@ -91,6 +91,14 @@ enum BasicEffectType {
  81 BET_GASCLOUD                  "Gas cloud",            // gas cloud
  82 BET_T3DGMX                    "T3DGM Explosion",     // space explosion
  83 BET_HIVEBRAIN                 "HiveBrain Explosion",     // HiveBrain explosion
+ 
+ 84 BET_HAMMER_FLESH              "Hammer hit flesh",
+ 85 BET_HAMMER_METAL              "Hammer hit metal",
+ 86 BET_HAMMER_ROCK               "Hammer hit rock",
+ 87 BET_HAMMER_WOOD               "Hammer hit wood",
+ 90 BET_HAMMER_GENERIC            "Hammer hit generic",
+ 88 BET_SAW                       "Saw scrape",
+ 89 BET_SAW_FLESH                 "Saw on flesh",
 };
 
 
@@ -292,11 +300,34 @@ void CBasicEffect_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     pdec->PrecacheSound(SOUND_GASCLOUD);
     pdec->PrecacheModel(MDL_T3DGM_EXPLOSION);
     pdec->PrecacheTexture(TEXTURE_GASCLOUD);
+    pdec->PrecacheSound(SOUND_HIVEBRAIN);
   case BET_T3DGMX:
     pdec->PrecacheSound(SOUND_HUGEX);
     pdec->PrecacheModel(MDL_T3DGM_EXPLOSION);
     pdec->PrecacheTexture(TEXTURE_T3DGMX);
+  case BET_HAMMER_FLESH:
+    pdec->PrecacheSound(SOUND_HAMMER_FLESH1);
+    pdec->PrecacheSound(SOUND_HAMMER_FLESH2);
+    pdec->PrecacheSound(SOUND_HAMMER_FLESH3);
+  case BET_HAMMER_ROCK:
+    pdec->PrecacheSound(SOUND_HAMMER_ROCK);
+  case BET_HAMMER_WOOD:
+    pdec->PrecacheSound(SOUND_HAMMER_WOOD);
+  case BET_HAMMER_METAL:
+    pdec->PrecacheSound(SOUND_HAMMER_METAL);
+  case BET_HAMMER_GENERIC:
+    pdec->PrecacheSound(SOUND_HAMMER_GENERIC);
+  case BET_SAW:
+    pdec->PrecacheSound(SOUND_SAW1);
+    pdec->PrecacheSound(SOUND_SAW2);
+    pdec->PrecacheSound(SOUND_SAW3);
+  case BET_SAW_FLESH:
+    pdec->PrecacheSound(SOUND_SAW_FLESH1);
+    pdec->PrecacheSound(SOUND_SAW_FLESH2);
+    pdec->PrecacheSound(SOUND_SAW_FLESH3);
+    pdec->PrecacheSound(SOUND_SAW_FLESH4);
     break;
+
   default:
     ASSERT(FALSE);
   }
@@ -457,6 +488,24 @@ components:
 // ********** T3DGMX **********
  264 texture TEXTURE_T3DGMX           "ModelsF\\t3dgm\\Explosion\\SpaceExplosion.tex",
  265 sound   SOUND_HUGEX               "SoundsF\\Destruction\\ExplosionHuge01.wav",
+
+// ********** HAMMER FX **********
+ 270 sound   SOUND_HAMMER_FLESH1            "SoundsF\\Weapons\\HammerHitFlesh1.wav",
+ 271 sound   SOUND_HAMMER_FLESH2            "SoundsF\\Weapons\\HammerHitFlesh2.wav",
+ 272 sound   SOUND_HAMMER_FLESH3            "SoundsF\\Weapons\\HammerHitFlesh3.wav",
+ 273 sound   SOUND_HAMMER_METAL            "SoundsF\\Weapons\\HammerHitMetal.wav",
+ 274 sound   SOUND_HAMMER_ROCK            "SoundsF\\Weapons\\HammerHitRock.wav",
+ 275 sound   SOUND_HAMMER_WOOD            "SoundsF\\Weapons\\HammerHitWood.wav",
+ 276 sound   SOUND_HAMMER_GENERIC        "SoundsF\\Weapons\\HammerGeneric.wav",
+
+// ********** SAW FX **********
+ 280 sound   SOUND_SAW1            "SoundsF\\Weapons\\Saw_01.wav",
+ 281 sound   SOUND_SAW2            "SoundsF\\Weapons\\Saw_02.wav",
+ 282 sound   SOUND_SAW3            "SoundsF\\Weapons\\Saw_03.wav",
+ 283 sound   SOUND_SAW_FLESH1            "SoundsF\\Weapons\\Saw_Flesh01.wav",
+ 284 sound   SOUND_SAW_FLESH2            "SoundsF\\Weapons\\Saw_Flesh02.wav",
+ 285 sound   SOUND_SAW_FLESH3            "SoundsF\\Weapons\\Saw_Flesh03.wav",
+ 286 sound   SOUND_SAW_FLESH4            "SoundsF\\Weapons\\Saw_Flesh04.wav",
 
 functions:
 
@@ -1189,6 +1238,117 @@ functions:
     m_iLightAnimation = 0;
   };
 
+  
+  void HammerFlesh(void)
+  {
+    SetPredictable(TRUE);
+    SetModel(MODEL_BULLET_HIT);
+    SetModelMainTexture(TEXTURE_BULLET_HIT);
+    m_soEffect.Set3DParameters(50.0f, 10.0f, 1.0f, 1.0f);
+    INDEX iFleshSound;
+    switch (IRnd()%3) {
+      case 0: iFleshSound = SOUND_HAMMER_FLESH1; break;
+      case 1: iFleshSound = SOUND_HAMMER_FLESH2; break;
+      case 2: iFleshSound = SOUND_HAMMER_FLESH3; break;
+    }
+    PlaySound(m_soEffect, iFleshSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iFleshSound);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
+  };
+
+  
+  void HammerMetal(void)
+  {
+    SetPredictable(TRUE);
+    SetModel(MODEL_BULLET_HIT);
+    SetModelMainTexture(TEXTURE_BULLET_HIT);
+    m_soEffect.Set3DParameters(50.0f, 10.0f, 1.0f, 1.0f);
+    PlaySound(m_soEffect, SOUND_HAMMER_METAL, SOF_3D);
+    m_fSoundTime = GetSoundLength(SOUND_HAMMER_METAL);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
+  };
+
+  
+  void HammerRock(void)
+  {
+    SetPredictable(TRUE);
+    SetModel(MODEL_BULLET_HIT);
+    SetModelMainTexture(TEXTURE_BULLET_HIT);
+    m_soEffect.Set3DParameters(50.0f, 10.0f, 1.0f, 1.0f);
+    PlaySound(m_soEffect, SOUND_HAMMER_ROCK, SOF_3D);
+    m_fSoundTime = GetSoundLength(SOUND_HAMMER_ROCK);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
+  };
+
+  
+  void HammerWood(void)
+  {
+    SetPredictable(TRUE);
+    SetModel(MODEL_BULLET_HIT);
+    SetModelMainTexture(TEXTURE_BULLET_HIT);
+    m_soEffect.Set3DParameters(50.0f, 10.0f, 1.0f, 1.0f);
+    PlaySound(m_soEffect, SOUND_HAMMER_WOOD, SOF_3D);
+    m_fSoundTime = GetSoundLength(SOUND_HAMMER_WOOD);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
+  };
+
+  
+  void HammerGeneric(void)
+  {
+    SetPredictable(TRUE);
+    SetModel(MODEL_BULLET_HIT);
+    SetModelMainTexture(TEXTURE_BULLET_HIT);
+    m_soEffect.Set3DParameters(50.0f, 10.0f, 1.0f, 1.0f);
+    PlaySound(m_soEffect, SOUND_HAMMER_GENERIC, SOF_3D);
+    m_fSoundTime = GetSoundLength(SOUND_HAMMER_GENERIC);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
+  };
+
+  
+  void Saw(void)
+  {
+    SetPredictable(TRUE);
+    SetModel(MODEL_BULLET_HIT);
+    SetModelMainTexture(TEXTURE_BULLET_HIT);
+    m_soEffect.Set3DParameters(50.0f, 10.0f, 1.0f, 1.0f);
+    INDEX iFleshSound;
+    switch (IRnd()%3) {
+      case 0: iFleshSound = SOUND_SAW1; break;
+      case 1: iFleshSound = SOUND_SAW2; break;
+      case 2: iFleshSound = SOUND_SAW3; break;
+    }
+    PlaySound(m_soEffect, iFleshSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iFleshSound);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
+  };
+
+  
+  void SawFlesh(void)
+  {
+    SetPredictable(TRUE);
+    SetModel(MODEL_BULLET_HIT);
+    SetModelMainTexture(TEXTURE_BULLET_HIT);
+    m_soEffect.Set3DParameters(50.0f, 10.0f, 1.0f, 1.0f);
+    INDEX iFleshSound;
+    switch (IRnd()%4) {
+      case 0: iFleshSound = SOUND_SAW_FLESH1; break;
+      case 1: iFleshSound = SOUND_SAW_FLESH2; break;
+      case 2: iFleshSound = SOUND_SAW_FLESH3; break;
+      case 3: iFleshSound = SOUND_SAW_FLESH4; break;
+    }
+    PlaySound(m_soEffect, iFleshSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iFleshSound);
+    m_fWaitTime = 0.95f;
+    m_bLightSource = FALSE;
+  };
+
+
 
 
 /************************************************************
@@ -1861,6 +2021,13 @@ procedures:
        eSpawn.betType==BET_BONE_SPLAT_FX ||
        eSpawn.betType==BET_SPIDER_SPLAT_FX ||
        eSpawn.betType==BET_FLOATER_SPLAT_FX ||
+       eSpawn.betType==BET_HAMMER_FLESH ||
+       eSpawn.betType==BET_HAMMER_METAL ||
+       eSpawn.betType==BET_HAMMER_ROCK ||
+       eSpawn.betType==BET_HAMMER_WOOD ||
+       eSpawn.betType==BET_HAMMER_GENERIC ||
+       eSpawn.betType==BET_SAW ||
+       eSpawn.betType==BET_SAW_FLESH ||
        eSpawn.betType==BET_ARROWHIT ||
        eSpawn.betType==BET_EXPLOSION_DEBRIS ||
        eSpawn.betType==BET_EXPLOSION_SMOKE ||
@@ -1961,6 +2128,14 @@ procedures:
       case BET_GASCLOUD: GasCloud(); break;
       case BET_T3DGMX: T3DGMX(); break;
       case BET_HIVEBRAIN: HiveBrain(); break;
+
+      case BET_HAMMER_FLESH: HammerFlesh(); break;
+      case BET_HAMMER_METAL: HammerMetal(); break;
+      case BET_HAMMER_ROCK: HammerRock(); break;
+      case BET_HAMMER_WOOD: HammerWood(); break;
+      case BET_HAMMER_GENERIC: HammerGeneric(); break;
+      case BET_SAW: Saw(); break;
+      case BET_SAW_FLESH: SawFlesh(); break;
       default:
         ASSERTALWAYS("Unknown effect type");
     }

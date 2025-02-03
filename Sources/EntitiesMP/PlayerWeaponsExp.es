@@ -113,14 +113,6 @@ event EReleaseWeapon {};
 event EReloadWeapon {};
 // weapon changed - used to notify other entities
 event EWeaponChanged {};
-// clustergrenade
-event EClusterGrenade {};
-// clustergrenade stop
-event EClusterGrenadeStop {};
-// nukeball
-event ENukeBall {};
-// nukeball stop
-event ENukeBallStop {};
 // secondary fire weapon
 event ESecFireWeapon {};
 // secondary release weapon
@@ -2074,12 +2066,6 @@ functions:
         vHit = crRay.cr_vHit;
         
         if (i==0) {
-
-      // spawn sfx
-      CEntityPointer penHit = CreateEntity(plKnife, CLASS_BASIC_EFFECT);
-      ESpawnEffect ese;
-      ese.colMuliplier = C_WHITE|CT_OPAQUE;
-
           if(crRay.cr_penHit->GetRenderType()==RT_BRUSH)
           {
             INDEX iSurfaceType=crRay.cr_pbpoBrushPolygon->bpo_bppProperties.bpp_ubSurfaceType;
@@ -2088,24 +2074,19 @@ functions:
             FLOAT3D vNormal=crRay.cr_pbpoBrushPolygon->bpo_pbplPlane->bpl_plAbsolute;
             FLOAT3D vReflected = vDir-vNormal*(2.0f*(vNormal%vDir));
             ((CPlayer&)*m_penPlayer).AddBulletSpray( vBase+vFront, eptType, vReflected);
-			 ese.betType = BET_HAMMER_GENERIC; penHit->Initialize(ese);
           }
           else if(crRay.cr_penHit->GetRenderType()==RT_MODEL)
           {
-
             BOOL bRender=TRUE;
             FLOAT3D vSpillDir=-((CPlayer&)*m_penPlayer).en_vGravityDir*0.5f;
             SprayParticlesType sptType=SPT_BLOOD;
-			 ese.betType = BET_HAMMER_FLESH;
             COLOR colParticles=C_WHITE|CT_OPAQUE;
-			 penHit->Initialize(ese);
-
             if (!IsDerivedFromClass(crRay.cr_penHit, "Enemy Base")) {
               sptType=SPT_NONE;
             }
             FLOAT fPower=4.0f;
             if( IsOfClass(crRay.cr_penHit, "Boneman") ||   
-                IsOfClass(crRay.cr_penHit, "FlyingKleer")) {sptType=SPT_BONES; fPower=6.0f; ese.betType = BET_HAMMER_WOOD; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "FlyingKleer")) {sptType=SPT_BONES; fPower=6.0f;}
             if( IsOfClass(crRay.cr_penHit, "Gizmo") ||
                 IsOfClass(crRay.cr_penHit, "Beast") ||
                 IsOfClass(crRay.cr_penHit, "DumDum") ||
@@ -2115,16 +2096,16 @@ functions:
                 IsOfClass(crRay.cr_penHit, "Neptune") ||
                 IsOfClass(crRay.cr_penHit, "Mantaman") ||
                 IsOfClass(crRay.cr_penHit, "HiveBrain") ||
-                IsOfClass(crRay.cr_penHit, "WitchBride"))     {sptType=SPT_SLIME; fPower=4.0f; ese.betType = BET_HAMMER_FLESH; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "WitchBride"))     {sptType=SPT_SLIME; fPower=4.0f;}
             if( IsOfClass(crRay.cr_penHit, "Ant") ||
                 IsOfClass(crRay.cr_penHit, "Crabman") ||
                 IsOfClass(crRay.cr_penHit, "Spider") ||
                 IsOfClass(crRay.cr_penHit, "Ghoul") ||
-                IsOfClass(crRay.cr_penHit, "SpiderMech"))     {sptType=SPT_GOO; fPower=4.0f; ese.betType = BET_HAMMER_FLESH; penHit->Initialize(ese);}
-            if( IsOfClass(crRay.cr_penHit, "Woman"))     {sptType=SPT_FEATHER; fPower=3.0f; ese.betType = BET_HAMMER_FLESH; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "SpiderMech"))     {sptType=SPT_GOO; fPower=4.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Woman"))     {sptType=SPT_FEATHER; fPower=3.0f;}
             if( IsOfClass(crRay.cr_penHit, "Ram") ||
-			    IsOfClass(crRay.cr_penHit, "Guardian"))     {sptType=SPT_STONES; fPower=3.0f; ese.betType = BET_HAMMER_ROCK; penHit->Initialize(ese);}
-            if( IsOfClass(crRay.cr_penHit, "Elemental")) {sptType=SPT_LAVA_STONES; fPower=3.0f; ese.betType = BET_HAMMER_ROCK; penHit->Initialize(ese);}
+			    IsOfClass(crRay.cr_penHit, "Guardian"))     {sptType=SPT_STONES; fPower=3.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Elemental")) {sptType=SPT_LAVA_STONES; fPower=3.0f;}
             if( IsOfClass(crRay.cr_penHit, "Walker") ||
                 IsOfClass(crRay.cr_penHit, "Catman") ||
                 IsOfClass(crRay.cr_penHit, "Chariot") ||
@@ -2135,12 +2116,12 @@ functions:
                 IsOfClass(crRay.cr_penHit, "RobotDog") ||
                 IsOfClass(crRay.cr_penHit, "Runner") ||
                 IsOfClass(crRay.cr_penHit, "Sentry") ||
-                IsOfClass(crRay.cr_penHit, "Spawner"))    {sptType=SPT_ELECTRICITY_SPARKS; fPower=30.0f; ese.betType = BET_HAMMER_METAL; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "Spawner"))    {sptType=SPT_ELECTRICITY_SPARKS; fPower=30.0f;}
             if( IsOfClass(crRay.cr_penHit, "AirElemental") ||
 			    IsOfClass(crRay.cr_penHit, "Waterman") ||
-			    IsOfClass(crRay.cr_penHit, "Airman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f; ese.betType = BET_HAMMER_FLESH; penHit->Initialize(ese);}
+			    IsOfClass(crRay.cr_penHit, "Airman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f;}
             if( IsOfClass(crRay.cr_penHit, "CannonRotating") ||
-                IsOfClass(crRay.cr_penHit, "CannonStatic"))    {sptType=SPT_WOOD; ese.betType = BET_HAMMER_WOOD; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "CannonStatic"))    {sptType=SPT_WOOD;}
             if( IsOfClass(crRay.cr_penHit, "ModelHolder2"))
             {
               bRender=FALSE;
@@ -2148,7 +2129,6 @@ functions:
               if( penDestruction!=NULL)
               {
                 bRender=TRUE;
-			    ese.betType = BET_HAMMER_GENERIC; penHit->Initialize(ese);
                 sptType= penDestruction->m_sptType;
               }
               CModelHolder2 *pmh2=(CModelHolder2*)crRay.cr_penHit;
@@ -2232,12 +2212,6 @@ functions:
 
         if(i==0)
         {
-
-      // spawn sfx
-      CEntityPointer penHit = CreateEntity(plKnife, CLASS_BASIC_EFFECT);
-      ESpawnEffect ese;
-      ese.colMuliplier = C_WHITE|CT_OPAQUE;
-
           if(crRay.cr_penHit->GetRenderType()==RT_BRUSH)
           {
             INDEX iSurfaceType=crRay.cr_pbpoBrushPolygon->bpo_bppProperties.bpp_ubSurfaceType;
@@ -2251,24 +2225,20 @@ functions:
             ((CPlayer&)*m_penPlayer).m_fChainShakeStrength = 0.85f;
             ((CPlayer&)*m_penPlayer).m_fChainShakeFreqMod = 1.0f;
             ((CPlayer&)*m_penPlayer).m_tmChainShakeEnd = _pTimer->CurrentTick() + CHAINSAW_UPDATETIME*1.5f;
-			 ese.betType = BET_SAW; penHit->Initialize(ese);
 
           }
           else if(crRay.cr_penHit->GetRenderType()==RT_MODEL)
           {
-
             BOOL bRender=TRUE;
             FLOAT3D vSpillDir=-((CPlayer&)*m_penPlayer).en_vGravityDir*0.5f;
             SprayParticlesType sptType=SPT_BLOOD;
-			 ese.betType = BET_SAW_FLESH;
             COLOR colParticles=C_WHITE|CT_OPAQUE;
-			 penHit->Initialize(ese);
             if (!IsDerivedFromClass(crRay.cr_penHit, "Enemy Base")) {
               sptType=SPT_NONE;
             }
             FLOAT fPower=4.0f;
             if( IsOfClass(crRay.cr_penHit, "Boneman") ||   
-                IsOfClass(crRay.cr_penHit, "FlyingKleer")) {sptType=SPT_BONES; fPower=6.0f; ese.betType = BET_SAW; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "FlyingKleer")) {sptType=SPT_BONES; fPower=6.0f;}
             if( IsOfClass(crRay.cr_penHit, "Gizmo") ||
                 IsOfClass(crRay.cr_penHit, "Beast") ||
                 IsOfClass(crRay.cr_penHit, "DumDum") ||
@@ -2278,16 +2248,16 @@ functions:
                 IsOfClass(crRay.cr_penHit, "Neptune") ||
                 IsOfClass(crRay.cr_penHit, "Mantaman") ||
                 IsOfClass(crRay.cr_penHit, "HiveBrain") ||
-                IsOfClass(crRay.cr_penHit, "WitchBride"))     {sptType=SPT_SLIME; fPower=4.0f; ese.betType = BET_SAW_FLESH; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "WitchBride"))     {sptType=SPT_SLIME; fPower=4.0f;}
             if( IsOfClass(crRay.cr_penHit, "Ant") ||
                 IsOfClass(crRay.cr_penHit, "Crabman") ||
                 IsOfClass(crRay.cr_penHit, "Spider") ||
                 IsOfClass(crRay.cr_penHit, "Ghoul") ||
-                IsOfClass(crRay.cr_penHit, "SpiderMech"))     {sptType=SPT_GOO; fPower=4.0f; ese.betType = BET_SAW_FLESH; penHit->Initialize(ese);}
-            if( IsOfClass(crRay.cr_penHit, "Woman"))     {sptType=SPT_FEATHER; fPower=3.0f; ese.betType = BET_SAW_FLESH; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "SpiderMech"))     {sptType=SPT_GOO; fPower=4.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Woman"))     {sptType=SPT_FEATHER; fPower=3.0f;}
             if( IsOfClass(crRay.cr_penHit, "Ram") ||
-			    IsOfClass(crRay.cr_penHit, "Guardian"))     {sptType=SPT_STONES; fPower=3.0f; ese.betType = BET_SAW; penHit->Initialize(ese);}
-            if( IsOfClass(crRay.cr_penHit, "Elemental")) {sptType=SPT_LAVA_STONES; fPower=3.0f; ese.betType = BET_SAW_FLESH; penHit->Initialize(ese);}
+			    IsOfClass(crRay.cr_penHit, "Guardian"))     {sptType=SPT_STONES; fPower=3.0f;}
+            if( IsOfClass(crRay.cr_penHit, "Elemental")) {sptType=SPT_LAVA_STONES; fPower=3.0f;}
             if( IsOfClass(crRay.cr_penHit, "Walker") ||
                 IsOfClass(crRay.cr_penHit, "Catman") ||
                 IsOfClass(crRay.cr_penHit, "Chariot") ||
@@ -2298,16 +2268,15 @@ functions:
                 IsOfClass(crRay.cr_penHit, "RobotDog") ||
                 IsOfClass(crRay.cr_penHit, "Runner") ||
                 IsOfClass(crRay.cr_penHit, "Sentry") ||
-                IsOfClass(crRay.cr_penHit, "Spawner"))    {sptType=SPT_ELECTRICITY_SPARKS; fPower=30.0f; ese.betType = BET_SAW; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "Spawner"))    {sptType=SPT_ELECTRICITY_SPARKS; fPower=30.0f;}
             if( IsOfClass(crRay.cr_penHit, "AirElemental") ||
 			    IsOfClass(crRay.cr_penHit, "Waterman") ||
-			    IsOfClass(crRay.cr_penHit, "Airman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f; ese.betType = BET_SAW_FLESH; penHit->Initialize(ese);}
+			    IsOfClass(crRay.cr_penHit, "Airman"))    {sptType=SPT_AIRSPOUTS; fPower=6.0f;}
             if( IsOfClass(crRay.cr_penHit, "CannonRotating") ||
-                IsOfClass(crRay.cr_penHit, "CannonStatic"))    {sptType=SPT_WOOD; ese.betType = BET_SAW; penHit->Initialize(ese);}
+                IsOfClass(crRay.cr_penHit, "CannonStatic"))    {sptType=SPT_WOOD;}
             if( IsOfClass(crRay.cr_penHit, "ModelHolder2"))
             {
               bRender=FALSE;
-			  ese.betType = BET_SAW; penHit->Initialize(ese);
               CModelDestruction *penDestruction = ((CModelHolder2&)*crRay.cr_penHit).GetDestruction();
               CModelHolder2 *pmh2=(CModelHolder2*)crRay.cr_penHit;
               colParticles=pmh2->m_colBurning;
@@ -4810,8 +4779,10 @@ procedures:
           m_bPrimaryFire = FALSE;
           switch (m_iCurrentWeapon) 
           {
+            case WEAPON_GRENADELAUNCHER: call FireGrenadeLauncherAlt(); break;
             case WEAPON_PLASMA: call FirePlasmaAlt(); break;
             case WEAPON_ROCKETLAUNCHER: call FireSecondaryRocket(); break;
+            case WEAPON_IRONCANNON: call NukeFireStart(); break;
             case WEAPON_DOUBLESHOTGUN: call FireGrenadeShotgun(); break;
             default: ASSERTALWAYS("Unknown weapon.");
           }
@@ -4826,105 +4797,21 @@ procedures:
 
     switch (m_iCurrentWeapon) 
     {
+      case WEAPON_GRENADELAUNCHER:
       case WEAPON_PLASMA: 
       case WEAPON_ROCKETLAUNCHER: 
+      case WEAPON_IRONCANNON: 
       case WEAPON_DOUBLESHOTGUN: 
       default: { jump Idle(); }
     }
   };
 
-  ClusterGrenade()
+  SecFireNone()
   {
-    CPlayer &pl = (CPlayer&)*m_penPlayer;
-    PlaySound(pl.m_soWeapon0, SOUND_SILENCE, SOF_3D|SOF_VOLUMETRIC);      // stop possible sounds
-    // force ending of weapon change
-    m_tmWeaponChangeRequired = 0;
-
-    m_bFireWeapon = TRUE;
-    m_bHasAmmo = HasAmmo(m_iCurrentWeapon);
-
-    // if has no ammo select new weapon
-    if (!m_bHasAmmo) {
-      SelectNewWeapon();
-      jump Idle();
-    }
-
-    // setup 3D sound parameters
-    Setup3DSoundParameters();
-
-    while (HoldingFire() && m_bHasAmmo) {
-      // boring animation
-      ((CPlayerAnimator&)*((CPlayer&)*m_penPlayer).m_penAnimator).m_fLastActionTime = _pTimer->CurrentTick();
-      wait() {
-        on (EBegin) : {
-          // fire one shot
-          switch (m_iCurrentWeapon) {
-            case WEAPON_GRENADELAUNCHER: call FireGrenadeLauncherAlt(); break;
-            default: ASSERTALWAYS("Unknown weapon.");
-          }
-          resume;
-        }
-        on (EEnd) : {
-          stop;
-        }
-      }
-   }
-
-    // stop weapon firing animation for continuous firing
-    switch (m_iCurrentWeapon) {
-      case WEAPON_GRENADELAUNCHER: { 
-        GetAnimator()->FireAnimationOff();
-        jump Idle();
-                         }
-      default: { jump Idle(); }
-     }
-  };
-
-  NukeBall()
-  {
-    CPlayer &pl = (CPlayer&)*m_penPlayer;
-    PlaySound(pl.m_soWeapon0, SOUND_SILENCE, SOF_3D|SOF_VOLUMETRIC);      // stop possible sounds
-    // force ending of weapon change
-    m_tmWeaponChangeRequired = 0;
-
-    m_bFireWeapon = TRUE;
-    m_bHasAmmo = HasAmmo(m_iCurrentWeapon);
-
-    // if has no ammo select new weapon
-    if (!m_bHasAmmo) {
-      SelectNewWeapon();
-      jump Idle();
-    }
-
-    // setup 3D sound parameters
-    Setup3DSoundParameters();
-
-    while (HoldingFire() && m_bHasAmmo) {
-      // boring animation
-      ((CPlayerAnimator&)*((CPlayer&)*m_penPlayer).m_penAnimator).m_fLastActionTime = _pTimer->CurrentTick();
-      wait() {
-        on (EBegin) : {
-          // fire one shot
-          switch (m_iCurrentWeapon) {
-            case WEAPON_IRONCANNON: call NukeFireStart(); break;
-            default: ASSERTALWAYS("Unknown weapon.");
-          }
-          resume;
-        }
-        on (EEnd) : {
-          stop;
-        }
-      }
-   }
-
-    // stop weapon firing animation for continuous firing
-    switch (m_iCurrentWeapon) {
-      case WEAPON_GRENADELAUNCHER: { 
-        GetAnimator()->FireAnimationOff();
-        jump Idle();
-                         }
-      default: { jump Idle(); }
-     }
+    // boring animation
+    ((CPlayerAnimator&)*((CPlayer&)*m_penPlayer).m_penAnimator).m_fLastActionTime = _pTimer->CurrentTick();
+    autowait(0.1f);
+    return EEnd();
   };
 
     
@@ -6917,14 +6804,6 @@ procedures:
       on (ESecFireWeapon) : {
         jump SecondaryFire();
       }
-      // clustergrenade pressed
-      on (EClusterGrenade) : {
-        jump ClusterGrenade();
-      }
-      // nukeball pressed
-      on (ENukeBall) : {
-        jump NukeBall();
-      }
       // boring weapon animation
       on (EBoringWeapon) : {
         call BoringWeaponAnimation();
@@ -7013,7 +6892,6 @@ procedures:
       }
       on (EReleaseSecFireWeapon) : {
         // stop fireing
-        m_bFireWeapon = FALSE;
         m_bSecFireWeapon = FALSE;
         resume;
       }
