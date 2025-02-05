@@ -18,6 +18,12 @@ enum GruntType {
   3 GT_HEAVY      "Grunt heavy",
 };
 
+enum ComAtkType {
+  0 COM_BOTH       "Laser and Bombs",
+  1 COM_LASERS     "Lasers only",
+  2 COM_BOMBS      "Bombs only",
+};
+
 %{
 #define STRETCH_SOLDIER   1.2f
 #define STRETCH_COMMANDER 1.4f
@@ -83,6 +89,8 @@ properties:
   16 FLOAT3D m_vBeamSource = FLOAT3D( 0,0,0),      // position of electricity ray target
   17 FLOAT3D m_vBeamTarget = FLOAT3D( 0,0,0),      // position of electricity ray target
   18 FLOAT m_tmTemp = 0,
+  
+  19 enum ComAtkType m_ComAtkType "Commander Attack" 'A' = COM_BOTH,
 
 // class internal
     
@@ -431,11 +439,21 @@ procedures:
       autocall SoldierAttack() EEnd;
     // commander
     } else if (m_gtType == GT_COMMANDER) {
-      switch (IRnd()%3) {
-      case 0: jump CommanderAttack(); break;
-      case 1: jump CommanderAttack(); break;
-      case 2: jump CommanderBomb(); break;
-	  }
+	  switch (m_ComAtkType) {
+	   case COM_BOTH:
+        switch (IRnd()%3) {
+        case 0: jump CommanderAttack(); break;
+        case 1: jump CommanderAttack(); break;
+        case 2: jump CommanderBomb(); break;
+		}
+      break;
+	 case COM_LASERS:
+        jump CommanderAttack();
+        break;
+	 case COM_BOMBS:
+        jump CommanderBomb();
+        break;
+	   }
     // sniper
     } else if (m_gtType == GT_SNIPER) {
       autocall SniperAttack() EEnd;
