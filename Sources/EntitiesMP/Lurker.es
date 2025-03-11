@@ -16,7 +16,7 @@ static EntityInfo eiLurker = {
   0.0f, 5.4f, 0.0f,
   0.0f, 4.5f, 0.0f,
 };
-#define FIRE	   FLOAT3D(0.0f, 4.75f, -3.0f)
+#define FIRE	   FLOAT3D(0.0f, 4.75f, -2.0f)
 
 %}
 
@@ -42,6 +42,11 @@ properties:
   22 CSoundObject m_soFire2,
   23 CSoundObject m_soFire3,
   24 CSoundObject m_soFire4,
+
+
+  25 FLOAT fStartAngle = 45.0f,
+  26 FLOAT fEndAngle   = -45.0f,
+  27 FLOAT fSweepTime  = 1.2f,
   
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
@@ -123,7 +128,7 @@ functions:
     if( m_bRenderElectricity)
     {
       // calculate electricity ray source pos
-      Particles_ExotechLarvaLaser(this, m_vBeamSource, m_vBeamTarget);
+      Particles_LurkerBeam(m_vBeamSource, m_vBeamTarget, 24, 1.0f);
     }
 
     CEnemyBase::RenderParticles();
@@ -302,47 +307,48 @@ procedures:
     autowait(0.6f);
 
     // start fireing electricity
-      const FLOATmatrix3D &m = GetRotationMatrix();
-      m_vBeamSource=GetPlacement().pl_PositionVector+FIRE*m;
+      const FLOATmatrix3D &mRotation = GetRotationMatrix();
+      m_vBeamSource=GetPlacement().pl_PositionVector+FIRE*mRotation;
 
-      // target enemy body
-      EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
-      GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, m_vBeamTarget);
-
-      // give some time so player can move away from electricity beam
-      autowait(0.1f);
+    // Beam sweeping motion
+     FLOAT fAngleStep = (fEndAngle - fStartAngle) / (fSweepTime / _pTimer->TickQuantum);
 
       // fire electricity beam
       m_bRenderElectricity = TRUE;
       m_tmTemp = _pTimer->CurrentTick();
-      while(_pTimer->CurrentTick() < m_tmTemp+1.2f)
-      {
-        wait(_pTimer->TickQuantum) {
-          on (EBegin): {
-            // correct electricity beam target
-            FLOAT3D vNewTarget;
-            EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
-            GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vNewTarget);
-            FLOAT3D vDiff = vNewTarget-m_vBeamTarget;
-            // if we have valid length
-            if( vDiff.Length() > 1.0f)
-            {
-              // calculate adjustment
-              m_vBeamTarget = m_vBeamTarget+vDiff.Normalize()*10.0f*_pTimer->TickQuantum;
-            }
 
-            // cast ray
-            CCastRay crRay( this, m_vBeamSource, m_vBeamTarget);
+while (_pTimer->CurrentTick() < m_tmTemp+1.3) {
+    wait(_pTimer->TickQuantum) {
+        on (EBegin): {
+            // Compute sweep angle
+            FLOAT fCurrentAngle = -45 + ((_pTimer->CurrentTick() - m_tmTemp) / 1.3) * (30 - (-45));
+            FLOAT fRadians = fCurrentAngle;
+
+            // Get player position
+            FLOAT3D vPlayerPos = m_penEnemy->GetPlacement().pl_PositionVector;
+            FLOAT fHeightDifference = vPlayerPos(2) - m_vBeamSource(2); // Difference in height
+            FLOAT fHorizontalDistance = (vPlayerPos - m_vBeamSource).Length(); // Ignore Y-axis for this
+
+            // Calculate proper Y adjustment (beam should hit player's chest area)
+            FLOAT fYAdjustment = fHeightDifference * (9.5f / fHorizontalDistance); // Adjust based on distance
+
+            // Set beam target based on sweep angle
+            FLOAT3D vOffset = FLOAT3D(Sin(fRadians) * 100.0f, -fYAdjustment * 9.5f, Cos(fRadians) * 200.0f); // Adjust range as needed
+            m_vBeamTarget = m_vBeamSource + vOffset*(GetRotationMatrix()*-1);
+
+            // Raycast from source to target
+            CCastRay crRay(this, m_vBeamSource, m_vBeamTarget);
             crRay.cr_bHitTranslucentPortals = FALSE;
             crRay.cr_bPhysical = FALSE;
             crRay.cr_ttHitModels = CCastRay::TT_COLLISIONBOX;
+            crRay.cr_fTestR = 1.0f;
+
             GetWorld()->CastRay(crRay);
-            // if entity is hit
-            if( crRay.cr_penHit != NULL)
-            {
-              // apply damage
-              InflictDirectDamage( crRay.cr_penHit, this, DMT_BURNING, 30.0f*_pTimer->TickQuantum/0.5f,
-                FLOAT3D(0, 0, 0), (m_vBeamSource-m_vBeamTarget).Normalize());
+
+            // Apply damage if hit
+            if (crRay.cr_penHit != NULL) {
+                InflictDirectDamage(crRay.cr_penHit, this, DMT_BURNING, 150.0f * _pTimer->TickQuantum / 0.5f,
+                                    FLOAT3D(0, 0, 0), (m_vBeamSource - m_vBeamTarget).Normalize());
             }
 
             resume;
@@ -422,19 +428,19 @@ procedures:
 
     StandingAnim();
     // setup moving speed
-    m_fWalkSpeed = FRnd()*1.5f + 2.0f;
+    m_fWalkSpeed = FRnd()*1.5f + 4.0f;
     m_aWalkRotateSpeed = AngleDeg(FRnd()*50.0f + 500.0f);
-    m_fAttackRunSpeed = FRnd()*1.5f + 10.0f;;
+    m_fAttackRunSpeed = FRnd()*1.5f + 15.0f;;
     m_aAttackRotateSpeed = m_aWalkRotateSpeed/2;
     m_fCloseRunSpeed = m_fAttackRunSpeed;
     m_aCloseRotateSpeed = m_aWalkRotateSpeed/2;
     // setup attack distances
-    m_fAttackDistance = 500.0f;
+    m_fAttackDistance = 140.0f;
     m_fCloseDistance = 12.0f;
     m_fStopDistance = 10.0f;
     m_fAttackFireTime = 5.0f;
     m_fCloseFireTime = 1.0f;
-    m_fIgnoreRange = 1000.0f;
+    m_fIgnoreRange = 500.0f;
     // damage/explode properties
     m_fBodyParts = 10;
     m_fBlowUpSize = 2.0f;

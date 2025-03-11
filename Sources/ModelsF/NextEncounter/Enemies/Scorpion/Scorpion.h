@@ -18,5 +18,7 @@
 #define SCORPION_COLLISION_BOX_PART_NAME 0
 
 // Attaching position names
+#define SCORPION_ATTACHMENT_FLARE1 0
+#define SCORPION_ATTACHMENT_FLARE2 1
 
 // Sound names

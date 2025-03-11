@@ -2639,6 +2639,51 @@ void Particles_Ghostbuster(const FLOAT3D &vSrc, const FLOAT3D &vDst, INDEX ctRay
   Particle_Flush();
 }
 
+#define CT_LIGHTNINGS 8
+void Particles_LurkerBeam(const FLOAT3D &vSrc, const FLOAT3D &vDst, INDEX ctRays, FLOAT fSize, FLOAT fPower,
+                           FLOAT fKneeDivider/*=33.3333333f*/)
+{
+  Particle_PrepareTexture(&_toLarvaLaser, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+  // get direction vector
+  FLOAT3D vZ = vDst-vSrc;
+  FLOAT fLen = vZ.Length();
+  vZ.Normalize();
+
+  // get two normal vectors
+  FLOAT3D vX;
+  if (Abs(vZ(2))>0.5) {
+    vX = FLOAT3D(1.0f, 0.0f, 0.0f)*vZ;
+  } else {
+    vX = FLOAT3D(0.0f, 1.0f, 0.0f)*vZ;
+  }
+  FLOAT3D vY  = vZ*vX;
+  const FLOAT fStep = fLen/fKneeDivider;
+
+  for(INDEX iRay = 0; iRay<ctRays; iRay++)
+  {
+    FLOAT3D v0 = vSrc;
+    FLOAT fT = FLOAT(iRay)/ctRays + _pTimer->GetLerpedCurrentTick()/1.5f;
+    FLOAT fDT = fT-INDEX(fT);
+    FLOAT fFade = 1-fDT*4.0f;
+
+    if( fFade>1 || fFade<=0) continue;
+    UBYTE ubFade = NormFloatToByte(fFade*fPower);
+    COLOR colFade = RGBToColor( ubFade, ubFade, ubFade);
+    for(FLOAT fPos=fStep; fPos<fLen+fStep/2; fPos+=fStep)
+    {
+      INDEX iOffset = ULONG(fPos*1234.5678f+iRay*103)%32;
+      FLOAT3D v1 = vSrc+(vZ*fPos + vX*(0.5f*afStarsPositions[iOffset][0]*fSize) +
+                                   vY*(0.5f*afStarsPositions[iOffset][1]*fSize));
+      Particle_RenderLine( v0, v1, 0.125f*fSize, colFade|0xFF);
+      v0 = v1;
+    }
+  }
+  // all done
+  Particle_Flush();
+}
+
+
 // growth - one for each drawport
 
 static int qsort_CompareGrowth(const void *pvGrowth0, const void *pvGrowth1)
@@ -5912,8 +5957,8 @@ void Particles_AirElemental(CEntity *pen, FLOAT fStretch, FLOAT fFade, FLOAT tmD
   FLOAT fGValue=0.0f;
   if( tmDying>0.0f)
   {
-    fSpeed=(2.5f+log(2.0f*tmDying+0.22313016014842982893328047076401f))*2.0f;
-    fGValue=fG*((1.0f+tmDying)*(1.0f+tmDying)-1.0f);
+    fSpeed=(2.5f+log(2.0f*tmDying+0.22313016014842982893328047076401f));
+    fGValue=fG/2*((1.0f+tmDying)*(1.0f+tmDying)-1.0f);
   }
 
   Particle_PrepareTexture( &_toTwister, PBT_BLEND);
@@ -6138,8 +6183,8 @@ void Particles_AirElemental_Comp(CModelObject *mo, FLOAT fStretch, FLOAT fFade, 
     COLOR col = pTD->GetTexel(PIX((afStarsPositions[iRnd][2]+0.5f)*1024.0f), 0);
     COLOR colA = CT_OPAQUE;
     UBYTE ubA=UBYTE((colA&0xFF)*0.75f);
-    col = col&0xff000000;
-    COLOR colCombined=(col&0xFFFFFF00)|ubA;
+    col = col&0xffffffff;
+    COLOR colCombined=(col&0xFFFFFFFF)|ubA;
     FLOAT fRndRot=Sgn(afStarsPositions[iRnd][0])*(Abs(afStarsPositions[iRnd][1])+1.0f)*360.0f*2;
     if( iFrame>3)
     {

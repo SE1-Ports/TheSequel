@@ -24,6 +24,7 @@ enum AttackType {
 #define GUN_RZ -5.0f
 #define RANGE_MINIGUN         50.0f
 #define RANGE_LASER           200.0f
+#define REMINDER_DEATTACH_FLARES 666
 
 // info structure
 static EntityInfo eiScorpion = {
@@ -49,6 +50,7 @@ properties:
   6 CSoundObject m_soFeet,            // for running sound
   7 BOOL m_bRunSoundPlaying = FALSE,
   8 CEntityPointer m_penTarget  "Ray target" 'T' COLOR(C_BLUE|0xFF),
+  9 CSoundObject m_soSpinner,            // for gunning sound
   
 {
   CEntity *penBullet;     // bullet
@@ -70,6 +72,9 @@ components:
 
  33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
+ 
+ 20 model   MODEL_FLARE       "Models\\Enemies\\Scorpman\\Flare.mdl",
+ 21 texture TEXTURE_FLARE       "Models\\Enemies\\Scorpman\\Gun.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "ModelsF\\NextEncounter\\Enemies\\Scorpion\\Sounds\\Idle.wav",
@@ -80,8 +85,12 @@ components:
  55 sound   SOUND_DEATH     "ModelsF\\NextEncounter\\Enemies\\Scorpion\\Sounds\\Death.wav",
  56 sound   SOUND_LASER     "ModelsF\\NextEncounter\\Enemies\\Scorpion\\Sounds\\FireLaser.wav",
  57 sound   SOUND_STEP      "ModelsF\\NextEncounter\\Enemies\\Scorpion\\Sounds\\Step.wav",
+ 58 sound   SOUND_SPINU     "ModelsF\\NextEncounter\\Enemies\\Scorpion\\Sounds\\SpinUp.wav",
+ 59 sound   SOUND_SPIND     "ModelsF\\NextEncounter\\Enemies\\Scorpion\\Sounds\\SpinDown.wav",
+ 60 sound   SOUND_SPINL     "ModelsF\\NextEncounter\\Enemies\\Scorpion\\Sounds\\SpinLoop.wav",
 
 functions:
+
   // describe how this enemy killed player
   virtual CTString GetPlayerKillDescription(const CTString &strPlayerName, const EDeath &eDeath)
   {
@@ -99,6 +108,9 @@ functions:
     PrecacheSound(SOUND_DEATH);
     PrecacheSound(SOUND_LASER );
     PrecacheSound(SOUND_STEP);
+    PrecacheSound(SOUND_SPINU);
+    PrecacheSound(SOUND_SPIND);
+    PrecacheSound(SOUND_SPINL);
     PrecacheClass(CLASS_PROJECTILE, PRT_SCORPION_LASER);
 
 
@@ -108,6 +120,9 @@ functions:
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
+
+    PrecacheModel(MODEL_FLARE);
+    PrecacheTexture(TEXTURE_FLARE);
   };
 
   /* Read from stream. */
@@ -360,6 +375,14 @@ functions:
 
   // fire bullet
   void FireBullet(void) {
+	
+    AddAttachment(SCORPION_ATTACHMENT_FLARE1, MODEL_FLARE, TEXTURE_FLARE);
+    CModelObject *pmoFlare1 = &GetModelObject()->GetAttachmentModel(SCORPION_ATTACHMENT_FLARE1)->amo_moModelObject;
+	pmoFlare1->StretchModel(FLOAT3D(3.0f, 3.0f, 3.0f));
+    AddAttachment(SCORPION_ATTACHMENT_FLARE2, MODEL_FLARE, TEXTURE_FLARE);
+    CModelObject *pmoFlare2 = &GetModelObject()->GetAttachmentModel(SCORPION_ATTACHMENT_FLARE2)->amo_moModelObject;
+	pmoFlare2->StretchModel(FLOAT3D(3.0f, 3.0f, 3.0f));
+
     // binary divide counter
     m_bFireBulletCount++;
     if (m_bFireBulletCount>1) { m_bFireBulletCount = 0; }
@@ -375,6 +398,9 @@ functions:
     ((CBullet&)*penBullet).CalcJitterTarget(20);
     ((CBullet&)*penBullet).LaunchBullet( TRUE, TRUE, TRUE);
     ((CBullet&)*penBullet).DestroyBullet();
+	
+    RemoveAttachment(SCORPION_ATTACHMENT_FLARE1);
+    RemoveAttachment(SCORPION_ATTACHMENT_FLARE2);
   };
 
 
@@ -495,6 +521,7 @@ procedures:
 
   FireLaser(EVoid){
     DeactivateRunningSound();
+    m_soSpinner.Stop();
     if (!CanFireAtPlayer()) {
       return EReturn();
     }
@@ -519,12 +546,16 @@ procedures:
     if (GetSP()->sp_gdGameDifficulty<=CSessionProperties::GD_EASY) {
       m_fFireTime *= 0.5f;
     }
+    StandingAnim();
+    PlaySound(m_soSpinner, SOUND_SPINU, SOF_3D);
+    autowait(1.0f);
 
     // fire
     m_iSpawnEffect = 0;                         // effect every 'x' frames
     m_fFireTime += _pTimer->CurrentTick();
     m_bFireBulletCount = 0;
     PlaySound(m_soSound, SOUND_FIRE, SOF_3D|SOF_LOOP);
+    PlaySound(m_soSpinner, SOUND_SPINL, SOF_3D|SOF_LOOP);
     PlayLightAnim(LIGHT_ANIM_FIRE, AOF_LOOPING);
 
     while (m_fFireTime > _pTimer->CurrentTick()) {
@@ -554,7 +585,11 @@ procedures:
         on (ETimer) : { stop; }
       }
     }
+	
+    GetModelObject()->RemoveAllAttachmentModels();
     m_soSound.Stop();
+    m_soSpinner.Stop();
+    PlaySound(m_soSpinner, SOUND_SPIND, SOF_3D);
     PlayLightAnim(LIGHT_ANIM_NONE, 0);
     // set next shoot time
     m_fShootTime = _pTimer->CurrentTick() + m_fAttackFireTime*(1.0f);
@@ -572,6 +607,7 @@ procedures:
   // hit enemy
   Hit(EVoid) : CEnemyBase::Hit {
     DeactivateRunningSound();
+    m_soSpinner.Stop();
     // close attack
     StartModelAnim(SCORPION_ANIM_MELEE, 0);
     PlaySound(m_soSound, SOUND_KICK, SOF_3D);
@@ -591,6 +627,8 @@ procedures:
   // Play wound animation and falling body part
   BeWounded(EDamage eDamage) : CEnemyBase::BeWounded {
     DeactivateRunningSound();
+    m_soSpinner.Stop();
+    GetModelObject()->RemoveAllAttachmentModels();
     PlayLightAnim(LIGHT_ANIM_NONE, 0);
     jump CEnemyBase::BeWounded(eDamage);
   };
@@ -600,6 +638,8 @@ procedures:
  ************************************************************/
   Death(EVoid) : CEnemyBase::Death {
     DeactivateRunningSound();
+    m_soSpinner.Stop();
+    GetModelObject()->RemoveAllAttachmentModels();
     PlayLightAnim(LIGHT_ANIM_NONE, 0);
     autocall CEnemyBase::Death() EEnd;
     return EEnd();
@@ -660,8 +700,10 @@ procedures:
     PlayLightAnim(LIGHT_ANIM_NONE, 0);
     if (m_bQuiet) { 
     m_soFeet.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soSpinner.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
 	} else {
     m_soFeet.Set3DParameters(150.0f, 5.0f, 1.0f, 1.0f);
+    m_soSpinner.Set3DParameters(150.0f, 5.0f, 1.5f, 1.0f);
 	}
     m_bRunSoundPlaying = FALSE;
 
