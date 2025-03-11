@@ -699,6 +699,28 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_actContentTypes[7].ct_tmDrowningDamageDelay = 1.0f;
   pwo->wo_actContentTypes[7].ct_ulFlags = CTF_FLYABLE;
 
+  pwo->wo_actContentTypes[8].ct_strName = "Hazard";
+  pwo->wo_actContentTypes[8].ct_fDensity = 0.0f;
+  pwo->wo_actContentTypes[8].ct_fFluidFriction     = 0.0f;
+  pwo->wo_actContentTypes[8].ct_fControlMultiplier = 1.0f;
+  pwo->wo_actContentTypes[8].ct_fSpeedMultiplier = 1.0f;
+  pwo->wo_actContentTypes[8].ct_iSwimDamageType = DMT_DAMAGER;
+  pwo->wo_actContentTypes[8].ct_fSwimDamageAmount = 10.0f;
+  pwo->wo_actContentTypes[8].ct_tmSwimDamageDelay = 1.0f;
+  pwo->wo_actContentTypes[8].ct_tmSwimDamageFrequency = 0.5f;
+  pwo->wo_actContentTypes[8].ct_ulFlags = CTF_FLYABLE|CTF_BREATHABLE_LUNGS;
+
+  pwo->wo_actContentTypes[9].ct_strName = "Hazard weak";
+  pwo->wo_actContentTypes[9].ct_fDensity = 0.0f;
+  pwo->wo_actContentTypes[9].ct_fFluidFriction     = 0.0f;
+  pwo->wo_actContentTypes[9].ct_fControlMultiplier = 1.0f;
+  pwo->wo_actContentTypes[9].ct_fSpeedMultiplier = 1.0f;
+  pwo->wo_actContentTypes[9].ct_iSwimDamageType = DMT_DAMAGER;
+  pwo->wo_actContentTypes[9].ct_fSwimDamageAmount = 1.5f;
+  pwo->wo_actContentTypes[9].ct_tmSwimDamageDelay = 1.0f;
+  pwo->wo_actContentTypes[9].ct_tmSwimDamageFrequency = 0.5f;
+  pwo->wo_actContentTypes[9].ct_ulFlags = CTF_FLYABLE|CTF_BREATHABLE_LUNGS;
+
   // environments
   pwo->wo_aetEnvironmentTypes[ 0].et_strName = "Normal";
   pwo->wo_aetEnvironmentTypes[ 0].et_iType = 1;

@@ -155,7 +155,7 @@ functions:
   {
    if(m_bRenderParticles) {
     if(m_KalChar==KA_LS ) {
-      Particles_BeastProjectileTrail( this, 0.25f, 0.1f, 10);
+      Particles_BeastProjectileTrail( this, 0.25f, -0.6f, 10);
       CEnemyBase::RenderParticles();
 	  }
 	}
@@ -292,6 +292,7 @@ functions:
     ((CKalopsy&)*pen).m_ttTarget = m_ttTarget;
     ((CKalopsy&)*pen).m_bSpawned = TRUE;
     pen->Initialize(EVoid());
+    ((CKalopsy&)*pen).LaunchAsFreeProjectile(FLOAT3D(0, -25.0f, -45.0f), this);
 
     m_ctSpawned++;
   };

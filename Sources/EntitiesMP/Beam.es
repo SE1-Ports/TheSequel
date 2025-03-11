@@ -12,6 +12,7 @@ enum BeamType {
   6 BM_LASER_VIOLET       "Laser violet",
   7 BM_GHOSTBUSTER        "Ghostbuster beam",
   8 BM_FIREBREATH         "Fire breath",
+  9 BM_LURKER             "Lurker laser",
 };
 
 class CBeam: CRationalEntity {
@@ -93,6 +94,9 @@ functions:
         break;
        case BM_GHOSTBUSTER:    
         Particles_Ghostbuster(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);
+        break;
+       case BM_LURKER:    
+        Particles_LurkerBeam(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);
         break;
        case BM_FIREBREATH:
         Particles_FireBreath2(this, m_vBeamSource, m_vBeamTarget, 

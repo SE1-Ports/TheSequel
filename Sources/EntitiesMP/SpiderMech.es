@@ -20,6 +20,12 @@ enum SpmState {
   1 SPM_EGG           "Egg",
 };
 
+enum MumAtt {
+  0 MUM_SPAWN         "Spawns only",
+  1 MUM_BALLS         "Acid Only",
+  2 MUM_BOTH          "Both",
+};
+
 %{
 #define STRETCH_SOLDIER   1.0f
 #define STRETCH_MUM       8.0f
@@ -51,6 +57,7 @@ thumbnail "Thumbnails\\SpiderMech.tbn";
 
 properties:
   1 enum SpmType m_spmType "Type" 'Y' = SPM_SOLDIER,
+  2 enum MumAtt m_MumAtt "Mum Attack" 'M' = MUM_BOTH,
   4 BOOL m_bWalkSoundPlaying = FALSE,
 
   10 CSoundObject m_soFire1,
@@ -65,6 +72,8 @@ properties:
  21 INDEX m_ctSpawned = 0,
  22 BOOL m_bSpawnEnabled = FALSE,
  23 INDEX m_bCountAsKill = TRUE,
+
+ 24 BOOL m_bPredict "Mum prediction" = TRUE,
     
 components:
   1 class   CLASS_BASE            "Classes\\EnemyBase.ecl",
@@ -519,16 +528,20 @@ procedures:
       return EReturn();
     }
     if (m_spmType == SPM_MUM) {
-      INDEX iRnd = IRnd()%2;
-      switch(iRnd)
-      {
-      case 0:
+	  switch (m_MumAtt) {
+	   case MUM_BOTH:
+        switch (IRnd()%2) {
+        case 0: jump SpawnAttack(); break;
+        case 1: jump Mumfire(); break;
+		}
+      break;
+	 case MUM_SPAWN:
         jump SpawnAttack();
         break;
-      case 1:
+	 case MUM_BALLS:
         jump Mumfire();
         break;
-        }
+	   }
 
 	}
   };
@@ -563,13 +576,19 @@ procedures:
 
       autowait(0.5f);
 
+	  if (m_bPredict) {
+
     // calculate predicted position
     FLOAT3D vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
     FLOAT3D vSpeedDst = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
     m_vDesiredPosition = CalculatePredictedPosition(GetPlacement().pl_PositionVector, vTarget, 60,
       vSpeedDst, GetPlacement().pl_PositionVector(2) );
     // shoot predicted propelled projectile
-    ShootPredictedProjectile(PRT_SPIDERWEB_MUM, m_vDesiredPosition, FIREPOS_MUM, ANGLE3D(0, 0, 0));
+    ShootPredictedProjectile(PRT_SPIDERWEB_MUM, m_vDesiredPosition, FIREPOS_MUM, ANGLE3D(0, 0, 0)); }
+
+	  else {
+
+    ShootProjectile(PRT_SPIDERWEB_MUM, FIREPOS_MUM,ANGLE3D(0.0f, 0.0f, 0.0f)); }
 
       autowait(0.6f);
 	//2 shot
@@ -579,13 +598,19 @@ procedures:
 
       autowait(0.5f);
 
+	  if (m_bPredict) {
+
     // calculate predicted position
     FLOAT3D vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
     FLOAT3D vSpeedDst = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
     m_vDesiredPosition = CalculatePredictedPosition(GetPlacement().pl_PositionVector, vTarget, 60,
       vSpeedDst, GetPlacement().pl_PositionVector(2) );
     // shoot predicted propelled projectile
-    ShootPredictedProjectile(PRT_SPIDERWEB_MUM, m_vDesiredPosition, FIREPOS_MUM, ANGLE3D(0, 0, 0));
+    ShootPredictedProjectile(PRT_SPIDERWEB_MUM, m_vDesiredPosition, FIREPOS_MUM, ANGLE3D(0, 0, 0)); }
+
+	  else {
+
+    ShootProjectile(PRT_SPIDERWEB_MUM, FIREPOS_MUM,ANGLE3D(0.0f, 0.0f, 0.0f)); }
 
       autowait(0.6f);
 	//3 shot
@@ -595,13 +620,19 @@ procedures:
 
       autowait(0.5f);
 
+	  if (m_bPredict) {
+
     // calculate predicted position
     FLOAT3D vTarget = m_penEnemy->GetPlacement().pl_PositionVector;
     FLOAT3D vSpeedDst = ((CMovableEntity&) *m_penEnemy).en_vCurrentTranslationAbsolute;
     m_vDesiredPosition = CalculatePredictedPosition(GetPlacement().pl_PositionVector, vTarget, 60,
       vSpeedDst, GetPlacement().pl_PositionVector(2) );
     // shoot predicted propelled projectile
-    ShootPredictedProjectile(PRT_SPIDERWEB_MUM, m_vDesiredPosition, FIREPOS_MUM, ANGLE3D(0, 0, 0));
+    ShootPredictedProjectile(PRT_SPIDERWEB_MUM, m_vDesiredPosition, FIREPOS_MUM, ANGLE3D(0, 0, 0)); }
+
+	  else {
+
+    ShootProjectile(PRT_SPIDERWEB_MUM, FIREPOS_MUM,ANGLE3D(0.0f, 0.0f, 0.0f)); }
 
       autowait(0.3f);
 

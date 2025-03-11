@@ -58,6 +58,7 @@ properties:
   5 CAnimObject m_aoLightAnimation,     // light animation object
   6 BOOL m_bSleeping "Sleeping" 'S' = FALSE,  // set to make scorpman sleep initally
   8 INDEX   m_fgibTexture = TEXTURE_SOLDIER,
+  9 CSoundObject m_soSpinner,            // for gunning sound
   
 {
   CEntity *penBullet;     // bullet
@@ -93,6 +94,9 @@ components:
  53 sound   SOUND_FIRE      "Models\\Enemies\\Scorpman\\Sounds\\Fire.wav",
  54 sound   SOUND_KICK      "Models\\Enemies\\Scorpman\\Sounds\\Kick.wav",
  55 sound   SOUND_DEATH     "Models\\Enemies\\Scorpman\\Sounds\\Death.wav",
+ 58 sound   SOUND_SPINU     "ModelsF\\Enemies\\Scorpman\\Sounds\\SpinUp.wav",
+ 59 sound   SOUND_SPIND     "ModelsF\\Enemies\\Scorpman\\Sounds\\SpinDown.wav",
+ 60 sound   SOUND_SPINL     "ModelsF\\Enemies\\Scorpman\\Sounds\\SpinLoop.wav",
 
 functions:
   // describe how this enemy killed player
@@ -120,6 +124,9 @@ functions:
 	PrecacheModel(MODEL_SCORPMAN_BODY1);
 	PrecacheModel(MODEL_SCORPMAN_BODY2);
 	PrecacheModel(MODEL_SCORPMAN_LEG);
+    PrecacheSound(SOUND_SPINU);
+    PrecacheSound(SOUND_SPIND);
+    PrecacheSound(SOUND_SPINL);
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
@@ -217,6 +224,7 @@ functions:
       amo_moModelObject;
     pmoGun->PlayAnim(GUN_ANIM_IDLE, AOF_LOOPING);
     pmoGun->RemoveAttachmentModel(GUN_ATTACHMENT_FLAME);
+    m_soSpinner.Stop();
   }
   /* Entity info */
   void *GetEntityInfo(void) {
@@ -392,8 +400,10 @@ functions:
     // set sound default parameters
     if (m_bQuiet) { 
     m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+    m_soSpinner.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
 	} else { 
-    m_soSound.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
+    m_soSound.Set3DParameters(160.0f, 50.0f, 1.25f, 1.0f);
+    m_soSpinner.Set3DParameters(200.0f, 10.0f, 1.5f, 1.0f);
 	}
   };
 
@@ -493,6 +503,7 @@ procedures:
     }
     // to fire
     StartModelAnim(SCORPMAN_ANIM_STANDTOFIRE, 0);
+    PlaySound(m_soSpinner, SOUND_SPINU, SOF_3D);
     m_fLockOnEnemyTime = GetModelObject()->GetAnimLength(SCORPMAN_ANIM_STANDTOFIRE) + 0.5f + FRnd()/3;
     autocall CEnemyBase::LockOnEnemy() EReturn;
 
@@ -501,6 +512,7 @@ procedures:
     m_fFireTime += _pTimer->CurrentTick();
     m_bFireBulletCount = 0;
     PlaySound(m_soSound, SOUND_FIRE, SOF_3D|SOF_LOOP);
+    PlaySound(m_soSpinner, SOUND_SPINL, SOF_3D|SOF_LOOP);
     MinigunOn();
 
     while (m_fFireTime > _pTimer->CurrentTick()) {
@@ -530,8 +542,10 @@ procedures:
         on (ETimer) : { stop; }
       }
     }
-    m_soSound.Stop();
     MinigunOff();
+    m_soSound.Stop();
+    m_soSpinner.Stop();
+    PlaySound(m_soSpinner, SOUND_SPIND, SOF_3D);
     // set next shoot time
     m_fShootTime = _pTimer->CurrentTick() + m_fAttackFireTime*(1.0f + FRnd()/3.0f);
 
@@ -547,6 +561,7 @@ procedures:
 
   // hit enemy
   Hit(EVoid) : CEnemyBase::Hit {
+    m_soSpinner.Stop();
     // close attack
     StartModelAnim(SCORPMAN_ANIM_SPIKEHIT, 0);
     autowait(0.5f);
