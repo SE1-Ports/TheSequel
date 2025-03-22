@@ -2148,9 +2148,12 @@ functions:
               if( penDestruction!=NULL)
               {
                 bRender=TRUE;
-			    ese.betType = BET_HAMMER_GENERIC; penHit->Initialize(ese);
+			    ese.betType = BET_HAMMER_ROCK; penHit->Initialize(ese);
                 sptType= penDestruction->m_sptType;
               }
+			  else {
+			    ese.betType = BET_HAMMER_GENERIC; penHit->Initialize(ese);
+				}
               CModelHolder2 *pmh2=(CModelHolder2*)crRay.cr_penHit;
               colParticles=pmh2->m_colBurning;
             }
@@ -2314,6 +2317,7 @@ functions:
               if( penDestruction!=NULL)
               {
                 bRender=TRUE;
+			    ese.betType = BET_SAW; penHit->Initialize(ese);
                 sptType= penDestruction->m_sptType;
                 if(sptType==SPT_COLOREDSTONE)
                 {
@@ -3766,6 +3770,14 @@ functions:
       case WEAPON_NONE: 
       case WEAPON_KNIFE: case WEAPON_COLT: case WEAPON_DOUBLECOLT: 
       case WEAPON_SINGLESHOTGUN: case WEAPON_DOUBLESHOTGUN:
+        WeaponSelectOk(WEAPON_MINIGUN)||
+        WeaponSelectOk(WEAPON_TOMMYGUN)||
+        WeaponSelectOk(WEAPON_FLAMER)||
+        WeaponSelectOk(WEAPON_LASER)||
+        WeaponSelectOk(WEAPON_DOUBLECOLT)||
+        WeaponSelectOk(WEAPON_COLT)||
+        WeaponSelectOk(WEAPON_KNIFE);
+        break;
       case WEAPON_TOMMYGUN: case WEAPON_MINIGUN: case WEAPON_SNIPER: case WEAPON_GHOSTBUSTER:
         WeaponSelectOk(WEAPON_MINIGUN)||
         WeaponSelectOk(WEAPON_TOMMYGUN)||
@@ -3778,6 +3790,7 @@ functions:
       case WEAPON_IRONCANNON:
       case WEAPON_DEVASTATOR:
         WeaponSelectOk(WEAPON_ROCKETLAUNCHER)||
+        WeaponSelectOk(WEAPON_DEVASTATOR)||
         WeaponSelectOk(WEAPON_GRENADELAUNCHER)||
         WeaponSelectOk(WEAPON_MINIGUN)||
         WeaponSelectOk(WEAPON_TOMMYGUN)||
@@ -3788,9 +3801,19 @@ functions:
         WeaponSelectOk(WEAPON_KNIFE);
         break;
       case WEAPON_ROCKETLAUNCHER:
+        WeaponSelectOk(WEAPON_DEVASTATOR)||
+        WeaponSelectOk(WEAPON_GRENADELAUNCHER)||
+        WeaponSelectOk(WEAPON_MINIGUN)||
+        WeaponSelectOk(WEAPON_TOMMYGUN)||
+        WeaponSelectOk(WEAPON_DOUBLESHOTGUN)||
+        WeaponSelectOk(WEAPON_SINGLESHOTGUN)||
+        WeaponSelectOk(WEAPON_DOUBLECOLT)||
+        WeaponSelectOk(WEAPON_COLT)||
+        WeaponSelectOk(WEAPON_KNIFE);
+        break;
       case WEAPON_GRENADELAUNCHER:
         WeaponSelectOk(WEAPON_ROCKETLAUNCHER)||
-        WeaponSelectOk(WEAPON_GRENADELAUNCHER)||
+        WeaponSelectOk(WEAPON_DEVASTATOR)||
         WeaponSelectOk(WEAPON_MINIGUN)||
         WeaponSelectOk(WEAPON_TOMMYGUN)||
         WeaponSelectOk(WEAPON_DOUBLESHOTGUN)||
@@ -4791,6 +4814,13 @@ procedures:
     // force ending of weapon change
     m_tmWeaponChangeRequired = 0;
     m_bSecFireWeapon = TRUE;
+    m_bHasAmmo = HasAmmo(m_iCurrentWeapon);
+
+    // if has no ammo select new weapon
+    if (!m_bHasAmmo) {
+      SelectNewWeapon();
+      jump Idle();
+    }
 
     m_iPlasmaBarrel = 0;
 
@@ -4799,7 +4829,7 @@ procedures:
     // setup 3D sound parameters
     Setup3DSoundParameters();
 
-    while (HoldingSecondaryFire()) 
+    while (HoldingSecondaryFire() && m_bHasAmmo) 
     {
       // boring animation
       ((CPlayerAnimator&)*((CPlayer&)*m_penPlayer).m_penAnimator).m_fLastActionTime = _pTimer->CurrentTick();
@@ -5404,6 +5434,8 @@ procedures:
     } else {
       ASSERTALWAYS("DoubleShotgun - Auto weapon change not working.");
       m_bFireWeapon = m_bHasAmmo = FALSE;
+      SelectNewWeapon();
+      jump Idle();
     }
     return EEnd();
   };
@@ -5920,6 +5952,8 @@ procedures:
     } else {
       ASSERTALWAYS("RocketLauncher - Auto weapon change not working.");
       m_bFireWeapon = m_bHasAmmo = FALSE;
+      SelectNewWeapon();
+      jump Idle();
     }
     return EEnd();
   };
@@ -6463,7 +6497,7 @@ procedures:
 
   FirePlasmaAlt() {
     // fire five cells
-    if (m_iPlasma>4) {
+    if (m_iPlasma>7) {
       CPlayer &pl = (CPlayer&)*m_penPlayer;
       // activate barrel anim
       CModelObject *pmo = &(m_moWeapon.GetAttachmentModel(LASER_ATTACHMENT_BARRELBIG)->amo_moModelObject);
@@ -6489,6 +6523,8 @@ procedures:
     } else {
       ASSERTALWAYS("Plasma - Auto weapon change not working.");
       m_bFireWeapon = m_bHasAmmo = FALSE;
+      SelectNewWeapon();
+      jump Idle();
     }
     return EEnd();
   };

@@ -176,7 +176,6 @@ properties:
 
 190 BOOL m_bCountAsKill "Count as kill" = TRUE,
 191 BOOL m_bIgnoreNav   "Ignore NavMarkers" = FALSE,
-192 FLOAT m_fHealthMultiplier "Health multiplier" =  1.0f,         // stretch multiplier
 
   {
     TIME m_tmPredict;  // time to predict the entity to
