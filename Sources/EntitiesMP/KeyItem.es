@@ -73,6 +73,10 @@ enum KeyItemType {
  55 KIT_KEYCARD2          "Keycard orange",
  56 KIT_KEYCARD4          "Keycard blue",
  57 KIT_KEYCARD5          "Keycard red",
+ 
+ 60 KIT_PANGOLIN          "Golden Pangolin",
+ 61 KIT_CHAMELEON         "Jewel Chameleon",
+ 62 KIT_SERPENTSCEPTER    "Serpent Scepter",
 };
 
 // event for sending through receive item
@@ -122,7 +126,7 @@ const char *GetKeyName(enum KeyItemType kit)
  case KIT_KEYHEART            :  return TRANS("Heart key"); break;
  case KIT_ATLANTIS            :  return TRANS("Atlantis key"); break;
  case KIT_CHINA               :  return TRANS("China key"); break;
- case KIT_ROME                :  return TRANS("Rome key"); break;
+ case KIT_ROME                :  return TRANS("Golden key"); break;
  case KIT_MONKEY              :  return TRANS("Golden monkey"); break;
  case KIT_MIAB                :  return TRANS("Monkey-in-a-barrel"); break;
  case KIT_SUZANNE             :  return TRANS("Suzanne"); break;
@@ -150,6 +154,10 @@ const char *GetKeyName(enum KeyItemType kit)
  case KIT_KEYCARD2           :  return TRANS("Orange keycard"); break;
  case KIT_KEYCARD4           :  return TRANS("Blue keycard"); break;
  case KIT_KEYCARD5           :  return TRANS("Red keycard"); break;
+ 
+ case KIT_PANGOLIN           :  return TRANS("Golden Pangolin"); break;
+ case KIT_CHAMELEON          :  return TRANS("Jewel Chameleon"); break;
+ case KIT_SERPENTSCEPTER     :  return TRANS("Serpent Scepter"); break;
 
   default: return TRANS("unknown item"); break;
   };
@@ -324,6 +332,15 @@ components:
 
 140 model   MODEL_CONCH              "ModelsF\\Items\\Keys\\VishnuConch\\Conch.mdl",
 141 texture TEXTURE_CONCH            "ModelsF\\Items\\Keys\\VishnuConch\\Conch.tex",
+
+147 model   MODEL_PANGOLIN              "ModelsF\\Items\\Keys\\Pangolin\\PangolinStatue.mdl",
+148 texture TEXTURE_PANGOLIN            "ModelsF\\Items\\Keys\\Pangolin\\PangolinStatue.tex",
+
+143 model   MODEL_CHAMELEON              "ModelsF\\Items\\Keys\\Chameleon\\Chameleon.mdl",
+144 texture TEXTURE_CHAMELEON            "ModelsF\\Items\\Keys\\Chameleon\\ChameleonBlue.tex",
+
+145 model   MODEL_SERPENTSCEPTER              "ModelsF\\Items\\Keys\\SerpentScepter\\SerpentScepter.mdl",
+146 texture TEXTURE_SERPENTSCEPTER            "ModelsF\\Items\\Keys\\SerpentScepter\\SerpentScepter.tex",
 
  // ********* MISC *********
 250 texture TEXTURE_FLARE       "ModelsMP\\Items\\Flares\\Flare.tex",
@@ -920,6 +937,30 @@ functions:
       case KIT_CONCH:
         // set appearance
         AddItem(MODEL_CONCH, TEXTURE_CONCH, 0, TEX_SPEC_MEDIUM, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_PANGOLIN:
+        // set appearance
+        AddItem(MODEL_PANGOLIN, TEXTURE_PANGOLIN, TEX_REFL_GOLD01, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_CHAMELEON:
+        // set appearance
+        AddItem(MODEL_CHAMELEON, TEXTURE_CHAMELEON, TEX_REFL_METAL01, TEX_SPEC_STRONG, 0);
+        // add flare
+        AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
+        StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));
+        m_iSoundComponent = SOUND_KEY;
+		break;
+      case KIT_SERPENTSCEPTER:
+        // set appearance
+        AddItem(MODEL_SERPENTSCEPTER, TEXTURE_SERPENTSCEPTER, TEX_REFL_GOLD01, TEX_SPEC_STRONG, 0);
         // add flare
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.2f,0), FLOAT3D(1,1,0.3f) );
         StretchItem(FLOAT3D(1.0f, 1.0f, 1.0f));

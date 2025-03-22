@@ -403,6 +403,28 @@ functions:
     m_bRunSoundPlaying = FALSE;
   };
 
+  BOOL AdjustShadingParameters(FLOAT3D &vLightDirection, COLOR &colLight, COLOR &colAmbient)
+  {
+    FLOAT fTimePassed = _pTimer->GetLerpedCurrentTick()-m_tmElectricityTimeStart;
+    if( m_bAttackingByElectricity && (fTimePassed>0))
+    {
+      FLOAT fDieFactor = 1.0f;
+      if( fTimePassed > 0.25f)
+      {
+        // calculate light dying factor
+        fDieFactor = 1.0-(ClampUp(fTimePassed-0.25f,0.5f)/0.5f);
+      }
+      // adjust light fx
+      FLOAT fR = 0.7f+0.1f*(FLOAT(rand())/RAND_MAX);
+      FLOAT fG = 0.7f+0.2f*(FLOAT(rand())/RAND_MAX);
+      FLOAT fB = 0.7f+0.3f*(FLOAT(rand())/RAND_MAX);
+      colAmbient = RGBToColor( fR*128*fDieFactor, fG*128*fDieFactor, fB*128*fDieFactor);
+      colLight = C_WHITE;
+      return CEnemyBase::AdjustShadingParameters(vLightDirection, colLight, colAmbient);
+    }
+    return CEnemyBase::AdjustShadingParameters(vLightDirection, colLight, colAmbient);
+  };
+
   // spawn hatchling 
   void SpawnHatchling(void) 
   {
