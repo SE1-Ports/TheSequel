@@ -92,6 +92,8 @@ properties:
 
   15 INDEX m_bFireBulletCount = 0,       // fire bullet binary divider
   16 INDEX   m_fgibTexture = TEXTURE_WALKER_SOLDIER,
+  17 INDEX   m_fgibGun = MODEL_DLASER,
+  18 INDEX   m_fgibgunTexture = TEXTURE_WALKER_SOLDIER,
 {
   CEntity *penBullet;     // bullet
   CLightSource m_lsLightSource;
@@ -128,9 +130,15 @@ components:
  25 model   MODEL_MG2        "Models\\Weapons\\MiniGun\\Barrels.mdl", // weapon
  26 texture TEXTURE_MG2      "Models\\Weapons\\MiniGun\\Barrels.tex", // weapon
 
- 71 model   MODEL_WALKER_TORSO   "ModelsJTH\\Enemies\\Walker\\Debris\\Torso.mdl",
- 72 model   MODEL_WALKER_LEG     "ModelsJTH\\Enemies\\Walker\\Debris\\Leg.mdl",
- 73 model   MODEL_WALKER_LEG2     "ModelsJTH\\Enemies\\Walker\\Debris\\Leg2.mdl",
+ 71 model   MODEL_ARMS   "ModelsF\\Enemies\\Walker\\Debris\\Arms.mdl",
+ 72 model   MODEL_LEG1     "ModelsF\\Enemies\\Walker\\Debris\\Leg1.mdl",
+ 73 model   MODEL_LEG2     "ModelsF\\Enemies\\Walker\\Debris\\Leg2.mdl",
+ 74 model   MODEL_BUTT   "ModelsF\\Enemies\\Walker\\Debris\\Butt.mdl",
+ 75 model   MODEL_DLASER     "ModelsF\\Enemies\\Walker\\Debris\\Laser.mdl",
+ 76 model   MODEL_DRL     "ModelsF\\Enemies\\Walker\\Debris\\RocketLauncher.mdl",
+
+ 33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
+ 34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
 
 // ************** SOUNDS **************
  50 sound   SOUND_SOLDIER_IDLE        "Models\\Enemies\\Walker\\Sounds\\Soldier\\Idle.wav",
@@ -196,9 +204,15 @@ functions:
 
   void Precache(void) {
     CEnemyBase::Precache();
-	  PrecacheModel(MODEL_WALKER_TORSO);
-	  PrecacheModel(MODEL_WALKER_LEG);
-	  PrecacheModel(MODEL_WALKER_LEG2);
+	  PrecacheModel(MODEL_ARMS);
+	  PrecacheModel(MODEL_LEG1);
+	  PrecacheModel(MODEL_LEG2);
+	  PrecacheModel(MODEL_DLASER);
+	  PrecacheModel(MODEL_DRL);
+	  PrecacheModel(MODEL_BUTT);
+
+    PrecacheModel(MODEL_FLESH);
+    PrecacheTexture(TEXTURE_FLESH_RED);
 
     if (m_EwcChar==WLC_SOLDIER)
     {
@@ -458,15 +472,33 @@ functions:
     vNormalizedDamage *= 0.75f;
     FLOAT3D vBodySpeed = en_vCurrentTranslationAbsolute-en_vGravityDir*(en_vGravityDir%en_vCurrentTranslationAbsolute);
 
-    // spawn debris
-    Debris_Begin(EIBT_FLESH, DPT_NONE, BET_NONE, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 2.0f, 0.5f);
+      ULONG ulFleshTexture = TEXTURE_FLESH_RED;
+      ULONG ulFleshModel   = MODEL_FLESH;
 
-    Debris_Spawn(this, this, MODEL_WALKER_TORSO, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+    // spawn debris
+    Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 2.0f, 0.5f);
+
+    Debris_Spawn(this, this, MODEL_ARMS, m_fgibTexture, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_WALKER_LEG, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+    Debris_Spawn(this, this, MODEL_BUTT, m_fgibTexture, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_WALKER_LEG2, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+    Debris_Spawn(this, this, MODEL_LEG2, m_fgibTexture, 0, 0, 0, 0, 0.5f,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG2, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG1, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_LEG1, m_fgibTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibGun, m_fgibgunTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, m_fgibGun, m_fgibgunTexture, 0, 0, 0, 0, 0.5f,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+	  
+      for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
+        Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 1.0f,
+                      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+					  }
 
       // spawn splash fx (sound)
       CPlacement3D plSplat = GetPlacement();
@@ -907,6 +939,8 @@ procedures:
 	  m_fSize = 1.0f;
       SetModelMainTexture(TEXTURE_WALKER_SERGEANT);
 		m_fgibTexture = TEXTURE_WALKER_SERGEANT;
+		m_fgibGun = MODEL_DRL;
+		m_fgibgunTexture = TEXTURE_ROCKETLAUNCHER;
       AddAttachment(WALKER_ATTACHMENT_ROCKETLAUNCHER_LT, MODEL_ROCKETLAUNCHER, TEXTURE_ROCKETLAUNCHER);
       AddAttachment(WALKER_ATTACHMENT_ROCKETLAUNCHER_RT, MODEL_ROCKETLAUNCHER, TEXTURE_ROCKETLAUNCHER);
       GetModelObject()->StretchModel(FLOAT3D(1,1,1));
@@ -923,6 +957,8 @@ procedures:
 	  m_fSize = 0.5f;
       SetModelMainTexture(TEXTURE_WALKER_SOLDIER);
 		m_fgibTexture = TEXTURE_WALKER_SOLDIER;
+		m_fgibGun = MODEL_DLASER;
+		m_fgibgunTexture = TEXTURE_LASER;
       AddAttachment(WALKER_ATTACHMENT_LASER_LT, MODEL_LASER, TEXTURE_LASER);
       AddAttachment(WALKER_ATTACHMENT_LASER_RT, MODEL_LASER, TEXTURE_LASER);
       GetModelObject()->StretchModel(FLOAT3D(0.5f,0.5f,0.5f));
@@ -941,6 +977,8 @@ procedures:
 	  m_fSize = 0.8f;
       SetModelMainTexture(TEXTURE_WALKER_MG);
 		m_fgibTexture = TEXTURE_WALKER_MG;
+		m_fgibGun = MODEL_DRL;
+		m_fgibgunTexture = TEXTURE_LASER;
       AddAttachment(WALKERMINIGUN_ATTACHMENT_MGA, MODEL_MG1, TEXTURE_MG1);
       AddAttachment(WALKERMINIGUN_ATTACHMENT_MGB, MODEL_MG1, TEXTURE_MG1);
 	  AddAttachment(WALKERMINIGUN_ATTACHMENT_MGC, MODEL_MG2, TEXTURE_MG2);
@@ -1015,7 +1053,7 @@ procedures:
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 300.0f;
     // damage/explode properties
-    m_fBodyParts = 8;
+    m_fBodyParts = 10;
     m_fDamageWounded = 100000.0f;
 
     // continue behavior in base class

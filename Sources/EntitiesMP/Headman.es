@@ -416,7 +416,7 @@ functions:
       ULONG ulFleshTexture = TEXTURE_FLESH_RED;
       ULONG ulFleshModel   = MODEL_FLESH;
 
-      Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+      Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, fEntitySize, vNormalizedDamage, vBodySpeed, 5.0f, 0.0f);
 
 
       Debris_Spawn(this, this, MODEL_HEADMAN_HAND, m_fgibTexture, 0, 0, 0, 0, 0.72f,

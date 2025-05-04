@@ -42,6 +42,7 @@ enum ParticleTrailType {
  20 TRAIL_AFTERBURNER       "Afterburner trail",
  22 TRAIL_SPIRAL            "Spiral trail",
  24 TRAIL_RUNNINGDUST       "Running dust",
+ 25 TRAIL_ALBINO            "Albino projectile trail",
 };
 
 %{
@@ -297,6 +298,10 @@ functions:
     if(m_ptType==TRAIL_RUNNINGDUST ) {
 	  m_bRenderParticles = TRUE;
        Particles_RunningDust(this);
+	}
+    if(m_ptType==TRAIL_ALBINO ) {
+	  m_bRenderParticles = TRUE;
+       Particles_AlbinoProjectileTrail( this, m_fSize, fZOffset, fYOffset, ctParticles);
 	}
   }
 

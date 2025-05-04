@@ -91,6 +91,7 @@ enum BasicEffectType {
  81 BET_GASCLOUD                  "Gas cloud",            // gas cloud
  82 BET_T3DGMX                    "T3DGM Explosion",     // space explosion
  83 BET_HIVEBRAIN                 "HiveBrain Explosion",     // HiveBrain explosion
+ 91 BET_MANTAMAN                  "Mantaman attack",
  
  84 BET_HAMMER_FLESH              "Hammer hit flesh",
  85 BET_HAMMER_METAL              "Hammer hit metal",
@@ -118,6 +119,14 @@ void CBasicEffect_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   case BET_ROCKET:
   case BET_ROCKET_PLANE:
     pdec->PrecacheSound(SOUND_EXPLOSION);
+    pdec->PrecacheSound(SOUND_EXPLOSION01);
+    pdec->PrecacheSound(SOUND_EXPLOSION02);
+    pdec->PrecacheSound(SOUND_EXPLOSION03);
+    pdec->PrecacheSound(SOUND_EXPLOSION04);
+    pdec->PrecacheSound(SOUND_EXPLOSION05);
+    pdec->PrecacheSound(SOUND_EXPLOSION06);
+    pdec->PrecacheSound(SOUND_EXPLOSION07);
+    pdec->PrecacheSound(SOUND_EXPLOSION08);
     pdec->PrecacheModel(MDL_ROCKET_EXPLOSION);
     pdec->PrecacheTexture(TXT_ROCKET_EXPLOSION);
     pdec->PrecacheModel(MDL_PARTICLES_EXPLOSION);
@@ -131,6 +140,14 @@ void CBasicEffect_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   case BET_GRENADE:
   case BET_GRENADE_PLANE:
     pdec->PrecacheSound(SOUND_EXPLOSION);
+    pdec->PrecacheSound(SOUND_EXPLOSION01);
+    pdec->PrecacheSound(SOUND_EXPLOSION02);
+    pdec->PrecacheSound(SOUND_EXPLOSION03);
+    pdec->PrecacheSound(SOUND_EXPLOSION04);
+    pdec->PrecacheSound(SOUND_EXPLOSION05);
+    pdec->PrecacheSound(SOUND_EXPLOSION06);
+    pdec->PrecacheSound(SOUND_EXPLOSION07);
+    pdec->PrecacheSound(SOUND_EXPLOSION08);
     pdec->PrecacheModel(MDL_GRENADE_EXPLOSION);
     pdec->PrecacheTexture(TXT_GRENADE_EXPLOSION);
     pdec->PrecacheModel(MDL_PARTICLES_EXPLOSION);
@@ -143,9 +160,26 @@ void CBasicEffect_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   case BET_CANNON:
   case BET_CANNON_NOLIGHT:
   case BET_LIGHT_CANNON:
+  case BET_HYDROGUN:
+    pdec->PrecacheSound(SOUND_SMALLEXPLOSION01);
+    pdec->PrecacheSound(SOUND_SMALLEXPLOSION02);
+    pdec->PrecacheSound(SOUND_SMALLEXPLOSION03);
+    pdec->PrecacheSound(SOUND_SMALLEXPLOSION04);
+    pdec->PrecacheSound(SOUND_SMALLEXPLOSION05);
+    pdec->PrecacheSound(SOUND_SMALLEXPLOSION06);
+    pdec->PrecacheSound(SOUND_SMALLEXPLOSION07);
+    pdec->PrecacheSound(SOUND_SMALLEXPLOSION08);
   case BET_CANNON_PLANE:
   case BET_CANNONSHOCKWAVE:
     pdec->PrecacheSound(SOUND_EXPLOSION);
+    pdec->PrecacheSound(SOUND_EXPLOSION01);
+    pdec->PrecacheSound(SOUND_EXPLOSION02);
+    pdec->PrecacheSound(SOUND_EXPLOSION03);
+    pdec->PrecacheSound(SOUND_EXPLOSION04);
+    pdec->PrecacheSound(SOUND_EXPLOSION05);
+    pdec->PrecacheSound(SOUND_EXPLOSION06);
+    pdec->PrecacheSound(SOUND_EXPLOSION07);
+    pdec->PrecacheSound(SOUND_EXPLOSION08);
     pdec->PrecacheModel(MDL_CANNON_EXPLOSION);
     pdec->PrecacheTexture(TXT_CANNON_EXPLOSION);
     pdec->PrecacheModel(MDL_CANNON3D_EXPLOSION);
@@ -260,16 +294,14 @@ void CBasicEffect_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
     break;
   case BET_PLASMA_EXPLOSION:
     pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION);
-  case BET_HYDROGUN:
-    pdec->PrecacheSound(SOUND_HYDROGUN);
-    pdec->PrecacheModel(MDL_ROCKET_EXPLOSION);
-    pdec->PrecacheTexture(TXT_ROCKET_EXPLOSION);
-    pdec->PrecacheModel(MDL_PARTICLES_EXPLOSION);
-    pdec->PrecacheTexture(TXT_PARTICLES_EXPLOSION);
-    pdec->PrecacheModel(MDL_ROCKET3D_EXPLOSION);
-    pdec->PrecacheTexture(TXT_ROCKET_EXPLOSION);
-    pdec->PrecacheModel(MDL_PARTICLES3D_EXPLOSION);
-    pdec->PrecacheTexture(TXT_PARTICLES_EXPLOSION);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION01);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION02);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION03);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION04);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION05);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION06);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION07);
+    pdec->PrecacheSound(SOUND_PLASMA_EXPLOSION08);
 
   case BET_FLESH_SPLAT_FX:
     pdec->PrecacheModel(MODEL_BULLET_HIT);
@@ -462,6 +494,14 @@ components:
 // ********** PLASMA EXPLOSION **********
  200 sound   SOUND_PLASMA_EXPLOSION           "ModelsMP\\Weapons\\PlasmaThrower\\Sounds\\_Explosion.wav",
  201 sound   SOUND_HYDROGUN                   "SoundsF\\Weapons\\Acid.wav",
+ 310 sound   SOUND_PLASMA_EXPLOSION01         "SoundsF\\Destruction\\PlasmaExplosion01.wav",
+ 311 sound   SOUND_PLASMA_EXPLOSION02         "SoundsF\\Destruction\\PlasmaExplosion02.wav",
+ 312 sound   SOUND_PLASMA_EXPLOSION03         "SoundsF\\Destruction\\PlasmaExplosion03.wav",
+ 313 sound   SOUND_PLASMA_EXPLOSION04         "SoundsF\\Destruction\\PlasmaExplosion04.wav",
+ 314 sound   SOUND_PLASMA_EXPLOSION05         "SoundsF\\Destruction\\PlasmaExplosion05.wav",
+ 315 sound   SOUND_PLASMA_EXPLOSION06         "SoundsF\\Destruction\\PlasmaExplosion06.wav",
+ 316 sound   SOUND_PLASMA_EXPLOSION07         "SoundsF\\Destruction\\PlasmaExplosion07.wav",
+ 317 sound   SOUND_PLASMA_EXPLOSION08         "SoundsF\\Destruction\\PlasmaExplosion08.wav",
 
 // ********** FLESH SPLAT FX **********
  210 sound   SOUND_FLESH_SPLAT1            "SoundsF\\Splats\\Splat1.wav",
@@ -506,6 +546,25 @@ components:
  284 sound   SOUND_SAW_FLESH2            "SoundsF\\Weapons\\Saw_Flesh02.wav",
  285 sound   SOUND_SAW_FLESH3            "SoundsF\\Weapons\\Saw_Flesh03.wav",
  286 sound   SOUND_SAW_FLESH4            "SoundsF\\Weapons\\Saw_Flesh04.wav",
+
+// ********** NEW EXPLOSIONS **********
+ 290 sound   SOUND_EXPLOSION01           "SoundsF\\Destruction\\Explosion01.wav",
+ 291 sound   SOUND_EXPLOSION02           "SoundsF\\Destruction\\Explosion02.wav",
+ 292 sound   SOUND_EXPLOSION03           "SoundsF\\Destruction\\Explosion03.wav",
+ 293 sound   SOUND_EXPLOSION04           "SoundsF\\Destruction\\Explosion04.wav",
+ 294 sound   SOUND_EXPLOSION05           "SoundsF\\Destruction\\Explosion05.wav",
+ 295 sound   SOUND_EXPLOSION06           "SoundsF\\Destruction\\Explosion06.wav",
+ 296 sound   SOUND_EXPLOSION07           "SoundsF\\Destruction\\Explosion07.wav",
+ 297 sound   SOUND_EXPLOSION08           "SoundsF\\Destruction\\Explosion08.wav",
+
+ 300 sound   SOUND_SMALLEXPLOSION01           "SoundsF\\Destruction\\ExplosionSmall01.wav",
+ 301 sound   SOUND_SMALLEXPLOSION02           "SoundsF\\Destruction\\ExplosionSmall02.wav",
+ 302 sound   SOUND_SMALLEXPLOSION03           "SoundsF\\Destruction\\ExplosionSmall03.wav",
+ 303 sound   SOUND_SMALLEXPLOSION04           "SoundsF\\Destruction\\ExplosionSmall04.wav",
+ 304 sound   SOUND_SMALLEXPLOSION05           "SoundsF\\Destruction\\ExplosionSmall05.wav",
+ 305 sound   SOUND_SMALLEXPLOSION06           "SoundsF\\Destruction\\ExplosionSmall06.wav",
+ 306 sound   SOUND_SMALLEXPLOSION07           "SoundsF\\Destruction\\ExplosionSmall07.wav",
+ 307 sound   SOUND_SMALLEXPLOSION08           "SoundsF\\Destruction\\ExplosionSmall08.wav",
 
 functions:
 
@@ -655,6 +714,11 @@ functions:
     {
       FLOAT fStretch=(m_vStretch(1)+m_vStretch(2)+m_vStretch(3))/3.0f;
       Particles_GrowingSwirl(this, fStretch, m_tmSpawn);
+    }
+    if(m_betType==BET_MANTAMAN)
+    {
+      FLOAT fStretch=(m_vStretch(1)+m_vStretch(2)+m_vStretch(3))/3.0f;
+      Particles_MantaAttack(this, fStretch, m_tmSpawn);
     }
     if(m_betType==BET_DISAPPEAR_DUST)
     {
@@ -868,8 +932,19 @@ functions:
     RandomBanking();
     SetNonLoopingTexAnims();
     m_soEffect.Set3DParameters(150.0f, 3.0f, 1.0f, 1.0f);
-    PlaySound(m_soEffect, SOUND_EXPLOSION, SOF_3D);
-    m_fSoundTime = GetSoundLength(SOUND_EXPLOSION);
+    INDEX iBangSound;
+    switch (IRnd()%8) {
+      case 0: iBangSound = SOUND_EXPLOSION01; break;
+      case 1: iBangSound = SOUND_EXPLOSION02; break;
+      case 2: iBangSound = SOUND_EXPLOSION03; break;
+      case 3: iBangSound = SOUND_EXPLOSION04; break;
+      case 4: iBangSound = SOUND_EXPLOSION05; break;
+      case 5: iBangSound = SOUND_EXPLOSION06; break;
+      case 6: iBangSound = SOUND_EXPLOSION07; break;
+      case 7: iBangSound = SOUND_EXPLOSION08; break;
+    }
+    PlaySound(m_soEffect, iBangSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iBangSound);
     m_fWaitTime = 0.95f;
     m_bLightSource = TRUE;
     m_iLightAnimation = 0;
@@ -895,8 +970,19 @@ functions:
     SetNonLoopingTexAnims();
     FLOAT fSizeFactor = m_vStretch.MaxNorm();
     m_soEffect.Set3DParameters(50.0f*fSizeFactor, 10.0f*fSizeFactor, 1.0f*fSizeFactor, 1.0f);
-    PlaySound(m_soEffect, SOUND_EXPLOSION, SOF_3D);
-    m_fSoundTime = GetSoundLength(SOUND_EXPLOSION);
+    INDEX iBangSound;
+    switch (IRnd()%8) {
+      case 0: iBangSound = SOUND_EXPLOSION01; break;
+      case 1: iBangSound = SOUND_EXPLOSION02; break;
+      case 2: iBangSound = SOUND_EXPLOSION03; break;
+      case 3: iBangSound = SOUND_EXPLOSION04; break;
+      case 4: iBangSound = SOUND_EXPLOSION05; break;
+      case 5: iBangSound = SOUND_EXPLOSION06; break;
+      case 6: iBangSound = SOUND_EXPLOSION07; break;
+      case 7: iBangSound = SOUND_EXPLOSION08; break;
+    }
+    PlaySound(m_soEffect, iBangSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iBangSound);
     m_fWaitTime = 0.95f;
     m_bLightSource = TRUE;
     m_iLightAnimation = 1;
@@ -939,6 +1025,15 @@ functions:
   }
   
   void GrowingSwirl(void)
+  {
+    SetPredictable(TRUE);
+    SetModel(MODEL_BULLET_HIT);
+    SetModelMainTexture(TEXTURE_BULLET_HIT);
+    m_fWaitTime = 10.0f;
+    m_bLightSource = FALSE;
+  }
+  
+  void MantaAttack(void)
   {
     SetPredictable(TRUE);
     SetModel(MODEL_BULLET_HIT);
@@ -995,8 +1090,19 @@ functions:
     RandomBanking();
     SetNonLoopingTexAnims();
     m_soEffect.Set3DParameters(150.0f, 3.0f, 1.0f, 1.0f);
-    PlaySound(m_soEffect, SOUND_EXPLOSION, SOF_3D);
-    m_fSoundTime = GetSoundLength(SOUND_EXPLOSION);
+    INDEX iBangSound;
+    switch (IRnd()%8) {
+      case 0: iBangSound = SOUND_EXPLOSION01; break;
+      case 1: iBangSound = SOUND_EXPLOSION02; break;
+      case 2: iBangSound = SOUND_EXPLOSION03; break;
+      case 3: iBangSound = SOUND_EXPLOSION04; break;
+      case 4: iBangSound = SOUND_EXPLOSION05; break;
+      case 5: iBangSound = SOUND_EXPLOSION06; break;
+      case 6: iBangSound = SOUND_EXPLOSION07; break;
+      case 7: iBangSound = SOUND_EXPLOSION08; break;
+    }
+    PlaySound(m_soEffect, iBangSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iBangSound);
     m_fWaitTime = 0.95f;
     m_bLightSource = TRUE;
     m_iLightAnimation = 1;
@@ -1023,17 +1129,37 @@ functions:
     moExplosion.mo_colBlendColor = m_colMultiplyColor;
     moExplosion.mo_toTexture.PlayAnim(EXPLOSION_GRENADE_TEXTURE_ANIM_FAST, 0);
     RandomBanking();
+    INDEX iBangSound;
     if( bLoVolume)
     {
-      m_soEffect.Set3DParameters(150.0f, 3.0f, 0.5f, 1.0f);
+      m_soEffect.Set3DParameters(150.0f, 3.0f, 1.0f, 1.0f);
+      switch (IRnd()%8) {
+        case 0: iBangSound = SOUND_SMALLEXPLOSION01; break;
+        case 1: iBangSound = SOUND_SMALLEXPLOSION02; break;
+        case 2: iBangSound = SOUND_SMALLEXPLOSION03; break;
+        case 3: iBangSound = SOUND_SMALLEXPLOSION04; break;
+        case 4: iBangSound = SOUND_SMALLEXPLOSION05; break;
+        case 5: iBangSound = SOUND_SMALLEXPLOSION06; break;
+        case 6: iBangSound = SOUND_SMALLEXPLOSION07; break;
+        case 7: iBangSound = SOUND_SMALLEXPLOSION08; break;
+      }
     }
     else
     {
       m_soEffect.Set3DParameters(150.0f, 3.0f, 1.0f, 1.0f);
+      switch (IRnd()%8) {
+        case 0: iBangSound = SOUND_EXPLOSION01; break;
+        case 1: iBangSound = SOUND_EXPLOSION02; break;
+        case 2: iBangSound = SOUND_EXPLOSION03; break;
+        case 3: iBangSound = SOUND_EXPLOSION04; break;
+        case 4: iBangSound = SOUND_EXPLOSION05; break;
+        case 5: iBangSound = SOUND_EXPLOSION06; break;
+        case 6: iBangSound = SOUND_EXPLOSION07; break;
+        case 7: iBangSound = SOUND_EXPLOSION08; break;
+      }
     }
-
-    PlaySound(m_soEffect, SOUND_EXPLOSION, SOF_3D);
-    m_fSoundTime = GetSoundLength(SOUND_EXPLOSION);
+    PlaySound(m_soEffect, iBangSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iBangSound);
     m_fWaitTime = 0.8f;
     if( bNoLight)
     {
@@ -1088,8 +1214,19 @@ functions:
     RandomBanking();
     SetNonLoopingTexAnims();
     m_soEffect.Set3DParameters(150.0f, 3.0f, 1.0f, 1.0f);
-    PlaySound(m_soEffect, SOUND_PLASMA_EXPLOSION, SOF_3D);
-    m_fSoundTime = GetSoundLength(SOUND_PLASMA_EXPLOSION);
+    INDEX iBangSound;
+    switch (IRnd()%8) {
+      case 0: iBangSound = SOUND_PLASMA_EXPLOSION01; break;
+      case 1: iBangSound = SOUND_PLASMA_EXPLOSION02; break;
+      case 2: iBangSound = SOUND_PLASMA_EXPLOSION03; break;
+      case 3: iBangSound = SOUND_PLASMA_EXPLOSION04; break;
+      case 4: iBangSound = SOUND_PLASMA_EXPLOSION05; break;
+      case 5: iBangSound = SOUND_PLASMA_EXPLOSION06; break;
+      case 6: iBangSound = SOUND_PLASMA_EXPLOSION07; break;
+      case 7: iBangSound = SOUND_PLASMA_EXPLOSION08; break;
+    }
+    PlaySound(m_soEffect, iBangSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iBangSound);
     m_fWaitTime = 0.95f;
     m_bLightSource = TRUE;
     m_iLightAnimation = 0;
@@ -1183,8 +1320,19 @@ functions:
     RandomBanking();
     SetNonLoopingTexAnims();
     m_soEffect.Set3DParameters(50.0f, 2.0f, 1.0f, 1.0f);
-    PlaySound(m_soEffect, SOUND_HYDROGUN, SOF_3D);
-    m_fSoundTime = GetSoundLength(SOUND_HYDROGUN);
+    INDEX iBangSound;
+      switch (IRnd()%8) {
+        case 0: iBangSound = SOUND_SMALLEXPLOSION01; break;
+        case 1: iBangSound = SOUND_SMALLEXPLOSION02; break;
+        case 2: iBangSound = SOUND_SMALLEXPLOSION03; break;
+        case 3: iBangSound = SOUND_SMALLEXPLOSION04; break;
+        case 4: iBangSound = SOUND_SMALLEXPLOSION05; break;
+        case 5: iBangSound = SOUND_SMALLEXPLOSION06; break;
+        case 6: iBangSound = SOUND_SMALLEXPLOSION07; break;
+        case 7: iBangSound = SOUND_SMALLEXPLOSION08; break;
+    }
+    PlaySound(m_soEffect, iBangSound, SOF_3D);
+    m_fSoundTime = GetSoundLength(iBangSound);
     m_fWaitTime = 0.95f;
     m_bLightSource = TRUE;
     m_iLightAnimation = 0;
@@ -2034,6 +2182,7 @@ procedures:
        eSpawn.betType==BET_SUMMONERSTAREXPLOSION  ||
        eSpawn.betType==BET_COLLECT_ENERGY ||
        eSpawn.betType==BET_GROWING_SWIRL||
+       eSpawn.betType==BET_MANTAMAN||
        eSpawn.betType==BET_DISAPPEAR_DUST||
 	     /*eSpawn.betType==BET_SNIPER_RESIDUE ||*/
        eSpawn.betType==BET_DUST_FALL)
@@ -2099,6 +2248,7 @@ procedures:
       case BET_EXPLOSION_SMOKE: ExplosionSmoke(); break;
       case BET_SUMMONERSTAREXPLOSION: SummonerStarExplosion(); break;
       case BET_GROWING_SWIRL: GrowingSwirl(); break;
+      case BET_MANTAMAN: MantaAttack(); break;
       case BET_DISAPPEAR_DUST: DisappearDust(); break;
       case BET_DUST_FALL: DustFall(); break;
       case BET_BULLETSTAINSNOW: BulletStainSnow(TRUE); break;

@@ -1,34 +1,7 @@
-/*
-Albino model by Dead Kadath
-http://www.serioussite.ru/load/albino_enemy_model/13-1-0-2377
-
-Coded by Rakanishu
-June - Sept 2020
-uses Beast code as a base 
-
-___
-
-This content is a resource enemy and does not act as a replacement.
-___
-
-Changlog:
-
-JAREP_01 Version
-
-- Added 2 Characters
-
-Albino_V1.00
-
-- Releaesd in June 2020: https://mentalcorps.forumgaming.fr/t1519-serious-sam-2-albino#7325
-___
-
-*/
-
 336
 
 %{
 #include "StdH.h"
-#include "Models/Enemies/Beast/Beast.h"
 #include "ModelsMP/Enemies/SS2/Albino/Albino.h"
 #include "EntitiesMP/WorldSettingsController.h"
 #include "EntitiesMP/BackgroundViewer.h"
@@ -45,25 +18,25 @@ enum AlbinoType {
 
 %{
 static _tmLastStandingAnim =0.0f;  
-#define ALBINO_STRETCH 3.0f
-#define BIG_ALBINO_STRETCH 7.2f
-#define HUGE_ALBINO_STRETCH 18.0f
+#define ALBINO_STRETCH 1.25f
+#define BIG_ALBINO_STRETCH 3.0f
+#define HUGE_ALBINO_STRETCH 7.0f
 
 // info structure
 static EntityInfo eiAlbinoHuge = {
   EIBT_FLESH, 10000.0f,
-  0.0f, 2.0f*HUGE_ALBINO_STRETCH, 0.0f,     // source (eyes)
-  0.0f, 1.5f*HUGE_ALBINO_STRETCH, 0.0f,     // target (body)
+  0.0f, 3.0f*HUGE_ALBINO_STRETCH, 0.0f,     // source (eyes)
+  0.0f, 3.0f*HUGE_ALBINO_STRETCH, 0.0f,     // target (body)
 };
 static EntityInfo eiAlbinoNormal = {
   EIBT_FLESH, 1500.0f,
-  0.0f, 2.0f*ALBINO_STRETCH, 0.0f,     // source (eyes)
-  0.0f, 1.5f*ALBINO_STRETCH, 0.0f,     // target (body)
+  0.0f, 3.0f*ALBINO_STRETCH, 0.0f,     // source (eyes)
+  0.0f, 3.0f*ALBINO_STRETCH, 0.0f,     // target (body)
 };
 static EntityInfo eiAlbinoBig = {
   EIBT_FLESH, 5000.0f,
-  0.0f, 2.0f*BIG_ALBINO_STRETCH, 0.0f,     // source (eyes)
-  0.0f, 1.5f*BIG_ALBINO_STRETCH, 0.0f,     // target (body)
+  0.0f, 3.0f*BIG_ALBINO_STRETCH, 0.0f,     // source (eyes)
+  0.0f, 3.0f*BIG_ALBINO_STRETCH, 0.0f,     // target (body)
 };
 %}
 
@@ -74,7 +47,10 @@ thumbnail "Thumbnails\\Albino.tbn";
 properties:
   1 enum AlbinoType m_acType "Character" 'C' = AT_NORMAL,
   2 INDEX m_iCounter = 0,
-  6 CTString m_strMessage "!JAREP V0.01b" = "Oct 8th 2020",     // message
+  7 CSoundObject m_soWoosh,
+  8 CSoundObject m_soFeet,
+  9 BOOL m_bRunSoundPlaying = FALSE,
+ 10 BOOL m_bWalkSoundPlaying = FALSE,
 
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
@@ -99,14 +75,18 @@ components:
 // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Idle.wav",
  51 sound   SOUND_SIGHT     "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Sight.wav",
- 52 sound   SOUND_WOUND     "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Wound.wav",
+ 52 sound   SOUND_WOUND1     "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Wound1.wav",
+ 59 sound   SOUND_WOUND2     "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Wound2.wav",
  53 sound   SOUND_FIRE      "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Fire.wav",
  54 sound   SOUND_KICK      "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Kick.wav",
  55 sound   SOUND_DEATH     "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Death.wav",
- 56 sound   SOUND_DEATHBIG  "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\DeathBig.wav",
+ 56 sound   SOUND_YELL      "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Yell.wav",
  57 sound   SOUND_ANGER     "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Anger.wav",
 
  58 sound   SOUND_ROCKET    "Sounds\\Weapons\\RocketFly.wav",
+ 60 sound   SOUND_WOOSH      "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Sounds\\Melee.wav",
+ 61 sound   SOUND_WALK     "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Walk.wav",
+ 62 sound   SOUND_RUN     "ModelsMP\\Enemies\\SS2\\Albino\\Sounds\\Run.wav",
 
 
 functions:
@@ -132,10 +112,13 @@ functions:
     CEnemyBase::Precache();
     PrecacheSound(SOUND_IDLE );
     PrecacheSound(SOUND_SIGHT);
-    PrecacheSound(SOUND_WOUND);
+    PrecacheSound(SOUND_WOUND1);
+    PrecacheSound(SOUND_WOUND2);
     PrecacheSound(SOUND_ANGER);
     PrecacheSound(SOUND_FIRE);
     PrecacheSound(SOUND_KICK);
+    PrecacheSound(SOUND_YELL);
+    PrecacheSound(SOUND_DEATH);
     PrecacheModel(MODEL_ALBINO);
 	PrecacheModel(MODEL_PLASMAGUN);
 	PrecacheTexture(TEXTURE_PLASMAGUN);
@@ -148,12 +131,9 @@ functions:
     PrecacheTexture(TEXTURE_FLESH_RED);
     PrecacheModel(MODEL_ARM);
     PrecacheModel(MODEL_LEGS);
-
-    if (m_acType == AT_NORMAL) {
-      PrecacheSound(SOUND_DEATH);
-    } else {
-      PrecacheSound(SOUND_DEATHBIG);
-    }
+	PrecacheSound(SOUND_WOOSH);
+	PrecacheSound(SOUND_WALK);
+	PrecacheSound(SOUND_RUN);
   };
 
   /* Entity info */
@@ -225,29 +205,28 @@ functions:
   INDEX AnimForDamage(FLOAT fDamage) {
     INDEX iAnim;
     if((m_acType==AT_BIG || m_acType==AT_HUGE) && GetHealth() <= m_fMaxHealth/2) {
-      iAnim = BEAST_ANIM_ANGER;
+      iAnim = ALBINO_ANIM_ANGER;
     } else {
-      iAnim = BEAST_ANIM_WOUND;
+      switch (IRnd()%2) {
+        case 0: iAnim = ALBINO_ANIM_WOUND1; break;
+        case 1: iAnim = ALBINO_ANIM_WOUND2; break;
+        default: ASSERTALWAYS("Albino unknown damage");
+       }
     }
     StartModelAnim(iAnim, 0);
+    DeactivateRunningSound();
     return iAnim;
   };
 
   // death
   INDEX AnimForDeath(void) {
-    INDEX iAnim;
-    if(m_acType==AT_BIG || m_acType==AT_HUGE) {
-      iAnim = BEAST_ANIM_DEATHBIG;
-    } else {
-      iAnim = BEAST_ANIM_DEATH;
-    }
-
-    StartModelAnim(iAnim, 0);
-    return iAnim;
+    StartModelAnim(ALBINO_ANIM_DEATH, 0);
+    DeactivateRunningSound();
+    return ALBINO_ANIM_DEATH;
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
-    if(GetModelObject()->GetAnim()==BEAST_ANIM_DEATH)
+    if(GetModelObject()->GetAnim()==ALBINO_ANIM_DEATH)
     {
       vStretch=FLOAT3D(1,1,2)*2.0f;
       return 0.3f;
@@ -256,32 +235,24 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(BEAST_COLLISION_BOX_DEATH);
+    ChangeCollisionBoxIndexWhenPossible(ALBINO_COLLISION_BOX_DEATH);
     en_fDensity = 500.0f;
   };
 
   // virtual anim functions
   void StandingAnim(void) {
-    _tmLastStandingAnim = _pTimer->CurrentTick();
-    StartModelAnim(BEAST_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(ALBINO_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    DeactivateRunningSound();
   };
 
   void WalkingAnim(void) {
-    if(_pTimer->CurrentTick()>=_tmLastStandingAnim-_pTimer->TickQuantum &&
-       _pTimer->CurrentTick()<=_tmLastStandingAnim+_pTimer->TickQuantum)
-    {
-      BREAKPOINT;
-    }
-
-    if(m_acType==AT_BIG || m_acType==AT_HUGE) {
-      StartModelAnim(BEAST_ANIM_WALKBIG, AOF_LOOPING|AOF_NORESTART);
-    } else {
-      StartModelAnim(BEAST_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
-    }
+    StartModelAnim(ALBINO_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+    ActivateWalkingSound();
   };
 
   void RunningAnim(void) {
-    WalkingAnim();
+    StartModelAnim(ALBINO_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    ActivateRunningSound();
   };
   void RotatingAnim(void) {
     WalkingAnim();
@@ -301,15 +272,17 @@ functions:
     if((m_acType==AT_BIG || m_acType==AT_HUGE) && GetHealth() <= m_fMaxHealth/2) {
       PlaySound(m_soSound, SOUND_ANGER, SOF_3D);
     } else {
-      PlaySound(m_soSound, SOUND_WOUND, SOF_3D);
+     INDEX iWoundSound;
+      switch (IRnd()%2) {
+       case 0: iWoundSound = SOUND_WOUND1; break;
+       case 1: iWoundSound = SOUND_WOUND2; break;
+       default: ASSERTALWAYS("Albino unknown damage");
+       }
+      PlaySound(m_soSound, iWoundSound, SOF_3D);
     }
   };
   void DeathSound(void) {
-    if (m_acType == AT_NORMAL) {
-      PlaySound(m_soSound, SOUND_DEATH, SOF_3D);
-    } else {
-      PlaySound(m_soSound, SOUND_DEATHBIG, SOF_3D);
-    }
+    PlaySound(m_soSound, SOUND_DEATH, SOF_3D);
   };
 
 
@@ -317,10 +290,45 @@ functions:
   void EnemyPostInit(void) 
   {
     if (m_bQuiet) {
-     m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f); }
+     m_soSound.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f); 
+     m_soWoosh.Set3DParameters(0.0f, 0.0f, 1.0f, 0.75f);
+     m_soFeet.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f); }
     else {
-    m_soSound.Set3DParameters(160.0f, 50.0f, 2.0f, 1.0f); }
+      if(m_acType==AT_BIG || m_acType==AT_HUGE) {
+    m_soSound.Set3DParameters(500.0f, 100.0f, 3.0f, 1.0f); 
+    m_soWoosh.Set3DParameters(150.0f, 50.0f, 1.0f, 0.75f);
+    m_soFeet.Set3DParameters(300.0f, 50.0f, 1.0f, 1.0f); }
+	  else {
+    m_soSound.Set3DParameters(200.0f, 50.0f, 2.0f, 1.0f); 
+    m_soWoosh.Set3DParameters(100.0f, 15.0f, 1.0f, 0.75f);
+    m_soFeet.Set3DParameters(100.0f, 15.0f, 1.0f, 1.0f); }
+	}
   };
+
+
+  // running sounds
+  void ActivateRunningSound(void)
+  {
+    if (!m_bRunSoundPlaying) {
+      PlaySound(m_soFeet, SOUND_RUN, SOF_3D|SOF_LOOP);
+      m_bRunSoundPlaying = TRUE;
+      m_bWalkSoundPlaying = FALSE;
+    }
+  }
+  void ActivateWalkingSound(void)
+  {
+    if (!m_bWalkSoundPlaying) {
+      PlaySound(m_soFeet, SOUND_WALK, SOF_3D|SOF_LOOP);
+      m_bRunSoundPlaying = FALSE;
+      m_bWalkSoundPlaying = TRUE;
+    }
+  }
+  void DeactivateRunningSound(void)
+  {
+    m_soFeet.Stop();
+    m_bRunSoundPlaying = FALSE;
+    m_bWalkSoundPlaying = FALSE;
+  }
 
 /************************************************************
  *                 BLOW UP FUNCTIONS                        *
@@ -378,6 +386,7 @@ procedures:
  *                    D  E  A  T  H                         *
  ************************************************************/
   Death(EVoid) : CEnemyBase::Death {
+    DeactivateRunningSound();
     if (m_acType == AT_NORMAL) {
       jump CEnemyBase::Death();
     }
@@ -396,17 +405,11 @@ procedures:
     DeathNotify();
     // start death anim
     AnimForDeath();
-    autowait(0.9f);
+    autowait(1.1f);
     if (m_acType == AT_BIG) {
       ShakeItBaby(_pTimer->CurrentTick(), 2.0f);
     } else {
       ShakeItBaby(_pTimer->CurrentTick(), 3.0f);
-    }
-    autowait(2.3f-0.9f);
-    if (m_acType == AT_BIG) {
-      ShakeItBaby(_pTimer->CurrentTick(), 5.0f);
-    } else {
-      ShakeItBaby(_pTimer->CurrentTick(), 7.0f);
     }
 
     // spawn dust effect
@@ -421,7 +424,7 @@ procedures:
     CEntityPointer penFX = CreateEntity(plSmoke, CLASS_BASIC_EFFECT);
     penFX->Initialize(ese);
 
-    autowait(GetModelObject()->GetAnimLength(BEAST_ANIM_DEATHBIG)-2.3f);
+    autowait(GetModelObject()->GetAnimLength(ALBINO_ANIM_DEATH)-2.3f);
     return EEnd();
   };
 
@@ -429,61 +432,46 @@ procedures:
  *                A T T A C K   E N E M Y                   *
  ************************************************************/
   Fire(EVoid) : CEnemyBase::Fire
-  {
-    // wait to finish walk and smooth change to idle
-    StartModelAnim(BEAST_ANIM_WALKTOIDLE, AOF_SMOOTHCHANGE);
-    autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-
+  { 
+    DeactivateRunningSound();
     if( m_acType == AT_NORMAL)
     {
-      StartModelAnim(BEAST_ANIM_ATTACK, AOF_SMOOTHCHANGE);
-      autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-      PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-      autowait(0.51f);
+      StartModelAnim(ALBINO_ANIM_FIRE, 0);  
+      PlaySound(m_soSound, SOUND_YELL, SOF_3D);
+      PlaySound(m_soWoosh, SOUND_FIRE, SOF_3D);
+      autowait(0.35f);
 
-          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 1.5f*ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
+          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 8.0f, 0.0f), ANGLE3D(0, 0, 0)); 
      
-	  autowait(0.3f);
+	  autowait(1.0f);
     }
     
     if(m_acType == AT_BIG)
     {
-      if( GetHealth() <= m_fMaxHealth/2)
+      if( GetHealth() > m_fMaxHealth/2)
       {
-        m_iCounter = 0;
-        while ( m_iCounter<6)
-        {
-          StartModelAnim(BEAST_ANIM_ATTACKFAST, AOF_SMOOTHCHANGE);
-          autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
+      StartModelAnim(ALBINO_ANIM_FIRE, 0);  
+      PlaySound(m_soSound, SOUND_YELL, SOF_3D);
+      PlaySound(m_soWoosh, SOUND_FIRE, SOF_3D);
+      autowait(0.3f);
 
-          PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-          autowait(0.34f);
-
-          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
-
-            //ANGLE3D( AngleDeg(40.0f*Cos(m_iCounter*360.0/6.0f)), AngleDeg(20.0f*Sin(m_iCounter*180.0/6.0f)), 0));
-          //autowait(0.15f);
-          m_iCounter++;
-        }
-        m_fAttackFireTime = 7.0f;
+          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 6.0f*BIG_ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
+     
+	  autowait(1.0f);
       }
       
-      if( GetHealth() > m_fMaxHealth/2)
+      if( GetHealth() <= m_fMaxHealth/2)
       {
         m_iCounter = 0;
         while ( m_iCounter<3)
         {
-          StartModelAnim(BEAST_ANIM_ATTACK, AOF_SMOOTHCHANGE);
-          autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-
-          PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
+          StartModelAnim(ALBINO_ANIM_FIRE, 0);
+          PlaySound(m_soSound, SOUND_YELL, SOF_3D);
+          PlaySound(m_soWoosh, SOUND_FIRE, SOF_3D);
           autowait(0.5f);
 
-          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 1.5f*BIG_ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
+          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 6.0f*BIG_ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
      
-            //ANGLE3D( AngleDeg(20.0f*Cos(m_iCounter*360.0/3.0f)), AngleDeg(10.0f*Sin(m_iCounter*180.0/3.0f)), 0));
-            //ANGLE3D( FRnd()*20.0f-10.0f, FRnd()*10.0f-5.0f, 0));
-          //autowait(0.25f);
           m_iCounter++;
         }
       }
@@ -491,75 +479,58 @@ procedures:
 
     if(m_acType == AT_HUGE)
     {
-      if( GetHealth() <= m_fMaxHealth/2)
+      if( GetHealth() > m_fMaxHealth/2)
       {
-        m_iCounter = 0;
-        while ( m_iCounter<6)
-        {
-          StartModelAnim(BEAST_ANIM_ATTACKFAST, AOF_SMOOTHCHANGE);
-          autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
+      StartModelAnim(ALBINO_ANIM_FIRE, 0);  
+      PlaySound(m_soSound, SOUND_YELL, SOF_3D);
+      PlaySound(m_soWoosh, SOUND_FIRE, SOF_3D);
+      autowait(0.3f);
 
-          PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
-          autowait(0.34f);
-
-          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
+          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 6.0f*HUGE_ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
      
-            //ANGLE3D( AngleDeg(40.0f*Cos(m_iCounter*360.0/6.0f)), AngleDeg(20.0f*Sin(m_iCounter*180.0/6.0f)), 0));
-          //autowait(0.15f);
-          m_iCounter++;
-        }
-        m_fAttackFireTime = 7.0f;
+	  autowait(1.0f);
       }
       
-      if( GetHealth() > m_fMaxHealth/2)
+      if( GetHealth() <= m_fMaxHealth/2)
       {
         m_iCounter = 0;
         while ( m_iCounter<3)
         {
-          StartModelAnim(BEAST_ANIM_ATTACK, AOF_SMOOTHCHANGE);
-          autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-
-          PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
+          StartModelAnim(ALBINO_ANIM_FIRE, 0);
+          PlaySound(m_soSound, SOUND_YELL, SOF_3D);
+          PlaySound(m_soWoosh, SOUND_FIRE, SOF_3D);
           autowait(0.5f);
 
-          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 1.5f*HUGE_ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
+          ShootProjectile(PRT_ALBINO_PROJECTILE, FLOAT3D( 0.0f, 6.0f*HUGE_ALBINO_STRETCH, 0.0f), ANGLE3D(0, 0, 0)); 
      
-            //ANGLE3D( AngleDeg(20.0f*Cos(m_iCounter*360.0/3.0f)), AngleDeg(10.0f*Sin(m_iCounter*180.0/3.0f)), 0));
-            //ANGLE3D( FRnd()*20.0f-10.0f, FRnd()*10.0f-5.0f, 0));
-          //autowait(0.25f);
           m_iCounter++;
         }
       }
     }
 
-    MaybeSwitchToAnotherPlayer();
-
-    autowait(FRnd()/2 + _pTimer->TickQuantum); 
-
-    if( m_penEnemy != NULL)
-    {
-      FLOAT fEnemyDistance = CalcDist(m_penEnemy);
-      if( fEnemyDistance>m_fCloseDistance*1.25f)
-      {
-        StartModelAnim(BEAST_ANIM_IDLETOWALK, AOF_SMOOTHCHANGE);
-        autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-        autowait(GetModelObject()->GetAnimLength(BEAST_ANIM_IDLETOWALK)/2.0f - _pTimer->TickQuantum); 
-      }
-    }
-    
+    MaybeSwitchToAnotherPlayer(); 
 
     return EReturn();
   };
 
   // hit enemy
   Hit(EVoid) : CEnemyBase::Hit {
+    DeactivateRunningSound();
+
+     FLOATmatrix3D m;
+     FLOAT3D fLookRight = FLOAT3D(1.0f, 0.0f, 0.0f);
+     MakeRotationMatrixFast(m, GetPlacement().pl_OrientationAngle);
+     fLookRight = fLookRight * m;
+     BOOL bEnemyRight = fLookRight % (m_penEnemy->GetPlacement().pl_PositionVector - GetPlacement().pl_PositionVector);
+
     // close attack
-    StartModelAnim(BEAST_ANIM_KICK, 0);
-    autowait(0.45f);
-    /*
-    StartModelAnim(BEAST_ANIM_KICK, AOF_SMOOTHCHANGE);
-    autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-    */
+     if (bEnemyRight>=0) {  
+    StartModelAnim(ALBINO_ANIM_MELEERIGHT, 0); }
+     else {  
+    StartModelAnim(ALBINO_ANIM_MELEELEFT, 0); }
+    PlaySound(m_soWoosh, SOUND_WOOSH, SOF_3D);
+
+    autowait(0.4f);
     PlaySound(m_soSound, SOUND_KICK, SOF_3D);
     if (CalcDist(m_penEnemy) < m_fCloseDistance) {
       FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
@@ -572,12 +543,7 @@ procedures:
         InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 30.0f, FLOAT3D(0, 0, 0), vDirection);
       }
     }
-
-    /*
-    StartModelAnim(BEAST_ANIM_IDLE, AOF_SMOOTHCHANGE);
-    autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-    */
-    autowait(0.45f);
+    autowait(0.83f);
     MaybeSwitchToAnotherPlayer();
     return EReturn();
   };
@@ -604,12 +570,10 @@ procedures:
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     // setup attack distances
     m_fAttackDistance = 500.0f;
-    m_fCloseDistance = 0.0f;
-    m_fStopDistance = 0.0f;
     m_fCloseFireTime = 1.0f;
     m_fIgnoreRange = 750.0f;
-    m_fStopDistance = 5.0f;
-    m_fCloseDistance = 7.0f;
+    m_fStopDistance = 12.0f;
+    m_fCloseDistance = 12.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
 
     // damage/explode properties
@@ -640,8 +604,8 @@ procedures:
       m_fBodyParts = 6;
       m_fDamageWounded = 650.0f;//500
       m_iScore = 12000; //1000
-      m_fStopDistance = 15;
-      m_fCloseDistance = 20;
+      m_fStopDistance = 20;
+      m_fCloseDistance = 25;
       // set stretch factor
       GetModelObject()->StretchModel(FLOAT3D(BIG_ALBINO_STRETCH, BIG_ALBINO_STRETCH, BIG_ALBINO_STRETCH));
       ModelChangeNotify();
@@ -670,11 +634,8 @@ procedures:
     }
     
     m_fMaxHealth = GetHealth();
-
-	/********* Set modifiable health *********
-
-    if (m_fHealth<=0.0f) { m_fHealth=1.0f; }
-	SetHealth(m_fHealth); m_fMaxHealth = m_fHealth; */
+    m_bRunSoundPlaying = FALSE;
+    m_bWalkSoundPlaying = FALSE;
 
     // continue behavior in base class
     jump CEnemyBase::MainLoop();

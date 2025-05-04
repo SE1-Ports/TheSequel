@@ -587,7 +587,7 @@ Fire(EVoid) : CEnemyBase::Fire {
       ELaunchCannonBall eLaunch;
       eLaunch.penLauncher = this;
       eLaunch.fLaunchPower = fLaunchSpeed;
-      eLaunch.cbtType = CBT_IRON;
+      eLaunch.cbtType = CBT_WEAK;
       eLaunch.fSize = 1.5f;
       penBall->Initialize(eLaunch);
 

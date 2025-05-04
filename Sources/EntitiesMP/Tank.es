@@ -416,14 +416,14 @@ functions:
     // inflict damage
     FLOAT3D vSource;
     GetEntityInfoPosition(this, eiTank.vTargetCenter, vSource);
-      InflictDirectDamage(this, this, DMT_EXPLOSION, 100.0f, vSource, 
+      InflictDirectDamage(this, this, DMT_EXPLOSION, 1000.0f, vSource, 
         -en_vGravityDir);
       if (m_TankChar == TK_SMALL) {
-      InflictRangeDamage(this, DMT_EXPLOSION, 40.0f, vSource, 1.0f, 10.0f);
+      InflictRangeDamage(this, DMT_EXPLOSION, 40.0f, vSource, 5.0f, 10.0f);
       } if (m_TankChar == TK_GENERAL) {
-      InflictRangeDamage(this, DMT_EXPLOSION, 60.0f, vSource, 1.0f, 30.0f);
+      InflictRangeDamage(this, DMT_EXPLOSION, 60.0f, vSource, 10.0f, 30.0f);
       } if (m_TankChar == TK_MONSTER)  {
-      InflictRangeDamage(this, DMT_EXPLOSION, 120.0f, vSource, 1.0f, 90.0f);
+      InflictRangeDamage(this, DMT_EXPLOSION, 120.0f, vSource, 20.0f, 90.0f);
       }
     
     // spawn explosion
@@ -440,7 +440,7 @@ functions:
       ULONG ulFleshTexture = TEXTURE_FLESH_RED;
       ULONG ulFleshModel   = MODEL_FLESH;
 
-    Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 1.0f, 0.0f);
+    Debris_Begin(EIBT_FLESH, DPT_BLOODTRAIL, BET_BLOODSTAIN, m_fBlowUpSize, vNormalizedDamage, vBodySpeed, 5.0f, 0.0f);
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
         Debris_Spawn( this, this, ulFleshModel, ulFleshTexture, 0, 0, 0, IRnd()%4, 0.5f,
                       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
@@ -682,7 +682,7 @@ procedures:
 	  m_fBlowUpSize = 2.0f;
 	  m_fgibTexture = TEXTURE_TANK_SMALL;
       m_iScore = 3000;
-      m_fBodyParts = 10;
+      m_fBodyParts = 20;
       m_fDamageWounded = 100.0f;
       m_fCloseDistance = 5.0f;
       m_fStopDistance = 5.0f;
@@ -712,7 +712,7 @@ procedures:
 	  m_fBlowUpSize = 6.0f;
 	  m_fgibTexture = TEXTURE_TANK_GENERAL;
       m_iScore = 10000;
-      m_fBodyParts = 10;
+      m_fBodyParts = 20;
       m_fDamageWounded = 500.0f;
       m_fCloseDistance = 15.0f;
       m_fStopDistance = 15.0f;
@@ -742,7 +742,7 @@ procedures:
 	  m_fBlowUpSize = 24.0f;
 	  m_fgibTexture = TEXTURE_TANK_MONSTER;
       m_iScore = 40000;
-      m_fBodyParts = 10;
+      m_fBodyParts = 20;
       m_fDamageWounded = 2000.0f;
       m_fCloseDistance = 50.0f;
       m_fStopDistance = 50.0f;

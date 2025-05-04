@@ -288,10 +288,6 @@ procedures:
       autowait(0.4f);
       PlaySound(m_soSound, SOUND_KICK, SOF_3D);
       if (CalcDist(m_penEnemy) < HIT_DISTANCE) { m_bHit = TRUE; }
-      autowait(0.1f);
-      if (CalcDist(m_penEnemy) < HIT_DISTANCE) { m_bHit = TRUE; }
-      autowait(0.1f);
-      if (CalcDist(m_penEnemy) < HIT_DISTANCE) { m_bHit = TRUE; }
       if (m_bHit) {
         FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
         vDirection.Normalize();
@@ -301,6 +297,7 @@ procedures:
         vSpeed = vSpeed * 10.0f;
         KickEntity(m_penEnemy, vSpeed);
     }
+    autowait(0.4f);
     return EReturn();
   };
 

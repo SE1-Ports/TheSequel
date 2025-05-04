@@ -17,9 +17,9 @@
 #include "Models/Enemies/Beast/Beast.h"
 #include "Models/Enemies/Devil/Devil.h"
 #include "Models/Enemies/ElementalLava/ElementalLava.h"
-#include "ModelsMP/Enemies/Guffy/Guffy.h" 
+#include "ModelsF/Enemies/Guffy/Guffy.h" 
 #include "ModelsMP/Enemies/Grunt/Grunt.h"
-#include "ModelsMP/Enemies/Demon/Demon.h"
+#include "ModelsF/Enemies/Demon/Demon.h"
 #include "ModelsMP/Enemies/ChainsawFreak/Freak.h"
 #include "ModelsMP/Enemies/CannonStatic/Turret.h"
 #include "ModelsMP/Enemies/CannonRotating/Turret.h"
@@ -52,7 +52,7 @@
 #include "AREP/Models/Dragonman2/Dragonman.h"
 #include "ModelsF/Enemies/Fishman/Fishman2.h"
 #include "ModelsF/Enemies/Fishman/Spear.h"
-#include "AREP/Models/Mantaman2/Mantaman.h"
+#include "ModelsF\\Enemies\\Mantaman2\\Mantaman2.h"
 #include "AREP/Models/Sentry/DrivingWheel/Robot.h"
 #include "AREP/Models/Sentry/FlyingFighter/FlyingFighter.h"
 #include "AREP/Models/Waterman/WaterMan.h"
@@ -84,7 +84,7 @@
 #include "ModelsMP/Enemies/SS3/Kleer/LostSoul.h"
 #include "ModelsMP/Enemies/SS2/Lizard/Lizard.h"
 #include "ModelsMP/Enemies/SS2/Primitive/Primitive.h"
-#include "ModelsMP/Enemies/SS2/ScorpSoldier/ScorpNoGun.h"
+#include "ModelsMP/Enemies/SS2/ScorpSoldier/ScorpSoldier.h"
 #include "ModelsMP/Enemies/SS2/Spawner/Spawner.h"
 #include "ModelsMP/Enemies/SS3/SpiderSmall/SpiderSmall.h"
 #include "ModelsMP/Enemies/SS3/SpiderBig/SpiderBig.h"
@@ -254,7 +254,7 @@ extern void SetupCompModel_t(const CTString &strName)
   } else if (strName=="Ant") {
     pmo->SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\Ant\\Ant.mdl"));
     pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-    pmo->PlayAnim(ANT_ANIM_IDLE, AOF_LOOPING);
+    pmo->PlayAnim(ANT_ANIM_Idle, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\Ant\\AntDarkBlue.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-0.75,-1.75), ANGLE3D(210,0,0));
     pmo->StretchModel(FLOAT3D(0.6f,0.6f,0.6f));
@@ -336,7 +336,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="crabmanred") {
     pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Crabman\\Crabman2.mdl"));
-    pmo->PlayAnim(CRABMAN2_ANIM_WALK, AOF_LOOPING);
+    pmo->PlayAnim(CRABMAN2_ANIM_Walk, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Crabman\\Textures\\Crab_diffuse_Red.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-4.0f,-14.0), ANGLE3D(165,0,0));
 
@@ -352,7 +352,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="crabmangreen") {
     pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Crabman\\Crabman2.mdl"));
-    pmo->PlayAnim(CRABMAN2_ANIM_WALK, AOF_LOOPING);
+    pmo->PlayAnim(CRABMAN2_ANIM_Walk, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Crabman\\Textures\\Crab_diffuse_Green.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-2.0f,-7.0), ANGLE3D(165,0,0));
 
@@ -368,7 +368,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="Monkey") {
     pmo->SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\Monkey\\Monkey.mdl"));
-    pmo->PlayAnim(MONKEY_ANIM_IDLE, AOF_LOOPING);
+    pmo->PlayAnim(MONKEY_ANIM_Idle, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\Monkey\\Monkey.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-1.0f,-3.0), ANGLE3D(195,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
@@ -941,7 +941,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="Scorpion") {
     pmo->SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\Scorpion\\Scorpion.mdl"));
-    pmo->PlayAnim(SCORPION_ANIM_WALK, AOF_LOOPING);
+    pmo->PlayAnim(SCORPION_ANIM_Walk, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\NextEncounter\\Enemies\\Scorpion\\Scorpion.tex"));
     pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
     _plModel = CPlacement3D(FLOAT3D(-1.5f,-2.7f,-12.0), ANGLE3D(200,0,0));
@@ -953,52 +953,64 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="ScorpSoldierSmall") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpNoGun.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpSoldier.mdl"));
     pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-    pmo->PlayAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_IDLE, AOF_LOOPING);
+    pmo->PlayAnim(SCORPSOLDIER_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Tex\\ScorpGreen.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-1.5f,-4.0)*2/3, ANGLE3D(210,0,0));
     _vLightDir = FLOAT3D( 0.2f, -0.2f, -0.2f);
     _colLight = C_lGRAY;
     _colAmbient = C_vdGRAY;
 
-    AddAttachment_t(pmo, SCORPNOGUN_ATTACHMENT_SCORPNOGUN, 
+    AddAttachment_t(pmo, SCORPSOLDIER_ATTACHMENT_GUN, 
       CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpGun.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Gun.tex"));
+
+    AddAttachment_t(pmo, SCORPSOLDIER_ATTACHMENT_FLARE, 
+      CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Flare.mdl"), 0,
+      CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Flare03.tex"));
 
     pmo->StretchModel(FLOAT3D(0.6f,0.6f,0.6f));
     _bHasFloor = TRUE;
 
   } else if (strName=="ScorpSoldierMedium") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpNoGun.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpSoldier.mdl"));
     pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-    pmo->PlayAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_IDLE, AOF_LOOPING);
+    pmo->PlayAnim(SCORPSOLDIER_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Tex\\ScorpYellow.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-2.5f,-6.0)*2/3, ANGLE3D(210,0,0));
     _vLightDir = FLOAT3D( 0.2f, -0.2f, -0.2f);
     _colLight = C_lGRAY;
     _colAmbient = C_vdGRAY;
 
-    AddAttachment_t(pmo, SCORPNOGUN_ATTACHMENT_SCORPNOGUN, 
+    AddAttachment_t(pmo, SCORPSOLDIER_ATTACHMENT_GUN, 
       CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpGun.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Gun.tex"));
+
+    AddAttachment_t(pmo, SCORPSOLDIER_ATTACHMENT_FLARE, 
+      CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Flare.mdl"), 0,
+      CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Flare03.tex"));
 
     pmo->StretchModel(FLOAT3D(1,1,1));
     _bHasFloor = TRUE;
 
   } else if (strName=="ScorpSoldierBig") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpNoGun.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpSoldier.mdl"));
     pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
-    pmo->PlayAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_IDLE, AOF_LOOPING);
+    pmo->PlayAnim(SCORPSOLDIER_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Tex\\ScorpPurple.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-5.0f,-12.0)*2/3, ANGLE3D(210,0,0));
     _vLightDir = FLOAT3D( 0.2f, -0.2f, -0.2f);
     _colLight = C_lGRAY;
     _colAmbient = C_vdGRAY;
 
-    AddAttachment_t(pmo, SCORPNOGUN_ATTACHMENT_SCORPNOGUN, 
+    AddAttachment_t(pmo, SCORPSOLDIER_ATTACHMENT_GUN, 
       CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpGun.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Gun.tex"));
+
+    AddAttachment_t(pmo, SCORPSOLDIER_ATTACHMENT_FLARE, 
+      CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Flare.mdl"), 0,
+      CTFILENAME("ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Flare03.tex"));
 
     pmo->StretchModel(FLOAT3D(2,2,2));
     _bHasFloor = TRUE;
@@ -1235,13 +1247,13 @@ extern void SetupCompModel_t(const CTString &strName)
     _fFloorY = -1.5f;
 
   } else if (strName=="MantamanSmall") {
-    pmo->SetData_t(CTFILENAME("AREP\\Models\\Mantaman2\\Mantaman.mdl"));
-    pmo->PlayAnim(MANTAMAN_ANIM_STANDORANDSWIMSLOW, AOF_LOOPING);
-    pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\Mantaman2\\Mantaman.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,0.0f,-4.0f), ANGLE3D(210,30,0));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Mantaman2\\Mantaman2.mdl"));
+    pmo->PlayAnim(MANTAMAN2_ANIM_IDLE, AOF_LOOPING);
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Mantaman2\\Mantaman2.tex"));
+    _plModel = CPlacement3D(FLOAT3D(0,0.0f,-7.0f), ANGLE3D(190,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
     _bHasFloor = TRUE;
-    _fFloorY = -1.5f;
+    _fFloorY = -4.0f;
 
   } else if (strName=="Dragonman") {
     pmo->SetData_t(CTFILENAME("AREP\\Models\\Dragonman2\\Dragonman.mdl"));
@@ -1367,6 +1379,7 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Lizard\\Lizard.mdl"));
     pmo->PlayAnim(LIZARD_ANIM_RUN, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Lizard\\Lizard.tex"));
+    pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-1.15f,-3.0f), ANGLE3D(150,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
     _fFloorY = 0.0f;
@@ -1376,6 +1389,7 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Lizard\\Lizard.mdl"));
     pmo->PlayAnim(LIZARD_ANIM_RUN, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Lizard\\LizardRed.tex"));
+    pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-1.5f,-4.2f), ANGLE3D(150,0,0));
     pmo->StretchModel(FLOAT3D(1.5f,1.5f,1.5f));
     _fFloorY = 0.0f;
@@ -1385,6 +1399,7 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Lizard\\Lizard.mdl"));
     pmo->PlayAnim(LIZARD_ANIM_RUN, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Lizard\\LizardBlue.tex"));
+    pmo->mo_toSpecular.SetData_t(CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-0.95f,-2.7f), ANGLE3D(150,0,0));
     pmo->StretchModel(FLOAT3D(0.8f,0.8f,0.8f));
     _fFloorY = 0.0f;
@@ -1449,7 +1464,7 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Juggernaut\\Mesh\\Mesh.mdl"));
     pmo->PlayAnim(MESH_ANIM_Idle, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Enemies\\Juggernaut\\texture\\JuggernautEyeless.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,-8.0f,-22.0), ANGLE3D(190,0,0));
+    _plModel = CPlacement3D(FLOAT3D(0,-8.0f,-21.0), ANGLE3D(190,0,0));
     
     
     pmo->StretchModel(FLOAT3D(0.75,0.75,0.75));
@@ -1457,33 +1472,33 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="AlbinoNormal") {
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Albino\\Albino.mdl"));
-    pmo->PlayAnim(BEAST_ANIM_IDLECOMPUTER, AOF_LOOPING);
+    pmo->PlayAnim(ALBINO_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Albino\\Albino.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,-3.25f,-10.0), ANGLE3D(170,0,0));
-    pmo->StretchModel(FLOAT3D(3,3,3));
+    _plModel = CPlacement3D(FLOAT3D(0,-3.25f,-11.0), ANGLE3D(170,0,0));
+    pmo->StretchModel(FLOAT3D(1.25f,1.25f,1.25f));
     _bHasFloor = TRUE;
 
   } else if (strName=="AlbinoBig") {
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Albino\\Albino.mdl"));
-    pmo->PlayAnim(BEAST_ANIM_IDLECOMPUTER, AOF_LOOPING);
+    pmo->PlayAnim(ALBINO_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Albino\\AlbinoBlue.tex"));
-    _plModel = CPlacement3D(FLOAT3D(0,-6.5f,-20.0), ANGLE3D(170,0,0));
+    _plModel = CPlacement3D(FLOAT3D(0,-6.5f,-25.0), ANGLE3D(170,0,0));
     
     //_plModel = CPlacement3D(FLOAT3D(tmp_af[5],tmp_af[6],tmp_af[7]), ANGLE3D(tmp_af[8],0,0));
     //_fFOV = tmp_af[9];
     //CPrintF("%f %f %f : %f : %f\n", tmp_af[5],tmp_af[6],tmp_af[7], tmp_af[8], tmp_af[9]);
     
-    pmo->StretchModel(FLOAT3D(6,6,6));
+    pmo->StretchModel(FLOAT3D(3,3,3));
     _bHasFloor = TRUE;
 
   } else if (strName=="AlbinoHuge") {
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Albino\\Albino.mdl"));
-    pmo->PlayAnim(BEAST_ANIM_IDLECOMPUTER, AOF_LOOPING);
+    pmo->PlayAnim(ALBINO_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Albino\\AlbinoDark.tex"));
     
-    _plModel = CPlacement3D(FLOAT3D(0.0f, -13.0f, -40.0f), ANGLE3D(170.0f, 0.0f, 0.0f));
+    _plModel = CPlacement3D(FLOAT3D(0.0f, -13.0f, -54.0f), ANGLE3D(170.0f, 0.0f, 0.0f));
 
-    pmo->StretchModel(FLOAT3D(14.0f, 14.0f, 14.0f));
+    pmo->StretchModel(FLOAT3D(7.0f, 7.0f, 7.0f));
     _fFloorY = 0.0f;
     _bHasFloor = TRUE;
 
@@ -1558,7 +1573,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="Guffy") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Guffy\\Guffy.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Guffy\\Guffy.mdl"));
     pmo->PlayAnim(GUFFY_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Guffy\\Guffy.tex"));
     AddAttachment_t(pmo, GUFFY_ATTACHMENT_GUNRIGHT, 
@@ -1568,7 +1583,7 @@ extern void SetupCompModel_t(const CTString &strName)
       CTFILENAME("ModelsMP\\Enemies\\Guffy\\Gun.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\Guffy\\Gun.tex"));
     CModelObject *pmoRight = &pmo->GetAttachmentModel(GUFFY_ATTACHMENT_GUNRIGHT)->amo_moModelObject;
-    pmoRight->StretchModel(FLOAT3D(-1,1,1));
+    pmoRight->StretchModel(FLOAT3D(-1.5,1.5,1.5));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-2.0f,-5.75f), ANGLE3D(210,0,0));
     _fFOV = 70.0f;
     
@@ -1583,7 +1598,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="GuffyBig") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Guffy\\Guffy.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Guffy\\Guffy.mdl"));
     pmo->PlayAnim(GUFFY_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\GuffyX\\GuffyRed.tex"));
     AddAttachment_t(pmo, GUFFY_ATTACHMENT_GUNRIGHT, 
@@ -1593,7 +1608,7 @@ extern void SetupCompModel_t(const CTString &strName)
       CTFILENAME("ModelsMP\\Enemies\\Guffy\\Gun.mdl"), 0,
       CTFILENAME("ModelsMP\\Enemies\\Guffy\\Gun.tex"));
     CModelObject *pmoRight = &pmo->GetAttachmentModel(GUFFY_ATTACHMENT_GUNRIGHT)->amo_moModelObject;
-    pmoRight->StretchModel(FLOAT3D(-1.5f,1.5f,1.5f));
+    pmoRight->StretchModel(FLOAT3D(-2.0f,2.0f,2.0f));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-2.75f,-7.75f), ANGLE3D(210,0,0));
     _fFOV = 70.0f;
     
@@ -1608,7 +1623,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="GuffyWarlord") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Guffy\\Guffy.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Guffy\\Guffy.mdl"));
     pmo->PlayAnim(GUFFY_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\GuffyX\\GuffyGreen.tex"));
     AddAttachment_t(pmo, GUFFY_ATTACHMENT_GUNRIGHT, 
@@ -1618,7 +1633,7 @@ extern void SetupCompModel_t(const CTString &strName)
       CTFILENAME("ModelsMP\\Enemies\\Guffy\\Gun.mdl"), 0,
       CTFILENAME("AREP\\Models\\GuffyX\\GunRed.tex"));
     CModelObject *pmoRight = &pmo->GetAttachmentModel(GUFFY_ATTACHMENT_GUNRIGHT)->amo_moModelObject;
-    pmoRight->StretchModel(FLOAT3D(-2.0f,2.0f,2.0f));
+    pmoRight->StretchModel(FLOAT3D(-2.5f,2.5f,2.5f));
     _plModel = CPlacement3D(FLOAT3D(0.0f,-3.5f,-9.75f), ANGLE3D(210,0,0));
     _fFOV = 70.0f;
     
@@ -1832,7 +1847,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="Demon") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\Demon.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Demon\\Demon.mdl"));
     pmo->PlayAnim(DEMON_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\Demon.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f, -1.25f, -2.25f), ANGLE3D(160.0f, 0.0f, 0.0f));
@@ -1842,7 +1857,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="DemonStorm") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\Demon.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Demon\\Demon.mdl"));
     pmo->PlayAnim(DEMON_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\DemonX\\DemonBlue.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f, -2.5f, -4.5f), ANGLE3D(160.0f, 0.0f, 0.0f));
@@ -1852,7 +1867,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="DemonSummon") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\Demon.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Demon\\Demon.mdl"));
     pmo->PlayAnim(DEMON_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\DemonPurple.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f, -3.25f, -4.75f), ANGLE3D(160.0f, 0.0f, 0.0f));
@@ -1862,7 +1877,7 @@ extern void SetupCompModel_t(const CTString &strName)
     _bHasFloor = TRUE;
 
   } else if (strName=="Arch-vile") {
-    pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\Demon.mdl"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Demon\\Demon.mdl"));
     pmo->PlayAnim(DEMON_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\DemonYellow.tex"));
     _plModel = CPlacement3D(FLOAT3D(0.0f, -1.9f, -3.35f), ANGLE3D(160.0f, 0.0f, 0.0f));

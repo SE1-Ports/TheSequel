@@ -14,7 +14,8 @@
 // Patch names
 
 // Names of collision boxes
-#define HUANMAN_COLLISION_BOX_PART_NAME 0
+#define HUANMAN_COLLISION_BOX_DEFAULT 0
+#define HUANMAN_COLLISION_BOX_DEATH 1
 
 // Attaching position names
 #define HUANMAN_ATTACHMENT_SPEAR 0

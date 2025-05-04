@@ -145,8 +145,8 @@ functions:
   INDEX AnimForDamage(FLOAT fDamage) {
     INDEX iAnim;
     switch (IRnd()%2) {
-      case 0: iAnim = LIZARD_ANIM_WOUND01; break;
-      case 1: iAnim = LIZARD_ANIM_WOUNDHARD; break;
+      case 0: iAnim = LIZARD_ANIM_WOUND1; break;
+      case 1: iAnim = LIZARD_ANIM_WOUND2; break;
       default: ASSERTALWAYS("Lizard unknown damage");
     }
     StartModelAnim(iAnim, 0);
@@ -485,7 +485,7 @@ procedures:
 
     if (m_blType == LIZ_NORMAL)
     {
-      GetModelObject()->StretchModel(FLOAT3D(1.0f, 1.0f, 1.0f));
+      GetModelObject()->StretchModel(FLOAT3D(1.15f, 1.15f, 1.15f));
       ModelChangeNotify();
       SetModelMainTexture(TEXTURE_LIZARD);
       SetModelSpecularTexture(TEXTURE_SPECULAR);
@@ -510,19 +510,19 @@ procedures:
       // damage/explode properties
       m_fBlowUpAmount = 80.0f;
       m_fBodyParts = 3;
-	  m_fBlowUpSize = 2.0f;
+	  m_fBlowUpSize = 2.3f;
       m_fDamageWounded = 20.0f;
       m_iScore = 500;
 	}
     if (m_blType == LIZ_SPIT)
     {
-      GetModelObject()->StretchModel(FLOAT3D(0.8f, 0.8f, 0.8f));
+      GetModelObject()->StretchModel(FLOAT3D(1.0f,1.0f, 1.0f));
       ModelChangeNotify();
       SetModelMainTexture(TEXTURE_LIZARD_BLUE);
       SetModelSpecularTexture(TEXTURE_SPECULAR);
 		m_fgibTexture = TEXTURE_LIZARD_BLUE;
-      SetHealth(30.0f);
-      m_fMaxHealth = 30.0f;
+      SetHealth(40.0f);
+      m_fMaxHealth = 40.0f;
       StandingAnim();
       // setup moving speed
       m_fWalkSpeed = FRnd() + 1.5f;
@@ -541,13 +541,13 @@ procedures:
       // damage/explode properties
       m_fBlowUpAmount = 80.0f;
       m_fBodyParts = 2;
-	  m_fBlowUpSize = 1.6f;
+	  m_fBlowUpSize = 2.0f;
       m_fDamageWounded = 10.0f;
       m_iScore = 750;
 	}
     if (m_blType == LIZ_BIG)
     {
-      GetModelObject()->StretchModel(FLOAT3D(1.5f, 1.5f, 1.5f));
+      GetModelObject()->StretchModel(FLOAT3D(2.0f, 2.0f, 2.0f));
       ModelChangeNotify();
       SetModelMainTexture(TEXTURE_LIZARD_RED);
       SetModelSpecularTexture(TEXTURE_SPECULAR);
@@ -572,7 +572,7 @@ procedures:
       // damage/explode properties
       m_fBlowUpAmount = 250.0f;
       m_fBodyParts = 4;
-	  m_fBlowUpSize = 3.0f;
+	  m_fBlowUpSize = 4.0f;
       m_fDamageWounded = 40.0f;
       m_iScore = 1500;
 	}

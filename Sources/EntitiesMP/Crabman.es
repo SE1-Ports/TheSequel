@@ -109,11 +109,19 @@ functions:
   // gas cloud
   void GasCloud(void) {
 	  FLOAT3D vSource;
+    if( m_penEnemy != NULL)
+    {
       vSource = GetPlacement().pl_PositionVector +
       FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
-      {
+    }
+    else
+    {
+      vSource = GetPlacement().pl_PositionVector;
+    }
+     
+    // damage
         InflictRangeDamage(this, DMT_ACID, m_fCloudDmg, vSource, m_fGasHS, m_fGasFO);
-      }
+
     CPlacement3D pl = GetPlacement();
     pl.pl_PositionVector = pl.pl_PositionVector+GASPOS;
 	CEntityPointer penCloud = CreateEntity(pl, CLASS_BASIC_EFFECT);
@@ -147,20 +155,20 @@ functions:
 
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
-    StartModelAnim(CRABMAN2_ANIM_DEFEND, 0);
-    return CRABMAN2_ANIM_DEFEND;
+    StartModelAnim(CRABMAN2_ANIM_Defend, 0);
+    return CRABMAN2_ANIM_Defend;
   };
 
   // death
   INDEX AnimForDeath(void) {
     INDEX iAnim;
-    iAnim = CRABMAN2_ANIM_DEATH;
+    iAnim = CRABMAN2_ANIM_Death;
     StartModelAnim(iAnim, 0);
     return iAnim;
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
-    if(GetModelObject()->GetAnim()==CRABMAN2_ANIM_DEATH)
+    if(GetModelObject()->GetAnim()==CRABMAN2_ANIM_Death)
     {
       vStretch=FLOAT3D(1,1,1)*0.75f;
       return 0.5f;
@@ -169,21 +177,21 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(CRABMAN2_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(CRABMAN2_COLLISION_BOX_DEATH);
     en_fDensity = 1000.0f;
   };
 
   // virtual anim functions
   void StandingAnim(void) {
-    StartModelAnim(CRABMAN2_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(CRABMAN2_ANIM_Idle, AOF_LOOPING|AOF_NORESTART);
   };
 
   void WalkingAnim(void) {
-    StartModelAnim(CRABMAN2_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(CRABMAN2_ANIM_Walk, AOF_LOOPING|AOF_NORESTART);
   };
 
   void RunningAnim(void) {
-    StartModelAnim(CRABMAN2_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(CRABMAN2_ANIM_Run, AOF_LOOPING|AOF_NORESTART);
   };
   void RotatingAnim(void) {
     WalkingAnim();
@@ -293,7 +301,7 @@ procedures:
       m_fShootTime = _pTimer->CurrentTick() + 0.25f;
       return EReturn();
     }
-    StartModelAnim(CRABMAN2_ANIM_ATTACK, 0);
+    StartModelAnim(CRABMAN2_ANIM_Attack, 0);
     PlaySound(m_soSound, SOUND_PUNCH, SOF_3D);
     StopMoving();
     // damage enemy

@@ -6224,15 +6224,16 @@ procedures:
     m_tmFlamerStop=1e9;
     
     m_moWeapon.PlayAnim(FLAMER_ANIM_FIRESTART, 0);
+    CPlayer &pl = (CPlayer&)*m_penPlayer;
+    pl.m_soWeapon2.Set3DParameters(50.0f, 5.0f, 1.0f, 1.0f);
+    PlaySound(pl.m_soWeapon2, SOUND_FL_START, SOF_3D|SOF_VOLUMETRIC);
+    if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("FlamethrowerStart");}
     autowait(m_moWeapon.GetAnimLength(FLAMER_ANIM_FIRESTART));
     // play fire sound
     CPlayer &pl = (CPlayer&)*m_penPlayer;
-    pl.m_soWeapon0.Set3DParameters(50.0f, 5.0f, 2.0f, 0.31f);
-    pl.m_soWeapon2.Set3DParameters(50.0f, 5.0f, 2.0f, 0.3f);
+    pl.m_soWeapon0.Set3DParameters(50.0f, 5.0f, 1.0f, 1.0f);
     PlaySound(pl.m_soWeapon0, SOUND_FL_FIRE, SOF_3D|SOF_LOOP|SOF_VOLUMETRIC);
     if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("FlamethrowerFire");}
-    PlaySound(pl.m_soWeapon2, SOUND_FL_START, SOF_3D|SOF_VOLUMETRIC);
-    if(_pNetwork->IsPlayerLocal(m_penPlayer)) {IFeel_PlayEffect("FlamethrowerStart");}
     FireFlame();
     DecAmmo(m_iNapalm, 1);
     autowait(m_moWeapon.GetAnimLength(FLAMER_ANIM_DEFAULT_ANIMATION)-0.04);

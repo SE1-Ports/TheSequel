@@ -26,6 +26,8 @@ enum FireType {
   9 SFT_DEV         "Devastator",
   10 SFT_NUKEBALL2    "Nukeball final",
   11 SFT_BULLETPIERCING "Piercing Bullet",
+  12 SFT_WEAKBALL "Weak cannonball",
+  13 SFT_WEAKBALL2 "Weaker cannonball",
 };
 
 class CShooter: CModelHolder2 {
@@ -244,6 +246,36 @@ functions:
     penBall->Initialize(eLaunch);
   };
 
+  void ShootWeakball()
+  {
+    // cannon ball start position
+    CPlacement3D plBall = GetPlacement();
+    // create cannon ball
+    CEntityPointer penBall = CreateEntity(plBall, CLASS_CANNONBALL);
+    // init and launch cannon ball
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = 10.0f+m_fCannonBallPower; // ranges from 50-150 (since iPower can be max 100)
+    eLaunch.cbtType = CBT_WEAK;
+    eLaunch.fSize = m_fCannonBallSize;
+    penBall->Initialize(eLaunch);
+  };
+
+  void ShootWeakball2()
+  {
+    // cannon ball start position
+    CPlacement3D plBall = GetPlacement();
+    // create cannon ball
+    CEntityPointer penBall = CreateEntity(plBall, CLASS_CANNONBALL);
+    // init and launch cannon ball
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = 10.0f+m_fCannonBallPower; // ranges from 50-150 (since iPower can be max 100)
+    eLaunch.cbtType = CBT_WEAK2;
+    eLaunch.fSize = m_fCannonBallSize;
+    penBall->Initialize(eLaunch);
+  };
+
   void ShootFireball()
   {
     // cannon ball start position
@@ -386,6 +418,12 @@ procedures:
         break;
       case SFT_IRONBALL:
         ShootCannonball();
+        break;
+      case SFT_WEAKBALL:
+        ShootWeakball();
+        break;
+      case SFT_WEAKBALL2:
+        ShootWeakball2();
         break;
       case SFT_FIREBALL:
         ShootProjectile(PRT_SHOOTER_FIREBALL, FLOAT3D (0.0f, 0.0f, 0.0f), ANGLE3D (0.0f, 0.0f, 0.0f));
