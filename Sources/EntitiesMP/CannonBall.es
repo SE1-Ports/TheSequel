@@ -17,6 +17,7 @@ enum CannonBallType {
   2 CBT_WEAK    "",
   3 CBT_DEV     "",
   4 CBT_NUKE2    "",
+  5 CBT_WEAK2    "",
 };
 
 // input parameter for launching the projectile
@@ -74,6 +75,12 @@ event EForceExplode {
 #define NUKE2_RANGE_DAMAGE (700.0f/3)   // because we have 3 explosions
 #define NUKE2_RANGE_HOTSPOT 35.0f
 #define NUKE2_RANGE_FALLOFF 40.0f
+
+#define WEAK2_DAMAGE_MIN 15.0f
+#define WEAK2_DAMAGE_MAX 30.0f
+#define WEAK2_RANGE_DAMAGE (25.0f)
+#define WEAK2_RANGE_HOTSPOT 4.0f
+#define WEAK2_RANGE_FALLOFF 8.0f
 
 #define SOUND_RANGE 250.0f
 
@@ -292,6 +299,13 @@ void Initialize(void) {
     SetModel(MODEL_BALL);
     SetModelMainTexture(TEXTURE_NUKE_BALL);
   }
+  if( m_cbtType == CBT_WEAK2)
+  {
+    SetCollisionFlags(ECF_CANNON_BALL);
+    SetPhysicsFlags(EPF_MODEL_BOUNCING);
+    SetModel(MODEL_BALL);
+    SetModelMainTexture(TEXTURE_IRON_BALL);
+  }
   // stretch it
   GetModelObject()->StretchModel(FLOAT3D(m_fCannonBallSize, m_fCannonBallSize, m_fCannonBallSize));
   ModelChangeNotify();
@@ -349,6 +363,10 @@ FLOAT CalculateDamageToInflict(void)
   if(m_cbtType == CBT_NUKE2)
   {
     fMaxDamage = NUKE2_DAMAGE_MAX;
+  }
+  if(m_cbtType == CBT_WEAK2)
+  {
+    fMaxDamage = WEAK2_DAMAGE_MAX;
   }
 
   // speed can range from
@@ -512,6 +530,9 @@ void RangeDamage(void)
     // nuclear explosion ...
     InflictRangeDamage(m_penLauncher, DMT_CANNONBALL_EXPLOSION, NUKE2_RANGE_DAMAGE*fDamageMul,
         GetPlacement().pl_PositionVector, NUKE2_RANGE_HOTSPOT, NUKE2_RANGE_FALLOFF);
+  } if(m_cbtType == CBT_WEAK2) {
+    InflictRangeDamage(m_penLauncher, DMT_CANNONBALL_EXPLOSION, WEAK2_RANGE_DAMAGE*fDamageMul,
+        GetPlacement().pl_PositionVector, WEAK2_RANGE_HOTSPOT, WEAK2_RANGE_FALLOFF);
   }
 };
 
@@ -572,6 +593,10 @@ procedures:
     if(m_cbtType == CBT_NUKE2)
     {
       fWaitTime = NUKE2_LIFE_TIME;
+    }
+    if(m_cbtType == CBT_WEAK2)
+    {
+      fWaitTime = WEAK_LIFE_TIME;
     }
     // bounce loop
     wait(fWaitTime) {
@@ -756,6 +781,10 @@ procedures:
       Explosion( FLOAT3D(4.0f,5.0f,5.0f),   STRETCH_8, STRETCH_8, STRETCH_10, TRUE, FALSE, FALSE, TRUE);
       autowait(0.05f);
       Explosion( FLOAT3D(-5.0f,3.0f,-4.0f), STRETCH_6, STRETCH_6, STRETCH_10, TRUE, FALSE, FALSE, TRUE);
+    }
+    if(m_cbtType == CBT_WEAK2)
+    {
+      Explosion( FLOAT3D(0.0f,0.0f,0.0f),   STRETCH_1, STRETCH_1, STRETCH_2, TRUE, TRUE,  TRUE, TRUE);
     }
 
     // cease to exist

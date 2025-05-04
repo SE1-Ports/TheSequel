@@ -1,0 +1,30 @@
+// Animation names
+#define GUFFY_ANIM_DEFAULT 0
+#define GUFFY_ANIM_IDLE 1
+#define GUFFY_ANIM_TOFIRE 2
+#define GUFFY_ANIM_FIRE1 3
+#define GUFFY_ANIM_FIRE2 4
+#define GUFFY_ANIM_MELEE 5
+#define GUFFY_ANIM_WOUND 6
+#define GUFFY_ANIM_WOUNDFIRE 7
+#define GUFFY_ANIM_STUN 8
+#define GUFFY_ANIM_DEATHBACKWARD 9
+#define GUFFY_ANIM_DEATHFORWARD 10
+#define GUFFY_ANIM_RUN 11
+#define GUFFY_ANIM_WALK 12
+#define GUFFY_ANIM_SLEEPING 13
+#define GUFFY_ANIM_WAKEUP 14
+
+// Color names
+
+// Patch names
+
+// Names of collision boxes
+#define GUFFY_COLLISION_BOX_DEFAULT 0
+#define GUFFY_COLLISION_BOX_DEATH 1
+
+// Attaching position names
+#define GUFFY_ATTACHMENT_GUNLEFT 0
+#define GUFFY_ATTACHMENT_GUNRIGHT 1
+
+// Sound names

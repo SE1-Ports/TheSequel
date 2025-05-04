@@ -86,6 +86,7 @@ void DECL_DLL Particles_BeastProjectileTrail_Prepare(CEntity *pen);
 void DECL_DLL Particles_BeastProjectileTrail( CEntity *pen, FLOAT fSize, FLOAT fHeight, INDEX ctParticles);
 void DECL_DLL Particles_BeastBigProjectileTrail_Prepare(CEntity *pen);
 void DECL_DLL Particles_BeastBigProjectileTrail( CEntity *pen, FLOAT fSize, FLOAT fZOffset, FLOAT fYOffset, INDEX ctParticles);
+void DECL_DLL Particles_AlbinoProjectileTrail( CEntity *pen, FLOAT fSize, FLOAT fZOffset, FLOAT fYOffset, INDEX ctParticles);
 void DECL_DLL Particles_BeastProjectileDebrisTrail_Prepare(CEntity *pen);
 void DECL_DLL Particles_BeastProjectileDebrisTrail(CEntity *pen, FLOAT fSizeMultiplier);
 void DECL_DLL Particles_AfterBurner(CEntity *pen, FLOAT m_tmSpawn, FLOAT fStretch, INDEX iGradientType=0);
@@ -152,7 +153,9 @@ void DECL_DLL Particles_Windblast( CEntity *pen, FLOAT fStretch, FLOAT fFadeOutS
 void DECL_DLL Particles_CollectEnergy(CEntity *pen, FLOAT tmStart, FLOAT tmStop);
 void DECL_DLL Particles_SniperResidue(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget); 
 void DECL_DLL Particles_GrowingSwirl( CEntity *pen, FLOAT fStretch, FLOAT fStartTime);
+void DECL_DLL Particles_MantaAttack ( CEntity *pen, FLOAT fStretch, FLOAT fStartTime);
 void DECL_DLL Particles_SummonerDisappear( CEntity *pen, FLOAT tmStart);
+void DECL_DLL Particles_DemonWakeUp( CEntity *pen, FLOAT tmStart);
 void DECL_DLL Particles_DisappearDust( CEntity *pen, FLOAT fStretch, FLOAT fStartTime);
 void DECL_DLL Particles_DustFall(CEntity *pen, FLOAT tmStart, FLOAT3D vStretch);
 void DECL_DLL Particles_AirElementalBlow(class CEmiter &em);

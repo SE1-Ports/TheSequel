@@ -2,7 +2,7 @@
 
 %{
 #include "StdH.h"
-#include "ModelsMP/Enemies/SS2/ScorpSoldier/ScorpNoGun.h"
+#include "ModelsMP/Enemies/SS2/ScorpSoldier/ScorpSoldier.h"
 #include "EntitiesMP/WorldSettingsController.h"
 #include "EntitiesMP/BackgroundViewer.h"
 %}
@@ -64,7 +64,7 @@ components:
   1 class   CLASS_PROJECTILE    "Classes\\Projectile.ecl",
   2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
 
- 10 model   MODEL_SCORP           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpNoGun.mdl",
+ 10 model   MODEL_SCORP           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpSoldier.mdl",
  11 texture TEXTURE_SMALL         "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Tex\\ScorpGreen.tex",
  12 texture TEXTURE_MEDIUM        "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Tex\\ScorpYellow.tex",
  13 texture TEXTURE_BIG           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Tex\\ScorpPurple.tex",
@@ -73,7 +73,10 @@ components:
  15 texture TEXTURE_BIG_OG         "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Tex\\ScorpRed.tex",
 
  16 model     MODEL_GUN           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\ScorpGun.mdl",
- 17 texture   TEXTURE_GUN           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Gun.tex",
+ 17 texture   TEXTURE_GUN         "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Gun.tex",
+
+ 23 model     MODEL_FLARE           "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Flare.mdl",
+ 24 texture   TEXTURE_FLARE         "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Flare03.tex",
 
  30 texture TEXTURE_SPECULAR  "Models\\SpecularTextures\\Strong.tex",
 
@@ -206,7 +209,7 @@ functions:
   // damage anim
   INDEX AnimForDamage(FLOAT fDamage) {
     INDEX iAnim;
-    iAnim = SCORPNOGUN_ANIM_SCORPSOLDIER_WOUND;
+    iAnim = SCORPSOLDIER_ANIM_WOUND;
     StartModelAnim(iAnim, 0);
     return iAnim;
   };
@@ -214,13 +217,13 @@ functions:
   // death
   INDEX AnimForDeath(void) {
     INDEX iAnim;
-    iAnim = SCORPNOGUN_ANIM_DEATH;
+    iAnim = SCORPSOLDIER_ANIM_DEATH;
     StartModelAnim(iAnim, 0);
     return iAnim;
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
-    if(GetModelObject()->GetAnim()==SCORPNOGUN_ANIM_DEATH )
+    if(GetModelObject()->GetAnim()==SCORPSOLDIER_ANIM_DEATH )
     {
       vStretch=FLOAT3D(1,1,2)*2.0f;
       return 0.3f;
@@ -229,21 +232,21 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(SCORPNOGUN_COLLISION_BOX_DEATH);
+    ChangeCollisionBoxIndexWhenPossible(SCORPSOLDIER_COLLISION_BOX_DEATH);
     en_fDensity = 500.0f;
   };
 
   // virtual anim functions
   void StandingAnim(void) {
-    StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_IDLE, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(SCORPSOLDIER_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
   };
 
   void WalkingAnim(void) {
-      StartModelAnim(SCORPNOGUN_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(SCORPSOLDIER_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
   };
 
   void RunningAnim(void) {
-      StartModelAnim(SCORPNOGUN_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(SCORPSOLDIER_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
   };
   void RotatingAnim(void) {
     WalkingAnim();
@@ -332,7 +335,7 @@ procedures:
     if( m_ssType == SS_SMALL)
     {
 	//1 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_SMALL_FIRE, SOF_3D);
 
       ShootProjectile(PRT_SCORP_PROJECTILE, FLOAT3D( 0.5f, 1.5f*SMALL_STRETCH, -1.0f),ANGLE3D(0.0f, 0.0f, 0.0f));
@@ -340,7 +343,7 @@ procedures:
       autowait(0.3f);
 
 	//2 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_SMALL_FIRE, SOF_3D);
 
       ShootProjectile(PRT_SCORP_PROJECTILE, FLOAT3D( 0.5f, 1.5f*SMALL_STRETCH, -1.0f),ANGLE3D(0.0f, 0.0f, 0.0f));
@@ -348,7 +351,7 @@ procedures:
       autowait(0.3f);
 
 	//3 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_SMALL_FIRE, SOF_3D);
 
       ShootProjectile(PRT_SCORP_PROJECTILE, FLOAT3D( 0.5f, 1.5f*SMALL_STRETCH, -1.0f),ANGLE3D(0.0f, 0.0f, 0.0f));
@@ -359,7 +362,7 @@ procedures:
     if(m_ssType == SS_MEDIUM)
     {
 	//1 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_MEDIUM_FIRE, SOF_3D);
 
       ShootProjectile(PRT_SCORP_PROJECTILE, FLOAT3D( 0.5f, 1.5f*MEDIUM_STRETCH, -1.0f),ANGLE3D(0.0f, 0.0f, 0.0f));
@@ -367,7 +370,7 @@ procedures:
       autowait(0.3f);
 
 	//2 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_MEDIUM_FIRE, SOF_3D);
 
       ShootProjectile(PRT_SCORP_PROJECTILE, FLOAT3D( 0.5f, 1.5f*MEDIUM_STRETCH, -1.0f),ANGLE3D(0.0f, 0.0f, 0.0f));
@@ -375,7 +378,7 @@ procedures:
       autowait(0.3f);
 
 	//3 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_MEDIUM_FIRE, SOF_3D);
 
       ShootProjectile(PRT_SCORP_PROJECTILE, FLOAT3D( 0.5f, 1.5f*MEDIUM_STRETCH, -1.0f),ANGLE3D(0.0f, 0.0f, 0.0f));
@@ -383,7 +386,7 @@ procedures:
       autowait(0.3f);
 
 	//4 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_MEDIUM_FIRE, SOF_3D);
 
       ShootProjectile(PRT_SCORP_PROJECTILE, FLOAT3D( 0.5f, 1.5f*MEDIUM_STRETCH, -1.0f),ANGLE3D(0.0f, 0.0f, 0.0f));
@@ -391,7 +394,7 @@ procedures:
       autowait(0.3f);
 
 	//5 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_MEDIUM_FIRE, SOF_3D);
 
       ShootProjectile(PRT_SCORP_PROJECTILE, FLOAT3D( 0.5f, 1.5f*MEDIUM_STRETCH, -1.0f),ANGLE3D(0.0f, 0.0f, 0.0f));
@@ -402,7 +405,7 @@ procedures:
     if(m_ssType == SS_BIG)
     {
 	//1 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_BIG_FIRE, SOF_3D);
 
     // calculate launch velocity and heading correction for angular launch
@@ -433,7 +436,7 @@ procedures:
       autowait(0.5f);
 
 	//2 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_BIG_FIRE, SOF_3D);
 
     // calculate launch velocity and heading correction for angular launch
@@ -464,7 +467,7 @@ procedures:
       autowait(0.5f);
 
 	//3 shot
-      StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_FIRE, 0);   
+      StartModelAnim(SCORPSOLDIER_ANIM_FIRE, 0);   
       PlaySound(m_soSound, SOUND_BIG_FIRE, SOF_3D);
 
     // calculate launch velocity and heading correction for angular launch
@@ -503,7 +506,7 @@ procedures:
   // hit enemy
   Hit(EVoid) : CEnemyBase::Hit {
     // close attack
-    StartModelAnim(SCORPNOGUN_ANIM_SCORPSOLDIER_MELEE, 0);
+    StartModelAnim(SCORPSOLDIER_ANIM_MELEE, 0);
     autowait(0.4f);
     PlaySound(m_soSound, SOUND_KICK, SOF_3D);
     if (CalcDist(m_penEnemy) < m_fCloseDistance) {
@@ -643,7 +646,9 @@ procedures:
       m_fAttackFireTime = 5.0f;
     }
     
-    AddAttachment(SCORPNOGUN_ATTACHMENT_SCORPNOGUN, MODEL_GUN, TEXTURE_GUN);
+    AddAttachment(SCORPSOLDIER_ATTACHMENT_FLARE, MODEL_FLARE, TEXTURE_FLARE);
+    AddAttachmentToModel(this, *GetModelObject(), SCORPSOLDIER_ATTACHMENT_GUN,
+      MODEL_GUN, TEXTURE_GUN, 0, TEXTURE_SPECULAR, 0);
 
     // set stretch factors for height and width - MUST BE DONE BEFORE SETTING MODEL!
     switch (m_ssType) {

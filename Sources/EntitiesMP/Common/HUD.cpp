@@ -126,7 +126,7 @@ static CTextureObject _toWDevastator;
 static CTextureObject _toWHydro;
 
 // powerup textures (ORDER IS THE SAME AS IN PLAYER.ES!)
-#define MAX_POWERUPS 4
+#define MAX_POWERUPS 5
 static CTextureObject _atoPowerups[MAX_POWERUPS];
 // tile texture (one has corners, edges and center)
 static CTextureObject _toTile;
@@ -611,9 +611,18 @@ static void HUD_DrawSniperMask( void )
   
   FLOAT fAFact = (Clamp(aFOV, 14.2f, 53.1f)-14.2f)/(53.1f-14.2f); // only for zooms 2x-4x !!!!!!
   ANGLE aAngle = 314.0f+fAFact*292.0f;
+  
+  COLOR colWheel = colMask;;
+  FLOAT fEnHP = _penWeapons->m_fEnemyHealth;
+  extern INDEX hud_bCrosshairColoring;
+  if(fEnHP > 0) {
+         if(fEnHP < 0.25f) { colWheel = C_RED;    }
+    else if(fEnHP < 0.60f) { colWheel = C_YELLOW; }
+    else                   { colWheel = C_GREEN;  }
+  }
 
   DrawRotatedQuad(&_toSniperWheel, fCenterI, fCenterJ, 40.0f*_fYResolutionScaling,
-                  aAngle, colMask|0x44);
+                  aAngle, colWheel|0x44);
   
   FLOAT fTM = _pTimer->GetLerpedCurrentTick();
   
@@ -696,6 +705,31 @@ static void HUD_DrawTommyGunMask( void )
   _pDP->FlushRenderingQueue();
   _pDP->Fill( 0, 0, fBlackStrip+1, fSizeJ, C_BLACK|CT_OPAQUE);
   _pDP->Fill( fSizeI-fBlackStrip-1, 0, fBlackStrip+1, fSizeJ, C_BLACK|CT_OPAQUE);
+
+  colMask = LerpColor(0x64b4ff00, C_WHITE, 0.25f);
+
+  FLOAT _fYResolutionScalingTom = (FLOAT)_pixDPHeight/480.0f;
+
+  FLOAT aFOV = Lerp(_penWeapons->m_fSniperFOVlast, _penWeapons->m_fSniperFOV,
+                    _pTimer->GetLerpFactor());
+  
+  // wheel
+  FLOAT fZoom = 1.0f/tan(RadAngle(aFOV)*0.5f);  // 2.0 - 8.0
+  
+  FLOAT fAFact = (Clamp(aFOV, 14.2f, 53.1f)-14.2f)/(53.1f-14.2f); // only for zooms 2x-4x !!!!!!
+  ANGLE aAngle = 314.0f+fAFact*292.0f;
+  
+  COLOR colWheel = colMask;;
+  FLOAT fEnHP = _penWeapons->m_fEnemyHealth;
+  extern INDEX hud_bCrosshairColoring;
+  if(fEnHP > 0) {
+         if(fEnHP < 0.25f) { colWheel = C_RED;    }
+    else if(fEnHP < 0.60f) { colWheel = C_YELLOW; }
+    else                   { colWheel = C_GREEN;  }
+  }
+
+  DrawRotatedQuad(&_toSniperEye, fCenterI, fCenterJ, 120.0f*_fYResolutionScalingTom,
+                  aAngle, colWheel|0x44);
 
   // prepare for output of distance
   CTString strTmp;
@@ -1493,6 +1527,7 @@ extern void InitHUD(void)
     _atoPowerups[1].SetData_t( CTFILENAME("TexturesMP\\Interface\\PInvulnerability.tex"));
     _atoPowerups[2].SetData_t( CTFILENAME("TexturesMP\\Interface\\PSeriousDamage.tex"));
     _atoPowerups[3].SetData_t( CTFILENAME("TexturesMP\\Interface\\PSeriousSpeed.tex"));
+    _atoPowerups[4].SetData_t( CTFILENAME("TexturesMP\\Interface\\PSeriousJump.tex"));
     // initialize sniper mask texture
     _toSniperMask.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperMask.tex"));
     _toSniperWheel.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperWheel.tex"));
@@ -1500,6 +1535,7 @@ extern void InitHUD(void)
     _toSniperEye.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperEye.tex"));
     _toSniperLed.SetData_t(       CTFILENAME("TexturesMP\\Interface\\SniperLed.tex"));
     _toSniperLine.SetData_t( CTFILENAME("TexturesF\\Interface\\SniperLine.tex"));
+    _toSniperEye.SetData_t( CTFILENAME("TexturesF\\Interface\\SniperWheel.tex"));
 
     // initialize tile texture
     _toTile.SetData_t( CTFILENAME("Textures\\Interface\\Tile.tex"));
@@ -1549,6 +1585,7 @@ extern void InitHUD(void)
     ((CTextureData*)_atoPowerups[1].GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_atoPowerups[2].GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_atoPowerups[3].GetData())->Force(TEX_CONSTANT);
+    ((CTextureData*)_atoPowerups[4].GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_toTile      .GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_toSniperMask.GetData())->Force(TEX_CONSTANT);
     ((CTextureData*)_toSniperWheel.GetData())->Force(TEX_CONSTANT);

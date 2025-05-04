@@ -26,7 +26,8 @@
 // Patch names
 
 // Names of collision boxes
-#define ZORGPRO_COLLISION_BOX_PART_NAME 0
+#define ZORGPRO_COLLISION_BOX_DEFAULT 0
+#define ZORGPRO_COLLISION_BOX_DEATH 1
 
 // Attaching position names
 #define ZORGPRO_ATTACHMENT_GUN_COMMANDER 0

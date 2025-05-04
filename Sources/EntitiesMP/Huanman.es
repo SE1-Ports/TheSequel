@@ -191,12 +191,6 @@ functions:
     // can't harm own class
     if (!IsOfClass(penInflictor, "Huanman")) {
       CEnemyBase::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
-
-      // if died of chainsaw
-      if (dmtType==DMT_CHAINSAW && GetHealth()<=0 && m_HuType!=HUAN_BIG) {
-        // must always blowup
-        m_fBlowUpAmount = 0;
-      }
     }
   };
 
@@ -223,7 +217,7 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(HUANMAN_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(HUANMAN_COLLISION_BOX_DEATH);
     en_fDensity = 500.0f;
   };
 
@@ -265,7 +259,10 @@ functions:
     if (m_bQuiet) { 
     m_soSound.Set3DParameters(0.0f, 0.0f, 2.0f, 1.0f);
 	} else {
-    m_soSound.Set3DParameters(80.0f, 10.0f, 1.25f, 1.0f);
+      if(m_HuType==HUAN_SMALL) {
+        m_soSound.Set3DParameters(80.0f, 10.0f, 1.25f, 1.0f); }
+      if(m_HuType==HUAN_BIG) {
+        m_soSound.Set3DParameters(200.0f, 50.0f, 1.25f, 1.0f); }
 	}
   };
 

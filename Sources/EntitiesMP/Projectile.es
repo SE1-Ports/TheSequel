@@ -585,7 +585,7 @@ void CProjectile_OnPrecache(CDLLEntityClass *pdec, INDEX iUser)
   case PRT_HYDROGUN:
     pdec->PrecacheModel(MODEL_HYDROGUN);
     pdec->PrecacheTexture(TEXTURE_GUFFY_PROJECTILE     );
-    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_CANNON_NOLIGHT);
+    pdec->PrecacheClass(CLASS_BASIC_EFFECT, BET_HYDROGUN);
     pdec->PrecacheClass(CLASS_BLOOD_SPRAY);
     pdec->PrecacheSound(SOUND_HYDROGUN  );
     break;
@@ -1413,8 +1413,8 @@ functions:
 
       case PRT_SCORP_BIG_PROJECTILE: Particles_BeastProjectileTrail( this, 2.0f, 0.1f, 10); break;
       case PRT_MANTAMAN_FIRE: Particles_RomboidTrail(this); break;
-      case PRT_MANTAMAN_DEBRIS: Particles_RocketTrail(this, 0.20f); break;
-      case PRT_ALBINO_PROJECTILE: Particles_BeastBigProjectileTrail (this, 3.0f, 0.0f, 0.0f, 10); break;
+      case PRT_MANTAMAN_DEBRIS: Particles_RomboidTrail(this); break;
+      case PRT_ALBINO_PROJECTILE: Particles_AlbinoProjectileTrail (this, 3.0f, 0.0f, 0.0f, 64); break;
       case PRT_SPIDERWEB_MUM: Particles_RocketTrail(this, 3.0f); break;
       case PRT_KALOPSY_SLIME: Particles_BeastProjectileTrail( this, 0.1f, 0.1f, 10); break;
       case PRT_CATMAN_BOMB: Particles_Fireball01Trail(this); break;
@@ -2470,7 +2470,7 @@ void LavamanBombExplosion(void)
 
   // shock wave
   ese.colMuliplier = C_WHITE|CT_OPAQUE;
-  ese.betType = BET_LIGHT_CANNON;
+  ese.betType = BET_CANNON;
   ese.vStretch = FLOAT3D(4,4,4);
   SpawnEffect(GetPlacement(), ese);
 
@@ -2973,13 +2973,13 @@ void MantamanProjectile(void) {
   // set appearance
   InitAsModel();
   SetPhysicsFlags(EPF_PROJECTILE_FLYING);
-  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
+  SetCollisionFlags(ECF_PROJECTILE_SOLID);
   SetModel(MODEL_MANTAMAN_FIRE);
   SetModelMainTexture(TEXTURE_MANTAMAN_FIRE);
   GetModelObject()->StretchModel(FLOAT3D(0.75f, 0.75f, 0.75f));
   ModelChangeNotify();
   // start moving
-  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
   m_fFlyTime = 30.0f;
   m_fDamageAmount = 5.0f;
@@ -3000,8 +3000,8 @@ void MantamanDebris(void)
 {
   // set appearance
   InitAsModel();
-  SetPhysicsFlags(EPF_MODEL_BOUNCING);
-  SetCollisionFlags(ECF_PROJECTILE_SOLID);
+  SetPhysicsFlags(EPF_ONBLOCK_SLIDE|EPF_PUSHABLE|EPF_MOVABLE);
+  SetCollisionFlags(ECF_PROJECTILE_MAGIC);
 
   SetModel(MODEL_MANTAMAN_FIRE);
   GetModelObject()->StretchModel(FLOAT3D(0.5f, 0.5f, 0.5f));
@@ -3010,18 +3010,20 @@ void MantamanDebris(void)
 
   ModelChangeNotify();
   // start moving
-  LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -20.0f), (CMovableEntity*)&*m_penLauncher);
-  SetDesiredRotation(ANGLE3D(0, 0, 0));
-  m_fFlyTime = 10.0f;
-  m_fDamageAmount = 0.0f;
+  LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)&*m_penLauncher);
+  SetDesiredRotation(ANGLE3D(0, 0, FRnd()*1800.0f-900.0f));
+  en_fCollisionSpeedLimit = 1000.0f;
+  en_fCollisionDamageFactor = 0.0f;
+  m_fFlyTime = FRnd() + 3.0f;
+  m_fDamageAmount = 5.0f;
   m_fSoundRange = 0.0f;
   m_bExplode = FALSE;
   m_bLightSource = FALSE;
   m_bCanHitHimself = FALSE;
-  m_bCanBeDestroyed = TRUE;
+  m_bCanBeDestroyed = FALSE;
   m_fWaitAfterDeath = 0.0f;
-  m_pmtMove = PMT_FLYING;
-  SetHealth(1.0f);
+  m_iRebounds = 4;
+  m_pmtMove = PMT_FLYING_REBOUNDING;
   m_aRotateSpeed = 100.0f;
 };
 
@@ -3037,26 +3039,25 @@ void MantamanDebrisExplosion(void)
 
 void MantamanProjectileExplosion(void)
 {
-  PlayerRocketExplosion();
   // explosion
   ESpawnEffect ese;
   ese.colMuliplier = C_BLUE|CT_OPAQUE;
-  ese.betType = BET_LIGHT_CANNON;
+  ese.betType = BET_PLASMA_EXPLOSION;
   ese.vStretch = FLOAT3D(1.0,1.0,1.0);
   SpawnEffect(GetPlacement(), ese);
 
-  FLOAT fHeading = 20.0f+(FRnd()-0.5f)*60.0f;
   // debris
-  for( INDEX iDebris=0; iDebris<2; iDebris++)
+  for( INDEX iDebris1=0; iDebris1<1; iDebris1++)
   {
-    FLOAT fPitch = 10.0f+FRnd()*10.0f;
-    FLOAT fSpeed = 5.0+FRnd()*20.0f;
+    FLOAT fHeading = FRnd();
+    FLOAT fPitch = FRnd() * 30.0f;
+    FLOAT fSpeed = 12.0f;
 
     // launch
     CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
     pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
-    // turn to other way
-    fHeading = -fHeading;
     pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
 
     CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
@@ -3064,6 +3065,196 @@ void MantamanProjectileExplosion(void)
     eLaunch.penLauncher = this;
     eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
     eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris2=0; iDebris2<1; iDebris2++)
+  {
+    FLOAT fHeading = FRnd() * 75.0f;
+    FLOAT fPitch = FRnd() * 30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris3=0; iDebris3<1; iDebris3++)
+  {
+    FLOAT fHeading = FRnd() * -75.0f;
+    FLOAT fPitch = FRnd() * 30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris4=0; iDebris4<1; iDebris4++)
+  {
+    FLOAT fHeading = FRnd() * 150.0f;
+    FLOAT fPitch = FRnd() * 30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris5=0; iDebris5<1; iDebris5++)
+  {
+    FLOAT fHeading = FRnd() * -150.0f;
+    FLOAT fPitch = FRnd() * 30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris6=0; iDebris6<1; iDebris6++)
+  {
+    FLOAT fHeading = FRnd();
+    FLOAT fPitch = FRnd() * -30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris7=0; iDebris7<1; iDebris7++)
+  {
+    FLOAT fHeading = FRnd() * 75.0f;
+    FLOAT fPitch = FRnd() * -30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris8=0; iDebris8<1; iDebris8++)
+  {
+    FLOAT fHeading = FRnd() * -75.0f;
+    FLOAT fPitch = FRnd() * -30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris9=0; iDebris9<1; iDebris9++)
+  {
+    FLOAT fHeading = FRnd() * 150.0f;
+    FLOAT fPitch = FRnd() * -30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
+    penProjectile->Initialize(eLaunch);
+  }
+  for( INDEX iDebris10=0; iDebris10<1; iDebris10++)
+  {
+    FLOAT fHeading = FRnd() * -150.0f;
+    FLOAT fPitch = FRnd() * -30.0f;
+    FLOAT fSpeed = 12.0f;
+
+    // launch
+    CPlacement3D pl = GetPlacement();
+    pl.pl_PositionVector(2) += 0.0f;
+    pl.pl_OrientationAngle = m_penLauncher->GetPlacement().pl_OrientationAngle;
+    pl.pl_OrientationAngle(1) += AngleDeg(fHeading);
+    pl.pl_OrientationAngle(2) = AngleDeg(fPitch);
+
+    CEntityPointer penProjectile = CreateEntity(pl, CLASS_PROJECTILE);
+    ELaunchProjectile eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.prtType = PRT_MANTAMAN_DEBRIS;
+    eLaunch.fSpeed = fSpeed;
+    // mark created entitiy
     penProjectile->Initialize(eLaunch);
   }
 }
@@ -3492,7 +3683,46 @@ void GuffyProjectile(void) {
 };
 
 void GuffyProjectileExplosion(void) {
-  PlayerRocketExplosion();
+  ESpawnEffect ese;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+
+  // explosion
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
+  ese.betType = BET_PLASMA_EXPLOSION;
+  ese.vStretch = FLOAT3D(1,1,1);
+  SpawnEffect(GetPlacement(), ese);
+  // spawn sound event in range
+  if( IsDerivedFromClass( m_penLauncher, "Player")) {
+    SpawnRangeSound( m_penLauncher, this, SNDT_PLAYER, m_fSoundRange);
+  }
+
+  // explosion debris
+  ese.betType = BET_EXPLOSION_DEBRIS;
+  SpawnEffect(GetPlacement(), ese);
+
+  // explosion smoke
+  ese.betType = BET_EXPLOSION_SMOKE;
+  SpawnEffect(GetPlacement(), ese);
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // stain
+      ese.betType = BET_EXPLOSIONSTAIN;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // shock wave
+      ese.betType = BET_SHOCKWAVE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+      // second explosion on plane
+      ese.betType = BET_ROCKET_PLANE;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      SpawnEffect(CPlacement3D(vPoint+ese.vNormal/50.0f, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
 }
 
 
@@ -3611,7 +3841,7 @@ void LarvaPlasmaExplosion(void) {
   // explosion
   ESpawnEffect ese;
   ese.colMuliplier = C_WHITE|CT_OPAQUE;
-  ese.betType = BET_LIGHT_CANNON;
+  ese.betType = BET_PLASMA_EXPLOSION;
   ese.vStretch = FLOAT3D(2,2,2);
   SpawnEffect(GetPlacement(), ese);
 
@@ -4388,7 +4618,7 @@ void ScorpBigProjExplosion(void) {
 
   // shock wave
   ese.colMuliplier = C_GREEN|CT_OPAQUE;
-  ese.betType = BET_CANNON;
+  ese.betType = BET_PLASMA_EXPLOSION;
   ese.vStretch = FLOAT3D(2,2,2);
   SpawnEffect(GetPlacement(), ese);
 
@@ -4490,8 +4720,8 @@ void AlbinoProjectile(void) {
 
   ModelChangeNotify();
   // play the flying sound
-  m_soEffect.Set3DParameters(20.0f, 2.0f, 1.0f, 1.0f);
-  PlaySound(m_soEffect, SOUND_DEMON_FLYING, SOF_3D|SOF_LOOP);
+  m_soEffect.Set3DParameters(30.0f, 5.0f, 1.0f, 1.0f);
+  PlaySound(m_soEffect, SOUND_SLIME_FLYING, SOF_3D|SOF_LOOP);
   // start moving
   LaunchAsPropelledProjectile(FLOAT3D(0.0f, 0.0f, -30.0f), (CMovableEntity*)(CEntity*)m_penLauncher);
   SetDesiredRotation(ANGLE3D(0, 0, 0));
@@ -4505,7 +4735,7 @@ void AlbinoProjectile(void) {
   m_fWaitAfterDeath = 0.0f;
   m_pmtMove = PMT_GUIDED;
   m_fGuidedMaxSpeedFactor = 30.0f;
-  m_aRotateSpeed = 80.0f;
+  m_aRotateSpeed = 20.0f;
   SetHealth(15.0f);
 };
 
@@ -4655,7 +4885,7 @@ void SpiderBigImpact(void) {
 
   // shock wave
   ese.colMuliplier = C_GREEN|CT_OPAQUE;
-  ese.betType = BET_CANNON;
+  ese.betType = BET_PLASMA_EXPLOSION;
   ese.vStretch = FLOAT3D(2,2,2);
   SpawnEffect(GetPlacement(), ese);
 
@@ -5160,9 +5390,17 @@ void HydroExplosion(void)
 
   // explosion
   ESpawnEffect ese;
-  ese.colMuliplier = C_BLUE|CT_OPAQUE;
+  FLOAT3D vPoint;
+  FLOATplane3D vPlaneNormal;
+  FLOAT fDistanceToEdge;
+  ese.colMuliplier = C_WHITE|CT_OPAQUE;
   ese.betType = BET_HYDROGUN;
   ese.vStretch = FLOAT3D(0.4,0.4,0.4);
+  SpawnEffect(GetPlacement(), ese);
+
+  // explosion smoke
+  ese.betType = BET_EXPLOSION_SMOKE;
+  ese.vStretch = FLOAT3D(0.5,0.5,0.5);
   SpawnEffect(GetPlacement(), ese);
 
   // particles
@@ -5177,6 +5415,22 @@ void HydroExplosion(void)
   eSpawnSpray.vDirection = en_vCurrentTranslationAbsolute/64.0f;
   eSpawnSpray.penOwner = this;
   penSpray->Initialize( eSpawnSpray);
+
+  // explosion smoke
+  ese.betType = BET_EXPLOSION_SMOKE;
+  ese.vStretch = FLOAT3D(0.5,0.5,0.5);
+  SpawnEffect(GetPlacement(), ese);
+
+  // on plane
+  if (GetNearestPolygon(vPoint, vPlaneNormal, fDistanceToEdge)) {
+    if ((vPoint-GetPlacement().pl_PositionVector).Length() < 3.5f) {
+      // stain
+      ese.betType = BET_EXPLOSIONSTAIN;
+      ese.vNormal = FLOAT3D(vPlaneNormal);
+      ese.vStretch = FLOAT3D(0.5f,0.5f,0.5f);
+      SpawnEffect(CPlacement3D(vPoint, ANGLE3D(0, 0, 0)), ese);
+    }
+  }
 }
 
 void MamutmanBullet(void) {
@@ -5318,7 +5572,7 @@ void GruntBombExplosion(void) {
 
   // explosion
   ese.colMuliplier = C_GREEN|CT_OPAQUE;
-  ese.betType = BET_CANNON;
+  ese.betType = BET_PLASMA_EXPLOSION;
   ese.vStretch = FLOAT3D(0.75,0.75,0.75);
   SpawnEffect(GetPlacement(), ese);
   // spawn sound event in range
@@ -6446,7 +6700,7 @@ procedures:
       case PRT_CATMAN_BOMB: CyborgBombExplosion(); break;
       case PRT_PLASMABOLT: PlasmaBoltExplosion(); break;
       case PRT_LASER_GREEN: PlayerLaserWave(); break;
-      case PRT_ROCKET_SEEKING: GuffyProjectileExplosion(); break;
+      case PRT_ROCKET_SEEKING: PlayerRocketExplosion(); break;
       case PRT_NEPTUNE: MantamanProjectileExplosion(); break;
       case PRT_GRENADE_CLUSTER: ClusterGrenadeExplosion(); break;
       case PRT_GRENADE_NEW: PlayerGrenadeExplosion(); break;

@@ -21,6 +21,7 @@
 // Names of collision boxes
 #define FISHMAN2_COLLISION_BOX_GROUND 0
 #define FISHMAN2_COLLISION_BOX_SWIM 1
+#define FISHMAN2_COLLISION_BOX_DEATH 2
 
 // Attaching position names
 #define FISHMAN2_ATTACHMENT_SPEAR 0

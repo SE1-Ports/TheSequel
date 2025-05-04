@@ -12,7 +12,8 @@
 // Patch names
 
 // Names of collision boxes
-#define CYCLOP_COLLISION_BOX_PART_NAME 0
+#define CYCLOP_COLLISION_BOX_DEFAULT 0
+#define CYCLOP_COLLISION_BOX_DEATH 1
 
 // Attaching position names
 

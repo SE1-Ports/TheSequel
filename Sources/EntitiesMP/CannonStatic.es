@@ -11,6 +11,14 @@ uses "EntitiesMP/SoundHolder";
 uses "EntitiesMP/BloodSpray";
 uses "EntitiesMP/CannonBall";
 
+enum CannonSType {
+  0 CT_NORMAL            "Normal",
+  1 CT_NUKE1             "Nuke (alpha)",
+  2 CT_NUKE2             "Nuke (final)",
+  3 CT_WEAK              "Weak",
+  4 CT_WEAK2             "Weaker",
+};
+
 %{
 #define CANNONS_SIZE 2.0f
   
@@ -50,6 +58,8 @@ properties:
 
  40 FLOAT3D m_aBeginMuzzleRotation = ANGLE3D(0.0f, 0.0f, 0.0f),
  41 FLOAT3D m_aEndMuzzleRotation = ANGLE3D(0.0f, 0.0f, 0.0f),
+
+ 45  enum CannonSType m_ctType                "Cannonball Type" 'C' = CT_NORMAL,
 
 components:
   1 class CLASS_BASE          "Classes\\EnemyBase.ecl",
@@ -410,8 +420,7 @@ procedures:
     EntityInfo *peiTarget = (EntityInfo*) (m_penEnemy->GetEntityInfo());
     CalculateAngularLaunchParams( vShooting, peiTarget->vTargetCenter[1]-6.0f/3.0f, m_vTarget, 
       vSpeedDest, m_fDesiredMuzzlePitch , fLaunchSpeed, fRelativeHdg);
-
-    // target enemy body
+   if (m_ctType==CT_NORMAL) {
     FLOAT3D vShootTarget;
     GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
     // launch
@@ -424,6 +433,63 @@ procedures:
     eLaunch.cbtType = CBT_IRON;
     eLaunch.fSize = 1.0f;
     penBall->Initialize(eLaunch);
+	}
+   if (m_ctType==CT_NUKE1) {
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+    // launch
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, m_vFiringPos, ANGLE3D( fRelativeHdg, m_fDesiredMuzzlePitch, 0));
+    CEntityPointer penBall = CreateEntity(pl, CLASS_CANNONBALL);
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = fLaunchSpeed;
+    eLaunch.cbtType = CBT_NUKE;
+    eLaunch.fSize = 1.0f;
+    penBall->Initialize(eLaunch);
+	}
+   if (m_ctType==CT_NUKE2) {
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+    // launch
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, m_vFiringPos, ANGLE3D( fRelativeHdg, m_fDesiredMuzzlePitch, 0));
+    CEntityPointer penBall = CreateEntity(pl, CLASS_CANNONBALL);
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = fLaunchSpeed;
+    eLaunch.cbtType = CBT_NUKE2;
+    eLaunch.fSize = 1.0f;
+    penBall->Initialize(eLaunch);
+	}
+   if (m_ctType==CT_WEAK) {
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+    // launch
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, m_vFiringPos, ANGLE3D( fRelativeHdg, m_fDesiredMuzzlePitch, 0));
+    CEntityPointer penBall = CreateEntity(pl, CLASS_CANNONBALL);
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = fLaunchSpeed;
+    eLaunch.cbtType = CBT_WEAK;
+    eLaunch.fSize = 1.0f;
+    penBall->Initialize(eLaunch);
+	}
+   if (m_ctType==CT_WEAK2) {
+    FLOAT3D vShootTarget;
+    GetEntityInfoPosition(m_penEnemy, peiTarget->vTargetCenter, vShootTarget);
+    // launch
+    CPlacement3D pl;
+    PrepareFreeFlyingProjectile(pl, vShootTarget, m_vFiringPos, ANGLE3D( fRelativeHdg, m_fDesiredMuzzlePitch, 0));
+    CEntityPointer penBall = CreateEntity(pl, CLASS_CANNONBALL);
+    ELaunchCannonBall eLaunch;
+    eLaunch.penLauncher = this;
+    eLaunch.fLaunchPower = fLaunchSpeed;
+    eLaunch.cbtType = CBT_WEAK2;
+    eLaunch.fSize = 1.0f;
+    penBall->Initialize(eLaunch);
+	}
    
     return EReturn();
   };

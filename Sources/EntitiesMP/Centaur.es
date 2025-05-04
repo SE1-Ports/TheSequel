@@ -382,12 +382,8 @@ procedures:
       StartModelAnim(CENTAUR_ANIM_MELEE, 0);
       DeactivateRunningSound();
       m_bHornHit = FALSE;
-      autowait(0.4f);
+      autowait(0.45f);
       PlaySound(m_soSound, SOUND_KICKHORN, SOF_3D);
-      if (CalcDist(m_penEnemy) < HIT_DISTANCE) { m_bHornHit = TRUE; }
-      autowait(0.1f);
-      if (CalcDist(m_penEnemy) < HIT_DISTANCE) { m_bHornHit = TRUE; }
-      autowait(0.1f);
       if (CalcDist(m_penEnemy) < HIT_DISTANCE) { m_bHornHit = TRUE; }
       if (m_bHornHit) {
         FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
@@ -400,8 +396,7 @@ procedures:
       }
     }
 
-    // run to enemy
-    m_fShootTime = _pTimer->CurrentTick() + 0.5f;
+    autowait(0.45f);
     return EReturn();
   };
 
@@ -456,7 +451,7 @@ procedures:
     // setup attack distances
     m_fAttackDistance = 300.0f;
     m_fCloseDistance = 7.0f;
-    m_fStopDistance = 0.0f;
+    m_fStopDistance = 6.0f;
     m_fAttackFireTime = 3.0f;
     m_fCloseFireTime = 2.0f;
     m_fIgnoreRange = 1000.0f;

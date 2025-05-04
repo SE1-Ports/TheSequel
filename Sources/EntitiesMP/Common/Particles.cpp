@@ -111,6 +111,8 @@ static CTextureObject _toBulletFlesh;
 static CTextureObject _toBulletMetal;
 static CTextureObject _toBulletEnergy;
 static CTextureObject _toPlasmaProjectileSpray;
+static CTextureObject _toAlbinoProjectileTrailGradient;
+static CTextureObject _toLightningTrail;
 
 static CTextureObject _toBlueLaser;
 static CTextureObject _toYellowLaser;
@@ -285,6 +287,8 @@ void InitParticles(void)
     _toBulletMetal.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayMetal.tex"));
     _toBulletEnergy.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\BulletSprayEnergy.tex"));
     _toPlasmaProjectileSpray.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\PlasmaProjectileSpill.tex"));
+    _toLightningTrail.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\Lightning_01.tex"));
+    _toAlbinoProjectileTrailGradient.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\AlbinoProjectileTrailGradient.tex"));
 	
     _toBlueLaser.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\LaserBlue.tex"));
     _toGreenLaser.SetData_t(CTFILENAME("TexturesF\\Effects\\Particles\\LaserGreen.tex"));
@@ -313,6 +317,7 @@ void InitParticles(void)
     ((CTextureData*)_toSummonerDisappearGradient      .GetData())->Force(TEX_STATIC|TEX_CONSTANT);
     ((CTextureData*)_toSummonerStaffGradient          .GetData())->Force(TEX_STATIC|TEX_CONSTANT);
     ((CTextureData*)_toFireworks01Gradient            .GetData())->Force(TEX_STATIC|TEX_CONSTANT);
+    ((CTextureData*)_toAlbinoProjectileTrailGradient.GetData())->Force(TEX_STATIC|TEX_CONSTANT);
   }
   catch(char *strError)
   {
@@ -429,6 +434,8 @@ void CloseParticles(void)
   _toBulletMetal.SetData(NULL);
   _toBulletEnergy.SetData(NULL);
   _toPlasmaProjectileSpray.SetData(NULL);
+  _toAlbinoProjectileTrailGradient.SetData(NULL);
+  _toLightningTrail.SetData(NULL);
 }
 
 void SetupParticleTexture(enum ParticleTexture ptTexture)
@@ -1135,6 +1142,68 @@ void Particles_BeastBigProjectileTrail( CEntity *pen, FLOAT fSize, FLOAT fZOffse
     COLOR colStar = pTD->GetTexel( ClampUp(FloatToInt(fT*8192),8191L), 0);
 
     if( fT>BIG_BEAST_PROJECTILE_LINE_PARTICLES)
+    {
+      FLOAT fTimeOld = fT-0.125f;
+      FLOAT3D vOldPos = GET_POS_BIG( fTimeOld);
+      Particle_RenderLine( vOldPos, vPos, 0.6f*fFade, colStar);
+    }
+    else
+    {
+      Particle_RenderSquare( vPos, 0.5, fT*360.0f, colStar);
+    }
+  }
+  // all done
+  Particle_Flush();
+}
+
+#define ALBINO_PROJECTILE_TRAIL_POSITIONS 32
+#define ALBINO_BIG_PROJECTILE_TRAIL_INTERPOSITIONS 1
+void Particles_AlbinoProjectileTrail_Prepare(CEntity *pen)
+{
+  pen->GetLastPositions(ALBINO_PROJECTILE_TRAIL_POSITIONS);
+}
+
+#define ALBINO_PROJECTILE_LINE_PARTICLES 1.0f
+#define ALBINO_PROJECTILE_FADE_OUT 0.4f
+#define ALBINO_PROJECTILE_TOTAL_TIME 1.6f
+void Particles_AlbinoProjectileTrail( CEntity *pen, FLOAT fSize, FLOAT fZOffset, FLOAT fYOffset, INDEX ctParticles)
+{
+  ASSERT( ctParticles<=CT_MAX_PARTICLES_TABLE);
+  FLOAT fNow = _pTimer->GetLerpedCurrentTick();
+
+  Particle_PrepareTexture(&_toLightningTrail, PBT_ADD);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+
+  CTextureData *pTD = (CTextureData *) _toAlbinoProjectileTrailGradient.GetData();
+
+  CPlacement3D pl = pen->GetLerpedPlacement();
+  FLOATmatrix3D m;
+  MakeRotationMatrixFast(m, pl.pl_OrientationAngle);
+  FLOAT3D vX( m(1,1), m(2,1), m(3,1));
+  FLOAT3D vY( -m(1,3), -m(2,3), -m(3,3));
+  FLOAT3D vZ( m(1,2), m(2,2), m(3,2));
+  FLOAT3D vCenter = pl.pl_PositionVector+vY*fZOffset+vZ*fYOffset;
+
+  for( INDEX iStar=0; iStar<ctParticles; iStar++)
+  {
+    FLOAT fT = fNow+afTimeOffsets[iStar];
+    // apply time strech
+    fT *= 1/ALBINO_PROJECTILE_TOTAL_TIME;
+    // get fraction part
+    fT = fT-int(fT);
+    FLOAT fFade;
+    if (fT>(1.0f-ALBINO_PROJECTILE_FADE_OUT)) fFade=(1-fT)*(1/ALBINO_PROJECTILE_FADE_OUT);
+    else fFade=1.0f;
+
+#define GET_POS_BIG( time) vCenter + \
+      vX*(afStarsPositions[iStar][0]*time*fSize*3.0) +\
+      vY*(time*time*-15.0f+(afStarsPositions[iStar][1]*2+6.0f)*1.2f*time) +\
+      vZ*(afStarsPositions[iStar][2]*time*fSize*3.0);
+
+    FLOAT3D vPos = GET_POS_BIG( fT);
+    COLOR colStar = pTD->GetTexel( ClampUp(FloatToInt(fT*8192),8191L), 0);
+
+    if( fT>ALBINO_PROJECTILE_LINE_PARTICLES)
     {
       FLOAT fTimeOld = fT-0.125f;
       FLOAT3D vOldPos = GET_POS_BIG( fTimeOld);
@@ -5803,6 +5872,82 @@ void Particles_SummonerDisappear( CEntity *pen, FLOAT tmStart)
   Particle_Flush();
 }
 
+
+#define SD_LIFE 4.0f
+void Particles_DemonWakeUp( CEntity *pen, FLOAT tmStart)
+{
+  FLOAT fMipFactor = Particle_GetMipFactor();
+  BOOL bVisible = pen->en_pmoModelObject->IsModelVisible( fMipFactor);
+  if( !bVisible) return;
+
+  Particle_PrepareTexture(&_toGrowingTwirl, PBT_ADDALPHA);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+
+  CTextureData *pTD = (CTextureData *) _toSummonerDisappearGradient.GetData();
+  FLOAT apol[256];
+  ULONG *pcol=pTD->GetRowPointer(0); // flare rnd color
+  ULONG *pcolAdder=pTD->GetRowPointer(1);
+  pTD->FetchRow( 0, apol);
+
+  FLOAT tmNow = _pTimer->GetLerpedCurrentTick();
+  FLOAT fLiving = tmNow-tmStart;
+  if( fLiving>SD_LIFE) return;
+  FLOAT fRatio=fLiving*1/SD_LIFE;
+  fRatio=fRatio-int(fRatio);
+  INDEX iIndex=INDEX(fRatio*255.0f);
+  FLOAT fG=10.0f*SD_LIFE*5.0f;
+  FLOAT fSpeed=0.0f;
+  FLOAT fGValue=0.0f;
+  FLOAT fExplodeRatio=0.2f;
+  if( fRatio>fExplodeRatio)
+  {
+    fSpeed=(0.351f+0.0506f*log(fRatio-fExplodeRatio));
+    fGValue=fG/2.0f*(fRatio-fExplodeRatio)*(fRatio-fExplodeRatio);
+  }
+  FLOAT fOut=fSpeed*5.0f;
+  // fill array with absolute vertices of entity's model and its attached models
+  pen->GetModelVerticesAbsolute(avVertices, 0.05f, fMipFactor); 
+
+  // get entity position and orientation
+  const FLOATmatrix3D &m = pen->GetRotationMatrix();
+  FLOAT3D vX( m(1,1), m(2,1), m(3,1));
+  FLOAT3D vY( m(1,2), m(2,2), m(3,2));
+  FLOAT3D vZ( m(1,3), m(2,3), m(3,3));
+  FLOAT3D vCenter = pen->GetLerpedPlacement().pl_PositionVector;
+  FLOAT3D vG=-vY;
+
+  // calculate color factor (for fade in/out)
+  FLOAT fColorFactor=CalculateRatio(tmNow, tmStart, tmStart+SD_LIFE, 0.25f, 0.1f);
+  FLOAT fSizeStretcher=CalculateRatio(tmNow, tmStart, tmStart+SD_LIFE, 0.25f, 0.1f);
+  INDEX ctVtx = avVertices.Count();
+  for( INDEX iVtx=0; iVtx<ctVtx; iVtx+=1)
+  {
+    INDEX iRnd=iVtx%CT_MAX_PARTICLES_TABLE;
+    FLOAT fRndPulseOffset=afStarsPositions[iRnd][1];
+    FLOAT fRndPulseSpeed=afStarsPositions[iRnd][2]*128.0f;
+    FLOAT fRndSize=afStarsPositions[iRnd][3];
+
+    FLOAT fPulser=1.0f-(fRatio*(1.0f+(Sin(fRatio*360.0f*fRndPulseSpeed+fRndPulseOffset*360.0f)))/2.0f);
+    UBYTE ubColor = UBYTE(CT_OPAQUE*fColorFactor*fPulser);
+    COLOR col=(ByteSwap(pcol[iRnd%255])&0xFFFFFF00)|ubColor;
+    COLOR colLighter=ByteSwap(pcolAdder[iIndex])&0xFFFFFF00;
+    col=AddColors(col,colLighter);
+
+    FLOAT3D vPos = avVertices[iVtx];
+    vPos-=vCenter;
+    FLOAT fX = (vPos%vX)*(1.0f+fOut);
+    FLOAT fY = (vPos%vY)*(1.0f+fOut/10.0f);
+    FLOAT fZ = (vPos%vZ)*(1.0f+fOut);
+    vPos = vX*fX+vY*fY+vZ*fZ+vCenter+vG*fGValue;
+    Particle_RenderSquare( vPos, (1.0f+fRndSize)*fSizeStretcher, 0, col);
+  }
+
+  // flush array
+  avVertices.PopAll();
+  // all done
+  Particle_Flush();
+}
+
 void Particles_DisappearDust( CEntity *pen, FLOAT fStretch, FLOAT fStartTime)
 {
 }
@@ -5843,6 +5988,52 @@ void Particles_GrowingSwirl( CEntity *pen, FLOAT fStretch, FLOAT fStartTime)
       vX*(fR*Sin(fAng))+
       vZ*(fR*Cos(fAng));
     FLOAT fSize=(1.0f+fT)*4.0f;
+    COLOR col = RGBToColor( 23, 112, 174);
+    UBYTE ubA=UBYTE(CT_OPAQUE*fFade*fFadeFX);
+    COLOR colCombined=(col&0xFFFFFF00)|ubA;
+    FLOAT fRot=fT*360.0f+afTimeOffsets[i]*360.0f;
+    Particle_RenderSquare( vPos, fSize, fRot, colCombined);
+  }
+  // all done
+  Particle_Flush();
+}
+
+#define TM_MANTAMAN_FX_LIFE 2.0f
+#define TM_MANTAMAN_TOTAL_LIFE 1.0f
+#define TM_MANTAMAN_LAUNCH 0.05f
+void Particles_MantaAttack( CEntity *pen, FLOAT fStretch, FLOAT fStartTime)
+{
+  Particle_PrepareTexture(&_toGrowingTwirl, PBT_ADDALPHA);
+  Particle_SetTexturePart( 512, 512, 0, 0);
+
+  FLOAT tmNow = _pTimer->GetLerpedCurrentTick();
+  FLOAT fFadeFX=CalculateRatio(tmNow, fStartTime, fStartTime+TM_MANTAMAN_FX_LIFE, 0.1f, 0.2f);
+  const FLOATmatrix3D &m = pen->GetRotationMatrix();
+  FLOAT3D vX( m(1,1), m(2,1), m(3,1));
+  FLOAT3D vY( m(1,2), m(2,2), m(3,2));
+  FLOAT3D vZ( m(1,3), m(2,3), m(3,3));
+  vX=vX*fStretch;
+  vY=vY*fStretch;
+  vZ=vZ*fStretch;
+  FLOAT3D vCenter = pen->GetLerpedPlacement().pl_PositionVector+vY*4.0f;
+  INDEX ctStars=TM_MANTAMAN_FX_LIFE/TM_MANTAMAN_LAUNCH;
+  for(INDEX i=0; i<ctStars; i++)
+  {
+    INDEX iRnd =(pen->en_ulID+i)%CT_MAX_PARTICLES_TABLE;
+    FLOAT fBirth = fStartTime+i*TM_MANTAMAN_LAUNCH-2.0f;//+afTimeOffsets[i]*TM_SWIRL_SPARK_LAUNCH/0.25f;
+    FLOAT fT = tmNow-fBirth;
+    FLOAT fFade=CalculateRatio(fT, 0, TM_MANTAMAN_TOTAL_LIFE, 0.1f, 0.2f);
+    if( fFade==0.0f) continue;
+    // apply time strech
+    fT *= 1/TM_MANTAMAN_TOTAL_LIFE;
+    // get fraction part
+    fT = fT-int(fT);
+    FLOAT fR=fT*64.0f;
+    FLOAT fAng=fT*600.0f;
+    FLOAT3D vPos=vCenter+
+      vX*(fR*Sin(fAng))+
+      vZ*(fR*Cos(fAng));
+    FLOAT fSize=(1.0f+fT)*0.5f;
     COLOR col = RGBToColor( 23, 112, 174);
     UBYTE ubA=UBYTE(CT_OPAQUE*fFade*fFadeFX);
     COLOR colCombined=(col&0xFFFFFF00)|ubA;
