@@ -1,9 +1,9 @@
 // Animation names
-#define FLOATER_ANIM_FIRE 0
-#define FLOATER_ANIM_MELEE 1
-#define FLOATER_ANIM_IDLE 2
-#define FLOATER_ANIM_RUN 3
-#define FLOATER_ANIM_WALK 4
+#define FLOATER_ANIM_Fire 0
+#define FLOATER_ANIM_Melee 1
+#define FLOATER_ANIM_Idle 2
+#define FLOATER_ANIM_Run 3
+#define FLOATER_ANIM_Walk 4
 
 // Color names
 

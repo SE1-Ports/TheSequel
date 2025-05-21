@@ -9,8 +9,7 @@
 #include "Models/Weapons/MiniGun/MiniGunItem.h"
 #include "Models/Weapons/GrenadeLauncher/GrenadeLauncherItem.h"
 #include "ModelsF/Weapons/RocketLauncher/RocketLauncherItem.h"
-#include "ModelsF/Weapons/Sniper/SniperItem.h"
-#include "ModelsF/Weapons/Sniper/Body.h"
+#include "ModelsF/Weapons/Crossbow/CrossbowItem.h"
 #include "ModelsMP/Weapons/Flamer/FlamerItem.h"
 #include "ModelsMP/Weapons/Chainsaw/ChainsawItem.h"
 #include "ModelsMP/Weapons/Chainsaw/BladeForPlayer.h"
@@ -132,9 +131,15 @@ components:
 105 texture TEXTURE_GL_MOVINGPART       "Models\\Weapons\\GrenadeLauncher\\MovingPipe.tex",
 
 // ************** SNIPER **************
-110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Sniper\\SniperItem.mdl",
-111 model   MODEL_SNIPER_BODY           "ModelsF\\Weapons\\Sniper\\Body.mdl",
-112 texture TEXTURE_SNIPER_BODY         "ModelsF\\Weapons\\Sniper\\Body.tex",
+110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Crossbow\\CrossbowItem.mdl",
+111 model   MODEL_SNIPER_BODY1           "ModelsF\\Weapons\\Crossbow\\Bow1.mdl",
+112 texture TEXTURE_SNIPER_BODY1         "ModelsF\\Weapons\\Crossbow\\Bow1.tex",
+113 model   MODEL_SNIPER_BODY2           "ModelsF\\Weapons\\Crossbow\\Bow2.mdl",
+114 texture TEXTURE_SNIPER_BODY2         "ModelsF\\Weapons\\Crossbow\\Bow2.tex",
+115 model   MODEL_SNIPER_SCOPE           "ModelsF\\Weapons\\Crossbow\\Scope.mdl",
+116 texture TEXTURE_SNIPER_SCOPE         "ModelsF\\Weapons\\Crossbow\\Scope.tex",
+117 model   MODEL_SNIPER_STRING           "ModelsF\\Weapons\\Crossbow\\String.mdl",
+118 texture TEXTURE_SNIPER_STRING         "Models\\Weapons\\Hand.tex",
 
 // ************** FLAMER **************
 130 model   MODEL_FLAMER                "ModelsMP\\Weapons\\Flamer\\FlamerItem.mdl",
@@ -371,8 +376,11 @@ functions:
       case WIT_SNIPER:
         m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 10.0f; 
         m_strDescription.PrintF("Sniper");
-        AddItem(MODEL_SNIPER, TEXTURE_SNIPER_BODY, 0, 0, 0);
-        AddItemAttachment(SNIPERITEM_ATTACHMENT_BODY, MODEL_SNIPER_BODY, TEXTURE_SNIPER_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddItem(MODEL_SNIPER, TEXTURE_SNIPER_BODY1, 0, 0, 0);
+        AddItemAttachment(CROSSBOWITEM_ATTACHMENT_BOW1, MODEL_SNIPER_BODY1, TEXTURE_SNIPER_BODY1, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddItemAttachment(CROSSBOWITEM_ATTACHMENT_BOW2, MODEL_SNIPER_BODY2, TEXTURE_SNIPER_BODY2, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddItemAttachment(CROSSBOWITEM_ATTACHMENT_SCOPE, MODEL_SNIPER_SCOPE, TEXTURE_SNIPER_SCOPE, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddItemAttachment(CROSSBOWITEM_ATTACHMENT_STRING, MODEL_SNIPER_STRING, TEXTURE_SNIPER_STRING, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         StretchItem( bDM ? vDMStretch : (FLOAT3D(3.0f, 3.0f, 3.0f)));
         break;
 

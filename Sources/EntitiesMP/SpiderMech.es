@@ -71,7 +71,6 @@ properties:
  20 BOOL m_bSpawned = FALSE,
  21 INDEX m_ctSpawned = 0,
  22 BOOL m_bSpawnEnabled = FALSE,
- 23 INDEX m_bCountAsKill = TRUE,
 
  24 BOOL m_bPredict "Mum prediction" = TRUE,
     

@@ -74,7 +74,6 @@ properties:
  11 BOOL m_bSpawned = FALSE,
  12 INDEX m_ctSpawned = 0,
  13 BOOL m_bSpawnEnabled = FALSE,
- 14 INDEX m_bCountAsKill = TRUE,
 
  15 CSoundObject m_soFeet,            // for running sound
  16 BOOL m_bRunSoundPlaying = FALSE,

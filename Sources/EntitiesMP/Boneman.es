@@ -37,6 +37,9 @@ components:
   2 texture TEXTURE_BONEMAN   "Models\\Enemies\\Boneman\\Boneman.tex",
   3 class   CLASS_PROJECTILE  "Classes\\Projectile.ecl",
   7 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
+  
+  8 model   MODEL_FLARE     "ModelsF\\Enemies\\Boneman\\Flare.mdl",
+  9 texture TEXTURE_FLARE   "Textures\\Effects\\Flares\\03\\Flare06.tex",
 
 // ************** BONEMAN PARTS **************
  10 model     MODEL_BONEMAN_ARM   "ModelsF\\Enemies\\Boneman\\Debris\\Arm.mdl",
@@ -81,6 +84,8 @@ functions:
     PrecacheClass(CLASS_BASIC_EFFECT, BET_BONE_SPLAT_FX);
 
     PrecacheClass(CLASS_PROJECTILE, PRT_BONEMAN_FIRE);
+    PrecacheModel(MODEL_FLARE);
+    PrecacheTexture(TEXTURE_FLARE);
   };
 
   // describe how this enemy killed player
@@ -413,6 +418,8 @@ procedures:
     // set your appearance
     SetModel(MODEL_BONEMAN);
     SetModelMainTexture(TEXTURE_BONEMAN);
+    AddAttachment(BONEMAN_ATTACHMENT_FLARE1, MODEL_FLARE, TEXTURE_FLARE);
+    AddAttachment(BONEMAN_ATTACHMENT_FLARE2, MODEL_FLARE, TEXTURE_FLARE);
     StandingAnim();
     m_sptType = SPT_BONES;
     // setup moving speed

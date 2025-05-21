@@ -41,7 +41,7 @@
 #include "Models/Weapons/GrenadeLauncher/GrenadeLauncherItem.h"
 #include "Models/Weapons/Laser/LaserItem.h"
 #include "Models/Weapons/Cannon/Cannon.h"
-#include "ModelsF/Weapons/Sniper/SniperItem.h"
+#include "ModelsF/Weapons/Crossbow/CrossbowItem.h"
 #include "ModelsMP/Weapons/ChainSaw/ChainSawItem.h"
 #include "ModelsMP/Weapons/ChainSaw/BladeForPlayer.h"
 #include "ModelsMP/Weapons/Flamer/FlamerItem.h"
@@ -386,6 +386,14 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("Models\\Enemies\\Boneman\\Boneman.mdl"));
     pmo->PlayAnim(BONEMAN_ANIM_WALKCOMPUTER, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("Models\\Enemies\\Boneman\\Boneman.tex"));
+
+    AddAttachment_t(pmo, BONEMAN_ATTACHMENT_FLARE1, 
+      CTFILENAME("ModelsF\\Enemies\\Boneman\\Flare.mdl"), 0,
+      CTFILENAME("Textures\\Effects\\Flares\\03\\Flare06.tex"));
+    AddAttachment_t(pmo, BONEMAN_ATTACHMENT_FLARE2, 
+      CTFILENAME("ModelsF\\Enemies\\Boneman\\Flare.mdl"), 0,
+      CTFILENAME("Textures\\Effects\\Flares\\03\\Flare06.tex"));
+
     _plModel = CPlacement3D(FLOAT3D(0,-1.0f,-3.0), ANGLE3D(210,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
     _bHasFloor = TRUE;
@@ -1278,7 +1286,7 @@ extern void SetupCompModel_t(const CTString &strName)
 
   } else if (strName=="Floater") {
     pmo->SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Floater\\Floater.mdl"));
-    pmo->PlayAnim(FLOATER_ANIM_WALK, AOF_LOOPING);
+    pmo->PlayAnim(FLOATER_ANIM_Walk, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\SS2\\Floater\\Floater.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,0.0f,-2.0), ANGLE3D(160,0,0));
     pmo->StretchModel(FLOAT3D(1,1,1));
@@ -1850,6 +1858,14 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Demon\\Demon.mdl"));
     pmo->PlayAnim(DEMON_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\Demon.tex"));
+
+    AddAttachment_t(pmo, DEMON_ATTACHMENT_FLARE1, 
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.tex"));
+    AddAttachment_t(pmo, DEMON_ATTACHMENT_FLARE2, 
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.tex"));
+
     _plModel = CPlacement3D(FLOAT3D(0.0f, -1.25f, -2.25f), ANGLE3D(160.0f, 0.0f, 0.0f));
     
     pmo->StretchModel(FLOAT3D(1.4f, 1.4f, 1.4f));
@@ -1860,6 +1876,14 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Demon\\Demon.mdl"));
     pmo->PlayAnim(DEMON_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("AREP\\Models\\DemonX\\DemonBlue.tex"));
+
+    AddAttachment_t(pmo, DEMON_ATTACHMENT_FLARE1, 
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.tex"));
+    AddAttachment_t(pmo, DEMON_ATTACHMENT_FLARE2, 
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.tex"));
+
     _plModel = CPlacement3D(FLOAT3D(0.0f, -2.5f, -4.5f), ANGLE3D(160.0f, 0.0f, 0.0f));
     
     pmo->StretchModel(FLOAT3D(2.6f, 2.6f, 2.6f));
@@ -1870,6 +1894,14 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Demon\\Demon.mdl"));
     pmo->PlayAnim(DEMON_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\DemonPurple.tex"));
+
+    AddAttachment_t(pmo, DEMON_ATTACHMENT_FLARE1, 
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.tex"));
+    AddAttachment_t(pmo, DEMON_ATTACHMENT_FLARE2, 
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.tex"));
+
     _plModel = CPlacement3D(FLOAT3D(0.0f, -3.25f, -4.75f), ANGLE3D(160.0f, 0.0f, 0.0f));
     
     pmo->StretchModel(FLOAT3D(3.2f, 3.2f, 3.2f));
@@ -1880,6 +1912,14 @@ extern void SetupCompModel_t(const CTString &strName)
     pmo->SetData_t(CTFILENAME("ModelsF\\Enemies\\Demon\\Demon.mdl"));
     pmo->PlayAnim(DEMON_ANIM_IDLE, AOF_LOOPING);
     pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsMP\\Enemies\\Demon\\DemonYellow.tex"));
+
+    AddAttachment_t(pmo, DEMON_ATTACHMENT_FLARE1, 
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.tex"));
+    AddAttachment_t(pmo, DEMON_ATTACHMENT_FLARE2, 
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.mdl"), 0,
+      CTFILENAME("ModelsF\\Enemies\\Demon\\Flare.tex"));
+
     _plModel = CPlacement3D(FLOAT3D(0.0f, -1.9f, -3.35f), ANGLE3D(160.0f, 0.0f, 0.0f));
     
     pmo->StretchModel(FLOAT3D(2.0f, 2.0f, 2.0f));
@@ -2233,16 +2273,28 @@ extern void SetupCompModel_t(const CTString &strName)
     _fFloorY = -0.5f;
 
   } else if (strName=="Sniper") {
-    pmo->SetData_t(CTFILENAME("ModelsF\\Weapons\\Sniper\\SniperItem.mdl"));
-    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Weapons\\Sniper\\Body.tex"));
+    pmo->SetData_t(CTFILENAME("ModelsF\\Weapons\\Crossbow\\CrossbowItem.mdl"));
+    pmo->mo_toTexture.SetData_t(CTFILENAME("ModelsF\\Weapons\\Crossbow\\Bow1.tex"));
     _plModel = CPlacement3D(FLOAT3D(0,-0.4f,-4.0f), ANGLE3D(0,10,0));
     _aRotation = ANGLE3D(100,0,0);
     _fFOV = 50.0f;
     _vLightDir = FLOAT3D( -0.1f, -0.2f, -0.2f);  
 
-    AddAttachment_t(pmo, SNIPERITEM_ATTACHMENT_BODY, 
-      CTFILENAME("ModelsF\\Weapons\\Sniper\\Body.mdl"), 0,
-      CTFILENAME("ModelsF\\Weapons\\Sniper\\Body.tex"),
+    AddAttachment_t(pmo, CROSSBOWITEM_ATTACHMENT_BOW1, 
+      CTFILENAME("ModelsF\\Weapons\\Crossbow\\Bow1.mdl"), 0,
+      CTFILENAME("ModelsF\\Weapons\\Crossbow\\Bow1.tex"),
+      CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
+    AddAttachment_t(pmo, CROSSBOWITEM_ATTACHMENT_BOW2, 
+      CTFILENAME("ModelsF\\Weapons\\Crossbow\\Bow2.mdl"), 0,
+      CTFILENAME("ModelsF\\Weapons\\Crossbow\\Bow2.tex"),
+      CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
+    AddAttachment_t(pmo, CROSSBOWITEM_ATTACHMENT_SCOPE, 
+      CTFILENAME("ModelsF\\Weapons\\Crossbow\\Scope.mdl"), 0,
+      CTFILENAME("ModelsF\\Weapons\\Crossbow\\Scope.tex"),
+      CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
+    AddAttachment_t(pmo, CROSSBOWITEM_ATTACHMENT_STRING, 
+      CTFILENAME("ModelsF\\Weapons\\Crossbow\\String.mdl"), 0,
+      CTFILENAME("Models\\Weapons\\Hand.tex"),
       CTFILENAME("Models\\SpecularTextures\\Medium.tex"));
     pmo->StretchModel(FLOAT3D(1.5,1.5,1.5));
     _bHasFloor = TRUE;

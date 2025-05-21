@@ -87,7 +87,6 @@ properties:
  11 INDEX m_ctSpawned = 0,
  12 FLOAT m_fSpawnDamage = 1e6f,
  13 BOOL m_bSpawnEnabled = FALSE,
- 14 INDEX m_bCountAsKill = TRUE,
 
  23 CEntityPointer m_penWoundTarget "Wound target",
  

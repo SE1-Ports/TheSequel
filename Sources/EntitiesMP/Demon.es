@@ -2,7 +2,7 @@
 
 %{
 #include "StdH.h"
-#include "ModelsMP/Enemies/Demon/Demon.h"
+#include "ModelsF/Enemies/Demon/Demon.h"
 #include "Models/Enemies/Elementals/Twister.h"
 %}
 
@@ -18,6 +18,12 @@ enum DemonType {
   3 DE_SUM            "Summoner",       // summoner
 };
 
+enum StatueAnim {
+  0 STANIM_CROUCH          "Gargoyle",
+  1 STANIM_STAND           "Standing",
+  2 STANIM_RUN             "RunPose",
+};
+
 
 %{
 #define REMINDER_DEATTACH_FIREBALL 666
@@ -30,6 +36,7 @@ FLOAT3D vFireballXLaunchPos = (FLOAT3D(0.06f, 2.6f, 0.15f)*DEMON_STRETCH);
 FLOAT3D vTornadoXLaunchPos = (FLOAT3D(0.06f, 2.6f, 0.15f)*DEMONSTORM_STRETCH);
 FLOAT3D vSpellXLaunchPos = (FLOAT3D(0.06f, 2.6f, 0.15f)*DEMONARCH_STRETCH);
 FLOAT3D vSumXLaunchPos = (FLOAT3D(0.06f, 1.6f, 0.15f)*DEMONSUM_STRETCH);
+FLOAT3D vMeleeFXPos = FLOAT3D(0.0f, 0.5f, -1.6f);
 #define TEMP_PER_GROUP 3  
 static _tmLastStandingAnim =0.0f;  
 #define SPELL_HIT   FLOAT3D(0.0f, 1.0f, 0.0f)
@@ -62,6 +69,15 @@ properties:
  14 CEntityPointer m_penSpawn3  "Template 3",
  
  15 INDEX   m_fgibTexture = TEXTURE_DEMON,
+ 
+ 16 enum StatueAnim m_StAnim     "Statue pose" 'P' = STANIM_CROUCH,
+ 17 CEntityPointer m_penWakeTarget "Wake target" 'W',
+ 18 enum EventEType m_eetWakeType  "Wake event type" 'E' = EET_TRIGGER, // death event type
+ 20 FLOAT m_tmTemp = 0,
+
+ 21 FLOAT m_fSize = 1.0f,
+ 
+ 22 FLOAT m_tmParticlesDisappearStart=-1e6,
 
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
@@ -70,7 +86,7 @@ components:
   3 class   CLASS_TWISTER       "Classes\\Twister.ecl",
   4 class   CLASS_SPAWNER_PROJECTILE "Classes\\SpawnerProjectile.ecl",
 
- 10 model   MODEL_DEMON         "ModelsMP\\Enemies\\Demon\\\\Demon.mdl",
+ 10 model   MODEL_DEMON         "ModelsF\\Enemies\\Demon\\\\Demon.mdl",
  11 texture TEXTURE_DEMON       "ModelsMP\\Enemies\\Demon\\Demon.tex",
  12 texture TEXTURE_STATUE      "ModelsMP\\Gothic\\DemonStatue\\Demon.tex",
  13 texture TEXTURE_STORM       "AREP\\Models\\DemonX\\DemonBlue.tex",
@@ -86,6 +102,9 @@ components:
 
  33 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  34 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
+  
+  8 model   MODEL_FLARE     "ModelsF\\Enemies\\Demon\\Flare.mdl",
+  9 texture TEXTURE_FLARE   "ModelsF\\Enemies\\Demon\\Flare.tex",
 
  // ************** SOUNDS **************
  50 sound   SOUND_IDLE      "ModelsMP\\Enemies\\Demon\\Sounds\\Idle.wav",
@@ -96,6 +115,9 @@ components:
  58 sound   SOUND_TWISTER   "AREP\\Models\\DemonX\\Sounds\\Twister.wav",
  59 sound   SOUND_ARCH      "ModelsMP\\Enemies\\Demon\\Sounds\\Arch.wav",
  60 sound   SOUND_SUM      "ModelsMP\\Enemies\\Demon\\Sounds\\Summon.wav",
+
+ 63 sound   SOUND_MELEE      "ModelsF\\Enemies\\Demon\\Sounds\\Melee.wav",
+ 61 sound   SOUND_WAKEUP     "ModelsF\\Enemies\\Demon\\Sounds\\WakeUp.wav",
 
 functions:
  
@@ -173,6 +195,9 @@ functions:
     PrecacheClass(CLASS_PROJECTILE, PRT_BEAST_PROJECTILE);
     PrecacheClass(CLASS_TWISTER);
     PrecacheClass(CLASS_PROJECTILE, PRT_METEOR_SIMPLE);
+    PrecacheClass(CLASS_SPAWNER_PROJECTILE, PRT_METEOR_SIMPLE);
+    PrecacheSound(SOUND_MELEE);
+    PrecacheSound(SOUND_WAKEUP);
 	
 	PrecacheModel(MODEL_ARM);
 	PrecacheModel(MODEL_HEAD);
@@ -181,6 +206,8 @@ functions:
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
+    PrecacheModel(MODEL_FLARE);
+    PrecacheTexture(TEXTURE_FLARE);
   };
 
   /* Entity info */
@@ -256,19 +283,14 @@ functions:
   };
 
   void WalkingAnim(void) {
-    /*if(_pTimer->CurrentTick()>=_tmLastStandingAnim-_pTimer->TickQuantum &&
-       _pTimer->CurrentTick()<=_tmLastStandingAnim+_pTimer->TickQuantum)
-    {
-      BREAKPOINT;
-    }*/
-    RunningAnim();
+    StartModelAnim(DEMON_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
   };
 
   void RunningAnim(void) {
     StartModelAnim(DEMON_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
   };
   void RotatingAnim(void) {
-    StartModelAnim(DEMON_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(DEMON_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
   };
 
   // virtual sound functions
@@ -408,6 +430,15 @@ functions:
     
     ((CMovableEntity &)*penSProjectile).LaunchAsFreeProjectile(FLOAT3D(0.0f, 0.0f, -50.0f), (CMovableEntity*)(CEntity*)this);
   }
+
+  void RenderParticles(void)
+  {
+    FLOAT tmNow = _pTimer->CurrentTick();
+    if( tmNow>m_tmParticlesDisappearStart)
+    {
+      Particles_DemonWakeUp(this, m_tmParticlesDisappearStart);
+    }
+   }
 
 
  /************************************************************
@@ -635,16 +666,20 @@ procedures:
     
     if(m_deType == DE_SUM)
     {
-    INDEX iRnd = IRnd()%2;
-    switch(iRnd)
-    {
-    case 0:
+	if (m_penSpawn1==NULL || m_penSpawn2==NULL || m_penSpawn3==NULL) {
+        jump SumMeteor(); }
+	else {
+     INDEX iRnd = IRnd()%2;
+     switch(iRnd)
+     {
+     case 0:
         jump SumMeteor();
         break;
-    case 1:
+     case 1:
         jump SumSum();
         break;
-    }
+     }
+	}
 
   };
     
@@ -652,31 +687,90 @@ procedures:
   };
 
   Hit(EVoid) : CEnemyBase::Hit {
-    // close attack
-    if (CalcDist(m_penEnemy) < 6.0f) {
-      StartModelAnim(DEMON_ANIM_WOUND, 0);
-      autowait(0.45f);
-      PlaySound(m_soSound, SOUND_WOUND, SOF_3D);
-      if (CalcDist(m_penEnemy) < CLOSE_ATTACK_RANGE
-        && IsInPlaneFrustum(m_penEnemy, CosFast(60.0f)))
-      {
-        FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
-        vDirection.Normalize();
-        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 50.0f, FLOAT3D(0, 0, 0), vDirection);
-      }
-      autowait(1.5f);
+
+    StartModelAnim(DEMON_ANIM_MELEE, 0);
+    PlaySound(m_soSound, SOUND_MELEE, SOF_3D);
+
+    autowait(0.2f);
+
+    // spawn particle effect
+    CPlacement3D plFX=GetPlacement();
+    const FLOATmatrix3D &m = GetRotationMatrix();
+    plFX.pl_PositionVector=plFX.pl_PositionVector+vMeleeFXPos*m*m_fSize;
+    ESpawnEffect ese;
+    ese.colMuliplier = C_WHITE|CT_OPAQUE;
+    ese.betType = BET_COLLECT_ENERGY;
+    ese.vStretch = FLOAT3D(1.0f, 1.0f, 1.0f);
+    m_penFireFX = CreateEntity(plFX, CLASS_BASIC_EFFECT);
+    m_penFireFX->Initialize(ese);
+
+    autowait(0.2f);
+
+    FLOAT3D vSource;
+    const FLOATmatrix3D &m = GetRotationMatrix();
+    vSource = GetPlacement().pl_PositionVector +
+    FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+	   {
+       InflictRangeDamage(this, DMT_TELEPORT, 10.0f, vSource+vMeleeFXPos*m*m_fSize, 4.0f, m_fCloseDistance*0.75);
+	   }
+      autowait(0.1f);
+    FLOAT3D vSource;
+    const FLOATmatrix3D &m = GetRotationMatrix();
+    vSource = GetPlacement().pl_PositionVector +
+    FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+	   {
+       InflictRangeDamage(this, DMT_TELEPORT, 10.0f, vSource+vMeleeFXPos*m*m_fSize, 4.0f, m_fCloseDistance*0.75);
+	   }
+      autowait(0.1f);
+    FLOAT3D vSource;
+    const FLOATmatrix3D &m = GetRotationMatrix();
+    vSource = GetPlacement().pl_PositionVector +
+    FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+	   {
+       InflictRangeDamage(this, DMT_TELEPORT, 10.0f, vSource+vMeleeFXPos*m*m_fSize, 4.0f, m_fCloseDistance*0.75);
+	   }
+      autowait(0.1f);
+    FLOAT3D vSource;
+    const FLOATmatrix3D &m = GetRotationMatrix();
+    vSource = GetPlacement().pl_PositionVector +
+    FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+	   {
+       InflictRangeDamage(this, DMT_TELEPORT, 10.0f, vSource+vMeleeFXPos*m*m_fSize, 4.0f, m_fCloseDistance*0.75);
+	   }
+      autowait(0.1f);
+    FLOAT3D vSource;
+    const FLOATmatrix3D &m = GetRotationMatrix();
+    vSource = GetPlacement().pl_PositionVector +
+    FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+	   {
+       InflictRangeDamage(this, DMT_TELEPORT, 10.0f, vSource+vMeleeFXPos*m*m_fSize, 4.0f, m_fCloseDistance*0.75);
+	   }
+      autowait(0.1f);
+    FLOAT3D vSource;
+    const FLOATmatrix3D &m = GetRotationMatrix();
+    vSource = GetPlacement().pl_PositionVector +
+    FLOAT3D(m_penEnemy->en_mRotation(1, 2), m_penEnemy->en_mRotation(2, 2), m_penEnemy->en_mRotation(3, 2));
+	   {
+       InflictRangeDamage(this, DMT_TELEPORT, 10.0f, vSource+vMeleeFXPos*m*m_fSize, 4.0f, m_fCloseDistance*0.75);
+	   }
+      autowait(0.9f);
+
+	  StandingAnim();
+      autowait(0.5f);
       MaybeSwitchToAnotherPlayer();
-    } else {
-      // run to enemy
-      m_fShootTime = _pTimer->CurrentTick() + 0.5f;
-    }
+    
     return EReturn();
   }
 
   Sleep(EVoid)
   {
     // start sleeping anim
-    StartModelAnim(DEMON_ANIM_POSE2, AOF_LOOPING);
+    if(m_StAnim == STANIM_CROUCH) {
+       StartModelAnim(DEMON_ANIM_SLEEP, AOF_LOOPING); }
+    if(m_StAnim == STANIM_STAND) {
+       StartModelAnim(DEMON_ANIM_POSE, AOF_LOOPING); }
+    if(m_StAnim == STANIM_RUN) {
+       StartModelAnim(DEMON_ANIM_RUNPOSE, AOF_LOOPING); }
     SetModelMainTexture(TEXTURE_STATUE);
     m_bInvulnerable = TRUE;
     // repeat
@@ -701,9 +795,21 @@ procedures:
 
   WakeUp(EVoid)
   {
+      PlaySound(m_soSound, SOUND_WAKEUP, SOF_3D);
+
+    // start disappear particles
+    FLOAT tmNow = _pTimer->CurrentTick();
+    m_tmParticlesDisappearStart=tmNow;
+
     // wakeup anim
-    SightSound();
-    m_bInvulnerable = FALSE;
+    if(m_StAnim == STANIM_CROUCH) {
+      StartModelAnim(DEMON_ANIM_WAKEUP, 0);}
+    if(m_StAnim == STANIM_STAND) {
+      StartModelAnim(DEMON_ANIM_WAKEUP2, 0);}
+    if(m_StAnim == STANIM_RUN) {
+      StartModelAnim(DEMON_ANIM_WAKEUP3, 0);}
+
+    autowait(0.8f);
 
     if(m_deType == DE_NORMAL)
     {
@@ -713,9 +819,21 @@ procedures:
     {
     SetModelMainTexture(TEXTURE_STORM);
 	}
+    if(m_deType == DE_ARCH)
+    {
+    SetModelMainTexture(TEXTURE_ARCH);
+	}
+    if(m_deType == DE_SUM)
+    {
+    SetModelMainTexture(TEXTURE_SUM);
+	}
+
+    m_bInvulnerable = FALSE;
 
     // trigger your target
-    SendToTarget(m_penDeathTarget, m_eetDeathType);
+    SendToTarget(m_penWakeTarget, m_eetWakeType);
+
+    autowait(1.7f);
     // proceed with normal functioning
     return EReturn();
   }
@@ -832,19 +950,20 @@ procedures:
     en_fDensity = 1100.0f;
     // set your appearance
     SetModel(MODEL_DEMON);
+    AddAttachment(DEMON_ATTACHMENT_FLARE1, MODEL_FLARE, TEXTURE_FLARE);
+    AddAttachment(DEMON_ATTACHMENT_FLARE2, MODEL_FLARE, TEXTURE_FLARE);
     StandingAnim();
     // setup moving speed
-    m_fWalkSpeed = FRnd()/1.0f + 12.0f;
-    m_aWalkRotateSpeed = AngleDeg(FRnd()*20.0f + 900.0f);
+    m_fWalkSpeed = FRnd()/1.0f + 6.0f;
+    m_aWalkRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
     m_fCloseRunSpeed = FRnd()/1.0f + 13.0f;
     m_aCloseRotateSpeed = AngleDeg(FRnd()*100 + 900.0f);
     // setup attack distances
-    m_fAttackDistance = 650.0f;
+    m_fAttackDistance = 1000.0f;
     m_fStopDistance = 0.0f;
     m_fAttackFireTime = 5.0f;
-    m_fCloseFireTime = 1.0f;
+    m_fCloseFireTime = 3.0f;
     m_fIgnoreRange = 800.0f;
-    m_fStopDistance = 5.0f;
     m_tmGiveUp = Max(m_tmGiveUp, 10.0f);
 
     // damage/explode properties
@@ -852,9 +971,11 @@ procedures:
 
 	if (m_deType == DE_NORMAL)
     {
+      m_fSize = 2.5f;
       m_fAttackRunSpeed = FRnd()/1.0f + 9.0f;
       m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
       m_fCloseDistance = 12.0f;
+      m_fStopDistance = 11.0f;
       SetHealth(500.0f);
       SetModelMainTexture(TEXTURE_DEMON);
 		m_fgibTexture = TEXTURE_DEMON;
@@ -870,9 +991,11 @@ procedures:
     }
     if (m_deType == DE_STORM)
     {
+      m_fSize = 4.9f;
       m_fAttackRunSpeed = FRnd()/1.0f + 12.0f;
       m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
       m_fCloseDistance = 16.0f;
+      m_fStopDistance = 15.0f;
       SetHealth(800.0f);
       SetModelMainTexture(TEXTURE_STORM);
 		m_fgibTexture = TEXTURE_STORM;
@@ -889,9 +1012,11 @@ procedures:
     }
 	if (m_deType == DE_ARCH)
     {
+      m_fSize = 3.7f;
       m_fAttackRunSpeed = FRnd()/1.0f + 15.0f;
       m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
       m_fCloseDistance = 12.0f;
+      m_fStopDistance = 11.0f;
       SetHealth(700.0f);
       SetModelMainTexture(TEXTURE_ARCH);
 		m_fgibTexture = TEXTURE_ARCH;
@@ -907,9 +1032,11 @@ procedures:
     }
 	if (m_deType == DE_SUM)
     {
+      m_fSize = 7.9f;
       m_fAttackRunSpeed = FRnd()/1.0f + 18.0f;
       m_aAttackRotateSpeed = AngleDeg(FRnd()*100.0f + 900.0f);
       m_fCloseDistance = 20.0f;
+      m_fStopDistance = 19.0f;
       SetHealth(3000.0f);
       SetModelMainTexture(TEXTURE_SUM);
 		m_fgibTexture = TEXTURE_SUM;

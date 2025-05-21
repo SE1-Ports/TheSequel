@@ -200,7 +200,6 @@ properties:
  33 BOOL m_bSpawnEnabled = FALSE,
  34 CSoundObject m_soFireL,
  35 CSoundObject m_soFireR,
- 36 INDEX m_bCountAsKill = TRUE,
  
 components:
   0 class   CLASS_BASE         "Classes\\EnemyBase.ecl",

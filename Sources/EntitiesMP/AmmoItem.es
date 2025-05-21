@@ -12,6 +12,7 @@
 #include "Models/Items/Ammo/Cannonball/CannonballQuad.h"
 #include "ModelsMP/Items/Ammo/SniperBullets/SniperBullets.h"
 #include "ModelsF/Items/Ammo/DevastatorShells/DevastatorShells.h"
+#include "ModelsF/Items/Ammo/Bolts/Bolts.h"
 %}
 
 uses "EntitiesMP/Item";
@@ -115,8 +116,8 @@ components:
  81 texture TEXTURE_FL_FUELRESERVOIR    "ModelsMP\\Weapons\\Flamer\\FuelReservoir.tex",
  
  // ******** SNIPER BULLETS *********
- 90 model   MODEL_SNIPER_BULLETS        "ModelsMP\\Items\\Ammo\\SniperBullets\\SniperBullets.mdl",
- 91 texture TEXTURE_SNIPER_BULLETS      "ModelsMP\\Items\\Ammo\\SniperBullets\\SniperBullets.tex",
+ 90 model   MODEL_SNIPER_BULLETS        "ModelsF\\Items\\Ammo\\Bolts\\Bolts.mdl",
+ 91 texture TEXTURE_SNIPER_BULLETS      "ModelsF\\Items\\Ammo\\Bolts\\Bolts.tex",
 
 // ************** FLARE FOR EFFECT **************
 100 texture TEXTURE_FLARE "Models\\Items\\Flares\\Flare.tex",
@@ -251,7 +252,7 @@ functions:
         pes->es_fValue = m_fValue*AV_NAPALM;
         break;
       case AIT_SNIPERBULLETS:
-        pes->es_strName = "Sniper bullets"; 
+        pes->es_strName = "Tungsten bolts"; 
         pes->es_fValue = m_fValue*AV_SNIPERBULLETS;
         break;
       case AIT_PLASMA:
@@ -390,9 +391,9 @@ functions:
       case AIT_SNIPERBULLETS:
         m_fValue = 5.0f;
         m_fRespawnTime = (m_fCustomRespawnTime>0) ? m_fCustomRespawnTime : 30.0f; 
-        m_strDescription.PrintF("Sniper bullets: %d", (int) m_fValue);
+        m_strDescription.PrintF("Tungsten bolts: %d", (int) m_fValue);
         // set appearance
-        AddItem(MODEL_SNIPER_BULLETS, TEXTURE_SNIPER_BULLETS, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddItem(MODEL_SNIPER_BULLETS, TEXTURE_SNIPER_BULLETS, TEX_REFL_PURPLE01, TEX_SPEC_MEDIUM, 0);
         AddFlare(MODEL_FLARE, TEXTURE_FLARE, FLOAT3D(0,0.75f,0), FLOAT3D(3,3,1.0f) );
         StretchItem(FLOAT3D(1.25f, 1.25f, 1.25f));
         break;

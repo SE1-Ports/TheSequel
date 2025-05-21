@@ -29,7 +29,7 @@
 #include "Models/Weapons/Cannon/Body.h"
 // Mission Pack weapons
 #include "ModelsF/Weapons/Railgun/Railgun.h"
-#include "ModelsF/Weapons/Sniper/Body.h"
+#include "ModelsF/Weapons/Crossbow/Crossbow.h"
 #include "ModelsMP/Weapons/Flamer/Flamer.h"
 #include "ModelsMP/Weapons/Flamer/Body.h"
 #include "ModelsMP/Weapons/Flamer/FuelReservoir.h"
@@ -359,8 +359,12 @@ void CPlayerWeapons_Precache(ULONG ulAvailable)
 
   if ( ulAvailable&(1<<(WEAPON_SNIPER-1)) ) {
     pdec->PrecacheModel(MODEL_SNIPER          ); 
-    pdec->PrecacheModel(MODEL_SNIPER_BODY     ); 
-    pdec->PrecacheTexture(TEXTURE_SNIPER_BODY );   
+    pdec->PrecacheModel(MODEL_SNIPER_BODY1     ); 
+    pdec->PrecacheTexture(TEXTURE_SNIPER_BODY1 );   
+    pdec->PrecacheModel(MODEL_SNIPER_BODY2     ); 
+    pdec->PrecacheTexture(TEXTURE_SNIPER_BODY2 );  
+    pdec->PrecacheModel(MODEL_SNIPER_SCOPE     ); 
+    pdec->PrecacheTexture(TEXTURE_SNIPER_SCOPE );   
     pdec->PrecacheSound(SOUND_SNIPER_FIRE     ); 
   }
 
@@ -842,13 +846,14 @@ components:
 330 sound   SOUND_GRENADELAUNCHER_ALT   "Models\\Weapons\\GrenadeLauncherHD\\Sounds\\Cluster.wav",
 
 // ************** SNIPER **************
-110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Railgun\\Railgun.mdl",
-111 model   MODEL_SNIPER_BODY           "ModelsF\\Weapons\\Sniper\\Body.mdl",
-112 texture TEXTURE_SNIPER_BODY         "ModelsF\\Weapons\\Sniper\\Body.tex",
-113 sound   SOUND_SNIPER_FIRE           "ModelsMP\\Weapons\\Sniper\\Sounds\\Fire.wav",
-//114 sound   SOUND_SNIPER_RELOAD         "ModelsMP\\Weapons\\Sniper\\Sounds\\Reload.wav",
-//115 sound   SOUND_SNIPER_ZOOM           "ModelsMP\\Weapons\\Sniper\\Sounds\\Zoom.wav",
-116 model   MODEL_SNIPER_HAND           "ModelsMP\\Weapons\\Sniper\\Hand.mdl",
+110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Crossbow\\Crossbow.mdl",
+111 model   MODEL_SNIPER_BODY1           "ModelsF\\Weapons\\Crossbow\\Bow1.mdl",
+112 texture TEXTURE_SNIPER_BODY1         "ModelsF\\Weapons\\Crossbow\\Bow1.tex",
+113 sound   SOUND_SNIPER_FIRE            "ModelsF\\Weapons\\Crossbow\\Sounds\\Fire.wav",
+114 model   MODEL_SNIPER_BODY2           "ModelsF\\Weapons\\Crossbow\\Bow2.mdl",
+115 texture TEXTURE_SNIPER_BODY2         "ModelsF\\Weapons\\Crossbow\\Bow2.tex",
+116 model   MODEL_SNIPER_SCOPE           "ModelsF\\Weapons\\Crossbow\\Scope.mdl",
+117 texture TEXTURE_SNIPER_SCOPE         "ModelsF\\Weapons\\Crossbow\\Scope.tex",
 
 /*
 // ************** PIPEBOMB **************
@@ -1642,9 +1647,9 @@ functions:
         case WEAPON_TOMMYGUN:
           ShowFlare(m_moWeapon, XM8_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 0.5f);
           break;
-        case WEAPON_SNIPER:
+        /*case WEAPON_SNIPER:
           ShowFlare(m_moWeapon, RAILGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 0.5f);
-          break;
+          break;*/
         case WEAPON_MINIGUN:
           ShowFlare(m_moWeapon, MINIGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE, 1.25f);
           break;
@@ -1664,9 +1669,9 @@ functions:
         case WEAPON_TOMMYGUN:
           HideFlare(m_moWeapon, XM8_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;
-        case WEAPON_SNIPER:
+        /*case WEAPON_SNIPER:
           HideFlare(m_moWeapon, RAILGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
-          break;
+          break;*/
         case WEAPON_MINIGUN:
           HideFlare(m_moWeapon, MINIGUN_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;
@@ -1748,9 +1753,11 @@ functions:
         break; }
       case WEAPON_SNIPER: {
         SetComponents(this, m_moWeapon, MODEL_SNIPER, TEXTURE_HAND, 0, 0, 0);
-        AddAttachmentToModel(this, m_moWeapon, RAILGUN_ATTACHMENT_BODY, MODEL_SNIPER_BODY, TEXTURE_SNIPER_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        CModelObject &mo = m_moWeapon.GetAttachmentModel(RAILGUN_ATTACHMENT_BODY)->amo_moModelObject;
-        AddAttachmentToModel(this, mo, BODY_ATTACHMENT_FLARE, MODEL_FLARE01, TEXTURE_FLARE01, 0, 0, 0);
+        AddAttachmentToModel(this, m_moWeapon, CROSSBOW_ATTACHMENT_BOW1, MODEL_SNIPER_BODY1, TEXTURE_SNIPER_BODY1, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        /*CModelObject &mo = m_moWeapon.GetAttachmentModel(RAILGUN_ATTACHMENT_BODY)->amo_moModelObject;
+        AddAttachmentToModel(this, mo, BODY_ATTACHMENT_FLARE, MODEL_FLARE01, TEXTURE_FLARE01, 0, 0, 0);*/
+        AddAttachmentToModel(this, m_moWeapon, CROSSBOW_ATTACHMENT_BOW2, MODEL_SNIPER_BODY2, TEXTURE_SNIPER_BODY2, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddAttachmentToModel(this, m_moWeapon, CROSSBOW_ATTACHMENT_SCOPE, MODEL_SNIPER_SCOPE, TEXTURE_SNIPER_SCOPE, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         break; }
       case WEAPON_MINIGUN: {
         SetComponents(this, m_moWeapon, MODEL_MINIGUN, TEXTURE_HAND, 0, 0, 0);
@@ -3378,8 +3385,8 @@ functions:
         fnmMsg = CTFILENAME("Data\\Messages\\Weapons\\tommygun.txt"); 
         break;
       case WIT_SNIPER:        
-        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("RAPTOR EMS-200 Railgun"), 0);
-        fnmMsg = CTFILENAME("DataMP\\Messages\\Weapons\\sniper.txt"); 
+        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("TCC-2 Perun Crossbow"), 0);
+        fnmMsg = CTFILENAME("DataF\\Messages\\Weapons\\crossbow.txt"); 
         break;
       case WIT_MINIGUN:         
         ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("XM4000 Minigun"), 0);
@@ -3556,7 +3563,7 @@ functions:
       case AIT_SNIPERBULLETS:
         if (m_iSniperBullets>=m_iMaxSniperBullets) { m_iSniperBullets = m_iMaxSniperBullets; return FALSE; }
         m_iSniperBullets+= Eai.iQuantity;
-        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Sniper bullets"), Eai.iQuantity);
+        ((CPlayer&)*m_penPlayer).ItemPicked(TRANS("Tungsten bolts"), Eai.iQuantity);
         AddManaToPlayer(Eai.iQuantity*AV_SNIPERBULLETS*MANA_AMMO);
         break;
       case AIT_PLASMA:
@@ -3659,7 +3666,7 @@ functions:
       if( eapi.iNapalm != 0)        { strMessage.PrintF("%s %d %s,", strMessage, eapi.iNapalm, TRANS("Napalm")); iAmmoTypes++; }
       if( eapi.iElectricity != 0)   { strMessage.PrintF("%s %d %s,", strMessage, eapi.iElectricity, TRANS("Cells")); iAmmoTypes++; }
       if( eapi.iIronBalls != 0)     { strMessage.PrintF("%s %d %s,", strMessage, eapi.iIronBalls, TRANS("Cannonballs")); iAmmoTypes++; }
-      if( eapi.iSniperBullets != 0) { strMessage.PrintF("%s %d %s,", strMessage, eapi.iSniperBullets, TRANS("Sniper bullets")); iAmmoTypes++; }
+      if( eapi.iSniperBullets != 0) { strMessage.PrintF("%s %d %s,", strMessage, eapi.iSniperBullets, TRANS("Tungsten bolts")); iAmmoTypes++; }
       if( eapi.iPlasma != 0)        { strMessage.PrintF("%s %d %s,", strMessage, eapi.iPlasma, TRANS("Plasma pack")); iAmmoTypes++; }
       if( eapi.iDev != 0)           { strMessage.PrintF("%s %d %s,", strMessage, eapi.iDev, TRANS("Devastator shells")); iAmmoTypes++; }
       if( eapi.iNukeBalls != 0)     { strMessage.PrintF("%s %d %s,", strMessage, eapi.iNukeBalls, TRANS("Nukeball")); iAmmoTypes++; }
@@ -3887,7 +3894,7 @@ functions:
       case WEAPON_TOMMYGUN:
         m_moWeapon.PlayAnim(XM8_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_SNIPER:
-        m_moWeapon.PlayAnim(RAILGUN_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
+        m_moWeapon.PlayAnim(CROSSBOW_ANIM_WAIT01, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_MINIGUN:
         m_moWeapon.PlayAnim(MINIGUN_ANIM_WAIT1, AOF_LOOPING|AOF_NORESTART|AOF_SMOOTHCHANGE); break;
       case WEAPON_ROCKETLAUNCHER:
@@ -4002,7 +4009,7 @@ functions:
   FLOAT SniperBoring(void) {
     // play boring anim
     INDEX iAnim;
-    iAnim = RAILGUN_ANIM_WAIT02;
+    iAnim = CROSSBOW_ANIM_WAIT02;
     m_moWeapon.PlayAnim(iAnim, AOF_SMOOTHCHANGE);
     return m_moWeapon.GetAnimLength(iAnim);
   };
@@ -4489,7 +4496,7 @@ procedures:
         m_iAnim = XM8_ANIM_DEACTIVATE;
         break;
       case WEAPON_SNIPER:
-        m_iAnim = RAILGUN_ANIM_DEACTIVATE;
+        m_iAnim = CROSSBOW_ANIM_DEACTIVATE;
         break;
       case WEAPON_MINIGUN:
         m_iAnim = MINIGUN_ANIM_DEACTIVATE;
@@ -4608,7 +4615,7 @@ procedures:
         SetFlare(0, FLARE_REMOVE);
         break;
       case WEAPON_SNIPER:
-        m_iAnim = RAILGUN_ANIM_ACTIVATE;
+        m_iAnim = CROSSBOW_ANIM_ACTIVATE ;
         SetFlare(0, FLARE_REMOVE);
         break;
       case WEAPON_MINIGUN: {
@@ -5579,7 +5586,7 @@ procedures:
       autowait(1.0f);
 
       // firing FX
-      CPlacement3D plShell;
+      /*CPlacement3D plShell;
       CalcWeaponPosition(FLOAT3D(afSniperShellPos[0], afSniperShellPos[1], afSniperShellPos[2]), plShell, FALSE);
       FLOATmatrix3D mRot;
       MakeRotationMatrixFast(mRot, plShell.pl_OrientationAngle);
@@ -5614,7 +5621,7 @@ procedures:
           sldBubble.sld_vSpeed = vSpeedRelative*mRot;
           penPlayer->m_iFirstEmptySLD = (penPlayer->m_iFirstEmptySLD+1) % MAX_FLYING_SHELLS;
         }
-      }
+      }*/
       
       autowait(1.35f - 1.0f);
       

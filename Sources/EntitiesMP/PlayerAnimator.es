@@ -19,8 +19,8 @@
 #include "Models/Weapons/MiniGun/Body.h"
 #include "Models/Weapons/GrenadeLauncher/GrenadeLauncherItem.h"
 #include "ModelsF/Weapons/RocketLauncher/RocketLauncherItem.h"
-#include "ModelsF/Weapons/Sniper/SniperItem.h"
-#include "ModelsF/Weapons/Sniper/Sniper.h"
+#include "ModelsF/Weapons/Crossbow/CrossbowItem.h"
+#include "ModelsF/Weapons/Crossbow/Crossbow.h"
 //#include "Models/Weapons/Pipebomb/StickItem.h"
 #include "ModelsMP/Weapons/Flamer/FlamerItem.h"
 #include "ModelsMP/Weapons/Flamer/Body.h"
@@ -148,8 +148,14 @@ void CPlayerAnimator_Precache(ULONG ulAvailable)
 
   if ( ulAvailable&(1<<(WEAPON_SNIPER-1)) ) {
     pdec->PrecacheModel(MODEL_SNIPER          ); 
-    pdec->PrecacheModel(MODEL_SNIPER_BODY     ); 
-    pdec->PrecacheTexture(TEXTURE_SNIPER_BODY );   
+    pdec->PrecacheModel(MODEL_SNIPER_BODY1     ); 
+    pdec->PrecacheTexture(TEXTURE_SNIPER_BODY1 );   
+    pdec->PrecacheModel(MODEL_SNIPER_BODY2     ); 
+    pdec->PrecacheTexture(TEXTURE_SNIPER_BODY2 );   
+    pdec->PrecacheModel(MODEL_SNIPER_SCOPE     ); 
+    pdec->PrecacheTexture(TEXTURE_SNIPER_SCOPE );  
+    pdec->PrecacheModel(MODEL_SNIPER_STRING     ); 
+    pdec->PrecacheTexture(TEXTURE_SNIPER_STRING );    
   }
 
   if ( ulAvailable&(1<<(WEAPON_MINIGUN-1)) ) {
@@ -383,9 +389,15 @@ components:
 105 texture TEXTURE_GL_MOVINGPART       "Models\\Weapons\\GrenadeLauncher\\MovingPipe.tex",
 
 // ************** SNIPER **************
-110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Sniper\\SniperItem.mdl",
-111 model   MODEL_SNIPER_BODY           "ModelsF\\Weapons\\Sniper\\Body.mdl",
-112 texture TEXTURE_SNIPER_BODY         "ModelsF\\Weapons\\Sniper\\Body.tex",
+110 model   MODEL_SNIPER                "ModelsF\\Weapons\\Crossbow\\CrossbowItem.mdl",
+111 model   MODEL_SNIPER_BODY1           "ModelsF\\Weapons\\Crossbow\\Bow1.mdl",
+112 texture TEXTURE_SNIPER_BODY1         "ModelsF\\Weapons\\Crossbow\\Bow1.tex",
+113 model   MODEL_SNIPER_BODY2           "ModelsF\\Weapons\\Crossbow\\Bow2.mdl",
+114 texture TEXTURE_SNIPER_BODY2         "ModelsF\\Weapons\\Crossbow\\Bow2.tex",
+115 model   MODEL_SNIPER_SCOPE           "ModelsF\\Weapons\\Crossbow\\Scope.mdl",
+116 texture TEXTURE_SNIPER_SCOPE         "ModelsF\\Weapons\\Crossbow\\Scope.tex",
+117 model   MODEL_SNIPER_STRING           "ModelsF\\Weapons\\Crossbow\\String.mdl",
+118 texture TEXTURE_SNIPER_STRING         "Models\\Weapons\\Hand.tex",
 
 /*
 // ************** PIPEBOMB **************
@@ -688,11 +700,14 @@ functions:
 
     // *********** SNIPER ***********
       case WEAPON_SNIPER:
-        AddWeaponAttachment(BODY_ATTACHMENT_FLAMER, MODEL_SNIPER, TEXTURE_SNIPER_BODY, 0, 0, 0);
+        AddWeaponAttachment(BODY_ATTACHMENT_FLAMER, MODEL_SNIPER, TEXTURE_SNIPER_BODY1, 0, 0, 0);
         SetAttachment(BODY_ATTACHMENT_FLAMER);
-        AddWeaponAttachment(SNIPERITEM_ATTACHMENT_BODY, MODEL_SNIPER_BODY, TEXTURE_SNIPER_BODY, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
-        SetAttachment(SNIPERITEM_ATTACHMENT_BODY);
-        AddWeaponAttachment(BODY_ATTACHMENT_FLARE, MODEL_FLARE02, TEXTURE_FLARE02, 0, 0, 0);
+        AddWeaponAttachment(CROSSBOWITEM_ATTACHMENT_BOW1, MODEL_SNIPER_BODY1, TEXTURE_SNIPER_BODY1, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        /*SetAttachment(SNIPERITEM_ATTACHMENT_BODY);
+        AddWeaponAttachment(BODY_ATTACHMENT_FLARE, MODEL_FLARE02, TEXTURE_FLARE02, 0, 0, 0);*/
+        AddWeaponAttachment(CROSSBOWITEM_ATTACHMENT_BOW2, MODEL_SNIPER_BODY1, TEXTURE_SNIPER_BODY2, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(CROSSBOWITEM_ATTACHMENT_SCOPE, MODEL_SNIPER_SCOPE, TEXTURE_SNIPER_SCOPE, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
+        AddWeaponAttachment(CROSSBOWITEM_ATTACHMENT_STRING, MODEL_SNIPER_STRING, TEXTURE_SNIPER_STRING, TEX_REFL_LIGHTMETAL01, TEX_SPEC_MEDIUM, 0);
         break;
 
     // *********** MINIGUN ***********
@@ -1627,9 +1642,9 @@ functions:
         case WEAPON_TOMMYGUN:
           ShowFlare(BODY_ATTACHMENT_TOMMYGUN, XM8ITEM_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;
-        case WEAPON_SNIPER:
+        /*case WEAPON_SNIPER:
           ShowFlare(BODY_ATTACHMENT_FLAMER, SNIPERITEM_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
-          break;
+          break;*/
         case WEAPON_MINIGUN:
           ShowFlare(BODY_ATTACHMENT_MINIGUN, MINIGUNITEM_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;
@@ -1650,9 +1665,9 @@ functions:
         case WEAPON_TOMMYGUN:
           HideFlare(BODY_ATTACHMENT_TOMMYGUN, XM8ITEM_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;
-        case WEAPON_SNIPER:
+        /*case WEAPON_SNIPER:
           HideFlare(BODY_ATTACHMENT_FLAMER, SNIPERITEM_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
-          break;
+          break;*/
         case WEAPON_MINIGUN:
           HideFlare(BODY_ATTACHMENT_MINIGUN, MINIGUNITEM_ATTACHMENT_BODY, BODY_ATTACHMENT_FLARE);
           break;

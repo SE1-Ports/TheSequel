@@ -94,22 +94,22 @@ functions:
   // virtual anim functions
   void StandingAnim(void) {
     if (m_bInAir) {
-      StartModelAnim(FLOATER_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(FLOATER_ANIM_Idle, AOF_LOOPING|AOF_NORESTART);
     }
   };
   void WalkingAnim(void) {
     if (m_bInAir) {
-      StartModelAnim(FLOATER_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(FLOATER_ANIM_Walk, AOF_LOOPING|AOF_NORESTART);
     }
   };
   void RunningAnim(void) {
     if (m_bInAir) {
-      StartModelAnim(FLOATER_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(FLOATER_ANIM_Run, AOF_LOOPING|AOF_NORESTART);
     }
   };
   void RotatingAnim(void) {
     if (m_bInAir) {
-      StartModelAnim(FLOATER_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(FLOATER_ANIM_Walk, AOF_LOOPING|AOF_NORESTART);
     }
   };
 
@@ -211,7 +211,7 @@ procedures:
   FlyFire(EVoid) : CEnemyFly::FlyFire {
 
     // fire projectile
-    StartModelAnim(FLOATER_ANIM_FIRE, 0);
+    StartModelAnim(FLOATER_ANIM_Fire, 0);
     autowait(0.6f);
     ShootProjectile(PRT_LASER_FLOATER, FIRE_AIR, ANGLE3D(0, 0, 0));
     PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
@@ -227,7 +227,7 @@ procedures:
       m_fShootTime = _pTimer->CurrentTick() + 0.25f;
       return EReturn();
     }
-    StartModelAnim(FLOATER_ANIM_MELEE, 0);
+    StartModelAnim(FLOATER_ANIM_Melee, 0);
     StopMoving();
     autowait(0.4f);
     // damage enemy

@@ -24,5 +24,7 @@
 
 // Attaching position names
 #define DEMON_ATTACHMENT_FIREBALL 0
+#define DEMON_ATTACHMENT_FLARE1 1
+#define DEMON_ATTACHMENT_FLARE2 2
 
 // Sound names
