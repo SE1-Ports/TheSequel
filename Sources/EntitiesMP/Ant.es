@@ -148,9 +148,9 @@ functions:
   INDEX AnimForDamage(FLOAT fDamage) {
     INDEX iAnim;
     if (m_bShielded == TRUE) {
-      iAnim = ANT_ANIM_BLOCKWOUND;
+      iAnim = ANT_ANIM_BlockWound;
 	} else {
-      iAnim = ANT_ANIM_WOUND;
+      iAnim = ANT_ANIM_Wound;
 	}
     StartModelAnim(iAnim, 0);
     DeactivateRunningSound();
@@ -162,8 +162,8 @@ functions:
     DeactivateRunningSound();
     INDEX iAnim;
     switch (IRnd()%2) {
-      case 0: iAnim = ANT_ANIM_DEATH1; break;
-      case 1: iAnim = ANT_ANIM_DEATH2; break;
+      case 0: iAnim = ANT_ANIM_Death1; break;
+      case 1: iAnim = ANT_ANIM_Death2; break;
       default: ASSERTALWAYS("Ant unknown death");
     }
     StartModelAnim(iAnim, 0);
@@ -172,12 +172,12 @@ functions:
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
-    if(GetModelObject()->GetAnim()==ANT_ANIM_DEATH1)
+    if(GetModelObject()->GetAnim()==ANT_ANIM_Death1)
     {
       vStretch=FLOAT3D(1,1,2)*0.3f;
       return 0.2f;
     }
-    else if(GetModelObject()->GetAnim()==ANT_ANIM_DEATH2)
+    else if(GetModelObject()->GetAnim()==ANT_ANIM_Death2)
     {
       vStretch=FLOAT3D(1,1,2)*0.3f;
       return 0.2f;
@@ -186,35 +186,35 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(ANT_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(ANT_COLLISION_BOX_DEATH);
     en_fDensity = 500.0f;
   };
 
   // virtual anim functions
   void StandingAnim(void) {
     if (m_bShielded == TRUE) {
-      StartModelAnim(ANT_ANIM_BLOCKLOOP, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(ANT_ANIM_BlockLoop, AOF_LOOPING|AOF_NORESTART);
 	} else {
-      StartModelAnim(ANT_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(ANT_ANIM_Idle, AOF_LOOPING|AOF_NORESTART);
 	}
     DeactivateRunningSound();
   };
 
   void WalkingAnim(void) {
-      StartModelAnim(ANT_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(ANT_ANIM_Walk, AOF_LOOPING|AOF_NORESTART);
     ActivateRunningSound();
   };
 
   void RunningAnim(void) {
-      StartModelAnim(ANT_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(ANT_ANIM_Walk, AOF_LOOPING|AOF_NORESTART);
     ActivateRunningSound();
   };
   void RotatingAnim(void) {
     if (m_bShielded == TRUE) {
-      StartModelAnim(ANT_ANIM_BLOCKLOOP, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(ANT_ANIM_BlockLoop, AOF_LOOPING|AOF_NORESTART);
       DeactivateRunningSound();
 	} else {
-      StartModelAnim(ANT_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+      StartModelAnim(ANT_ANIM_Walk, AOF_LOOPING|AOF_NORESTART);
       ActivateRunningSound();
 	}
   };
@@ -316,7 +316,7 @@ procedures:
     DeactivateRunningSound();
     if(m_antType == ANT_NORMAL) {
 	//1 shot
-      StartModelAnim(ANT_ANIM_ATTACK, 0);   
+      StartModelAnim(ANT_ANIM_Attack, 0);   
       PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
 
       autowait(0.5f);
@@ -349,12 +349,12 @@ procedures:
       autowait(0.5f);
     } if(m_antType == ANT_SHIELD) {
 
-    StartModelAnim(ANT_ANIM_BLOCKOUT, AOF_SMOOTHCHANGE);
+    StartModelAnim(ANT_ANIM_BlockOut, AOF_SMOOTHCHANGE);
     autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn; 
  	m_bShielded = FALSE;  
 	 
 	//1 shot
-      StartModelAnim(ANT_ANIM_ATTACK, 0);   
+      StartModelAnim(ANT_ANIM_Attack, 0);   
       PlaySound(m_soSound, SOUND_FIRE, SOF_3D);
 
       autowait(0.5f);
@@ -386,12 +386,12 @@ procedures:
 
       autowait(0.5f);
 
-     StartModelAnim(ANT_ANIM_BLOCKIN, AOF_SMOOTHCHANGE);
+     StartModelAnim(ANT_ANIM_BlockIn, AOF_SMOOTHCHANGE);
      autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
-     autowait(GetModelObject()->GetAnimLength(ANT_ANIM_BLOCKIN)/2.0f - _pTimer->TickQuantum);
+     autowait(GetModelObject()->GetAnimLength(ANT_ANIM_BlockIn)/2.0f - _pTimer->TickQuantum);
  	 m_bShielded = TRUE;
    } if(m_antType == ANT_BOMBER) {
-      StartModelAnim(ANT_ANIM_RECHARGE, 0);   
+      StartModelAnim(ANT_ANIM_Recharge, 0);   
       PlaySound(m_soSound, SOUND_RECHARGE, SOF_3D);
 
       autowait(0.3f);

@@ -6055,10 +6055,10 @@ void Particles_SniperResidue(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget)
   FLOAT3D v1 = vSource;
   FLOAT3D v2 = vTarget;
 
-  colColor = C_YELLOW|0xff;
+  colColor = C_CYAN|0xFF;
   for (INDEX i=1; i<24; i++) {
-    for (INDEX j=0; j<2; j++) {
-      Particle_RenderLine( v1, v2, 0.05f, colColor);
+    for (INDEX j=0; j<4; j++) {
+      Particle_RenderLine( v1, v2, 0.1f, colColor);
     }
     v1 = v2;
     v2 = Lerp(vSource, vTarget, NormByteToFloat(i*255/24));

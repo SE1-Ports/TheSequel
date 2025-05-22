@@ -138,7 +138,7 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(CYCLOP_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(CYCLOP_COLLISION_BOX_DEATH);
     en_fDensity = 500.0f;
   };
 

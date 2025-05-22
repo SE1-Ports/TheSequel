@@ -14,6 +14,10 @@ BOOL ConsiderPlayers(CEntity*pen)
 {
   return IsDerivedFromClass(pen, "Player");
 }
+BOOL ConsiderEnemies(CEntity*pen) 
+{
+  return IsDerivedFromClass(pen, "Player");
+}
 %}
 
 class CTouchField: CRationalEntity {

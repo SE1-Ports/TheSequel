@@ -41,6 +41,8 @@ properties:
   7 BOOL m_bSleeping "Sleeping" 'S' = FALSE,  // set to make it sleep initally
   8 FLOAT m_tmLastWalkingSoundTime = -100.0f,
   9 FLOAT m_tmWalkingSound "Walk sound frequency" = 5.0f,
+ 10 CEntityPointer m_penWakeTarget "Wake target" 'W',
+ 11 enum EventEType m_eetWakeType  "Wake event type" 'E' = EET_TRIGGER, // death event type
   
   {
     CAutoPrecacheSound m_aps;
@@ -248,7 +250,7 @@ procedures:
     autowait(GetModelObject()->GetCurrentAnimLength());
 
     // trigger your target
-//    SendToTarget(m_penDeathTarget, m_eetDeathType);
+    SendToTarget(m_penWakeTarget, m_eetWakeType);
     // proceed with normal functioning
     return EReturn();
   }

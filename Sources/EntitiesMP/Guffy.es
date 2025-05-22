@@ -1,7 +1,7 @@
 344
 %{
 #include "StdH.h"
-#include "ModelsMP/Enemies/Guffy/Guffy.h"
+#include "ModelsF/Enemies/Guffy/Guffy.h"
 %}
 
 uses "EntitiesMP/EnemyBase";
@@ -53,13 +53,19 @@ properties:
   12 CSoundObject m_soFire2,
   13 BOOL m_bGruntSoundPlaying = FALSE,
   14 INDEX   m_fgibTexture = TEXTURE_GUFFY,
+  15 CSoundObject m_soWoosh,
+
+ 20 FLOAT m_fDamageStunned = 0.0f,            // damage amount to be stunned
+ 21 BOOL m_bSleeping "Sleeping" 'S' = FALSE,  // set to make guffly sleep initally
+ 22 CEntityPointer m_penWakeTarget "Wake target" 'W',
+ 23 enum EventEType m_eetWakeType  "Wake event type" 'E' = EET_TRIGGER, // death event type
   
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
   1 class   CLASS_PROJECTILE    "Classes\\Projectile.ecl",
   2 class   CLASS_BASIC_EFFECT    "Classes\\BasicEffect.ecl",
 
- 10 model   MODEL_GUFFY         "ModelsMP\\Enemies\\Guffy\\Guffy.mdl",
+ 10 model   MODEL_GUFFY         "ModelsF\\Enemies\\Guffy\\Guffy.mdl",
  11 texture TEXTURE_GUFFY       "ModelsMP\\Enemies\\Guffy\\Guffy.tex",
  12 texture TEXTURE_SERGEANT    "AREP\\Models\\GuffyX\\GuffyRed.tex",
  13 texture TEXTURE_WARLORD     "AREP\\Models\\GuffyX\\GuffyGreen.tex",
@@ -68,8 +74,9 @@ components:
  16 texture TEXTURE_GUN_RED     "AREP\\Models\\GuffyX\\GunRed.tex",
 
  20 model   MODEL_GUFFY_ARM            "ModelsF\\Enemies\\Guffy\\Debris\\Arm.mdl",
- 21 model   MODEL_GUFFY_LEGS           "ModelsF\\Enemies\\Guffy\\Debris\\Legs.mdl",
+ 21 model   MODEL_GUFFY_LEG           "ModelsF\\Enemies\\Guffy\\Debris\\Leg.mdl",
  22 model   MODEL_GUFFY_TUSK           "ModelsF\\Enemies\\Guffy\\Debris\\Tusk.mdl",
+ 25 model   MODEL_GUFFY_BACK           "ModelsF\\Enemies\\Guffy\\Debris\\Back.mdl",
 
  23 model   MODEL_FLESH          "Models\\Effects\\Debris\\Flesh\\Flesh.mdl",
  24 texture TEXTURE_FLESH_RED  "Models\\Effects\\Debris\\Flesh\\FleshRed.tex",
@@ -88,6 +95,9 @@ components:
  50 sound   SOUND_WOUND_BIG         "AREP\\Models\\GuffyX\\Sounds\\BigWound.wav",
  51 sound   SOUND_DEATH_BIG         "AREP\\Models\\GuffyX\\Sounds\\BigDeath.wav",
  52 sound   SOUND_GRUNT_BIG         "AREP\\Models\\GuffyX\\Sounds\\BigGrunt.wav",
+ 
+ 53 sound   SOUND_WOOSH      "ModelsMP\\Enemies\\SS2\\ScorpSoldier\\Sounds\\Melee.wav",
+ 54 sound   SOUND_KICK      "Models\\Enemies\\Beast\\Sounds\\Kick.wav",
 
 functions:
 
@@ -152,6 +162,9 @@ functions:
     PrecacheSound(SOUND_FIRE_BIG);
     PrecacheSound(SOUND_WOUND_BIG);
     PrecacheSound(SOUND_GRUNT_BIG);
+	
+    PrecacheSound(SOUND_WOOSH);
+    PrecacheSound(SOUND_KICK);
     
     // projectile
     PrecacheClass(CLASS_PROJECTILE, PRT_GUFFY_PROJECTILE);
@@ -159,8 +172,9 @@ functions:
 
 	//debris
     PrecacheModel(MODEL_GUFFY_TUSK);
-	PrecacheModel(MODEL_GUFFY_LEGS);
+	PrecacheModel(MODEL_GUFFY_LEG);
 	PrecacheModel(MODEL_GUFFY_ARM);
+	PrecacheModel(MODEL_GUFFY_BACK);
 
     PrecacheModel(MODEL_FLESH);
     PrecacheTexture(TEXTURE_FLESH_RED);
@@ -222,19 +236,17 @@ functions:
     DeactivateGruntSound();
     StartModelAnim(GUFFY_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
   };
-  /*void StandingAnimFight(void)
-  {
-    StartModelAnim(GUFFY_ANIM_FIRE, AOF_LOOPING|AOF_NORESTART);
-  }*/
   void RunningAnim(void) {
     ActivateGruntSound();
     StartModelAnim(GUFFY_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
   };
   void WalkingAnim(void) {
-    RunningAnim();
+    DeactivateGruntSound();
+    StartModelAnim(GUFFY_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
   };
   void RotatingAnim(void) {
-    StartModelAnim(GUFFY_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    DeactivateGruntSound();
+    StartModelAnim(GUFFY_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
   };
 
   // virtual sound functions
@@ -289,11 +301,13 @@ functions:
     m_soFire1.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
     m_soFire2.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
     m_soGrunt.Set3DParameters(0.0f, 0.0f, 1.0f, 1.0f);
+     m_soWoosh.Set3DParameters(0.0f, 0.0f, 1.0f, 0.75f);
 	} else {
     m_soSound.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
     m_soFire1.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
     m_soFire2.Set3DParameters(160.0f, 50.0f, 1.0f, 1.0f);
     m_soGrunt.Set3DParameters(100.0f, 10.0f, 1.0f, 1.0f);
+    m_soWoosh.Set3DParameters(20.0f, 5.0f, 1.0f, 1.0f);
 	}
 
   };
@@ -302,7 +316,14 @@ functions:
   INDEX AnimForDamage(FLOAT fDamage) {
     DeactivateGruntSound();
     INDEX iAnim;
-    iAnim = GUFFY_ANIM_WOUND;
+      if (abs(fDamage)<=m_fDamageStunned) {
+       if(m_GufChar == GUF_SERGEANT) { 
+        iAnim = GUFFY_ANIM_WOUNDFIRE; }
+	   else {
+        iAnim = GUFFY_ANIM_WOUND; }
+		}
+	  else {
+        iAnim = GUFFY_ANIM_STUN; }
     StartModelAnim(iAnim, 0);
     return iAnim;
   };
@@ -366,13 +387,19 @@ functions:
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
     Debris_Spawn(this, this, MODEL_GUFFY_ARM, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
-    Debris_Spawn(this, this, MODEL_GUFFY_LEGS, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+    Debris_Spawn(this, this, MODEL_GUFFY_LEG, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_GUFFY_LEG, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	Debris_Spawn(this, this, MODEL_GUFFY_TUSK, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	Debris_Spawn(this, this, MODEL_GUFFY_TUSK, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	Debris_Spawn(this, this, MODEL_GUFFY_TUSK, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_GUFFY_BACK, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
+      FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
+    Debris_Spawn(this, this, MODEL_GUFFY_BACK, m_fgibTexture, 0, 0, 0, 0, fDebrisSize,
       FLOAT3D(FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f, FRnd()*0.6f+0.2f));
 	  
       for( INDEX iDebris = 0; iDebris<m_fBodyParts; iDebris++) {
@@ -400,14 +427,15 @@ procedures:
  ************************************************************/
   Fire(EVoid) : CEnemyBase::Fire {
     DeactivateGruntSound();
+    // to fire
+    StartModelAnim(GUFFY_ANIM_TOFIRE, 0);
+    m_fLockOnEnemyTime = GetModelObject()->GetAnimLength(GUFFY_ANIM_TOFIRE + 0.75f);
+    autocall CEnemyBase::LockOnEnemy() EReturn;
     
     if(m_GufChar == GUF_SOLDIER)
     {
     
-     StartModelAnim(GUFFY_ANIM_FIRE, AOF_LOOPING);
-    
-     // wait for animation to bring the left hand into firing position
-     autowait(0.1f);
+     StartModelAnim(GUFFY_ANIM_FIRE1, 0);
 
      FLOATmatrix3D m;
      FLOAT3D fLookRight = FLOAT3D(1.0f, 0.0f, 0.0f);
@@ -436,7 +464,7 @@ procedures:
      while ( m_iCounter<4)
 	 {
     
-      StartModelAnim(GUFFY_ANIM_FIRE, 0);
+      StartModelAnim(GUFFY_ANIM_FIRE2, 0);
     
       // wait for animation to bring the left hand into firing position
       autowait(0.1f);
@@ -451,10 +479,10 @@ procedures:
         ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*m_fSize, ANGLE3D(0, 0, 0));
         PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
       
-        ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*m_fSize, ANGLE3D(-2, 0, 0));
+        ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*m_fSize, ANGLE3D(-9, 0, 0));
         PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
       } else { // enemy is to the left of guffy
-        ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*m_fSize, ANGLE3D(2, 0, 0));
+        ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*m_fSize, ANGLE3D(9, 0, 0));
         PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
       
         ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*m_fSize, ANGLE3D(0, 0, 0));
@@ -468,7 +496,7 @@ procedures:
     if(m_GufChar == GUF_WARLORD)
     {
     
-     StartModelAnim(GUFFY_ANIM_FIRE, 0);
+     StartModelAnim(GUFFY_ANIM_FIRE2, 0);
     
      // wait for animation to bring the left hand into firing position
      autowait(0.1f);
@@ -526,7 +554,7 @@ procedures:
       
 
      autowait(0.5f);
-     StartModelAnim(GUFFY_ANIM_FIRE, 0);
+     StartModelAnim(GUFFY_ANIM_FIRE2, 0);
     
      // wait for animation to bring the left hand into firing position
      autowait(0.1f);
@@ -582,17 +610,125 @@ procedures:
       eLaunch.fSpeed = fLaunchSpeed;
       penProjectile->Initialize(eLaunch);
 	}
-    autowait(1.0f);
-    
     StopMoving();
+    autowait(0.8f);
+    StandingAnim();    
     
     MaybeSwitchToAnotherPlayer();
 
     // wait for a while
-    StandingAnimFight();
     autowait(FRnd()*0.25f+0.25f);
 
     return EReturn();
+  };
+
+  // hit enemy
+  Hit(EVoid) : CEnemyBase::Hit {
+    DeactivateGruntSound();
+    // close attack
+    StartModelAnim(GUFFY_ANIM_MELEE, 0);
+    autowait(0.1f);
+    PlaySound(m_soWoosh, SOUND_WOOSH, SOF_3D);
+    autowait(0.15f);
+    if (CalcDist(m_penEnemy) < m_fCloseDistance) {
+      FLOAT3D vDirection = m_penEnemy->GetPlacement().pl_PositionVector-GetPlacement().pl_PositionVector;
+      vDirection.Normalize();
+      if (m_GufChar == GUF_SERGEANT) {
+        PlaySound(m_soSound, SOUND_KICK, SOF_3D);
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 60.0f, FLOAT3D(0, 0, 0), vDirection);
+      } else if (m_GufChar == GUF_WARLORD) {
+        PlaySound(m_soSound, SOUND_KICK, SOF_3D);
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 90.0f, FLOAT3D(0, 0, 0), vDirection);
+      } else  {
+        PlaySound(m_soSound, SOUND_KICK, SOF_3D);
+        InflictDirectDamage(m_penEnemy, this, DMT_CLOSERANGE, 30.0f, FLOAT3D(0, 0, 0), vDirection);
+      }
+    }
+
+    /*
+    StartModelAnim(BEAST_ANIM_IDLE, AOF_SMOOTHCHANGE);
+    autocall CMovableModelEntity::WaitUntilScheduledAnimStarts() EReturn;    
+    */
+    autowait(0.85f);
+    MaybeSwitchToAnotherPlayer();
+    return EReturn();
+  };
+
+  Sleep(EVoid)
+  {
+    // start sleeping anim
+    StartModelAnim(GUFFY_ANIM_SLEEPING, AOF_LOOPING);
+    // repeat
+    wait() {
+      // if triggered
+      on(ETrigger eTrigger) : {
+        // remember enemy
+        SetTargetSoft(eTrigger.penCaused);
+        // wake up
+        jump WakeUp();
+      }
+      // if damaged
+      on(EDamage eDamage) : {
+        // wake up
+        jump WakeUp();
+      }
+      otherwise() : {
+        resume;
+      }
+    }
+  }
+
+  WakeUp(EVoid)
+  {
+    // wakeup anim
+    if(m_GufChar==GUF_WARLORD) {
+       WoundSound(); }
+	else {
+	   IdleSound(); }
+    StartModelAnim(GUFFY_ANIM_WAKEUP, 0);
+    autowait(GetModelObject()->GetCurrentAnimLength());
+
+    // trigger your target
+    SendToTarget(m_penWakeTarget, m_eetWakeType);
+    // proceed with normal functioning
+    return EReturn();
+  }
+
+  // overridable called before main enemy loop actually begins
+  PreMainLoop(EVoid) : CEnemyBase::PreMainLoop
+  {
+    // if sleeping
+    if (m_bSleeping) {
+      m_bSleeping = FALSE;
+      // go to sleep until waken up
+      wait() {
+        on (EBegin) : {
+          call Sleep();
+        }
+        on (EReturn) : {
+          stop;
+        };
+        // if dead
+        on(EDeath eDeath) : {
+          // die
+          jump CEnemyBase::Die(eDeath);
+        }
+      }
+    }
+    return EReturn();
+  }
+/************************************************************
+ *                PROCEDURES WHEN HARMED                    *
+ ************************************************************/
+  // Play wound animation and falling body part
+  BeWounded(EDamage eDamage) : CEnemyBase::BeWounded {
+      if (m_GufChar == GUF_SERGEANT) {
+        ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_LEFT_ARM*m_fSize, ANGLE3D(9, 0, 0));
+        PlaySound(m_soFire1, SOUND_FIRE, SOF_3D);
+        ShootProjectile(PRT_GUFFY_PROJECTILE, FIRE_RIGHT_ARM*m_fSize, ANGLE3D(-9, 0, 0));
+        PlaySound(m_soFire2, SOUND_FIRE, SOF_3D);
+		}
+    jump CEnemyBase::BeWounded(eDamage);
   };
 
 
@@ -643,7 +779,7 @@ procedures:
       GetModelObject()->StretchModel(FLOAT3D(m_fSize, m_fSize, m_fSize));
       ModelChangeNotify();
       CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(GUFFY_ATTACHMENT_GUNRIGHT)->amo_moModelObject;
-      pmoRight->StretchModel(FLOAT3D(-1,1,1));
+      pmoRight->StretchModel(FLOAT3D(-1.5,1.5,1.5));
       m_fBlowUpAmount = 400.0f;
       m_iScore = 3000;
 
@@ -657,14 +793,15 @@ procedures:
       m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
       // setup attack distances
       m_fAttackDistance = 150.0f;
-      m_fCloseDistance = 0.0f;
+      m_fCloseDistance = 4.0f;
       m_fStopDistance = 25.0f;
       m_fAttackFireTime = 5.0f;
-      m_fCloseFireTime = 5.0f;
+      m_fCloseFireTime = 2.0f;
       m_fIgnoreRange = 250.0f;
       // damage/explode properties
       m_fBodyParts = 5;
       m_fDamageWounded = 100.0f;
+      m_fDamageStunned = 80.0f;
 	  }
 
     if (m_GufChar==GUF_SERGEANT) {
@@ -678,7 +815,7 @@ procedures:
       GetModelObject()->StretchModel(FLOAT3D(m_fSize, m_fSize, m_fSize));
       ModelChangeNotify();
       CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(GUFFY_ATTACHMENT_GUNRIGHT)->amo_moModelObject;
-      pmoRight->StretchModel(FLOAT3D(-1.5,1.5,1.5));
+      pmoRight->StretchModel(FLOAT3D(-2,2,2));
       m_fBlowUpAmount = 1000.0f;
       m_iScore = 5000;
 
@@ -692,14 +829,15 @@ procedures:
       m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
       // setup attack distances
       m_fAttackDistance = 400.0f;
-      m_fCloseDistance = 0.0f;
+      m_fCloseDistance = 6.5f;
       m_fStopDistance = 25.0f;
       m_fAttackFireTime = 5.0f;
-      m_fCloseFireTime = 5.0f;
+      m_fCloseFireTime = 2.0f;
       m_fIgnoreRange = 250.0f;
       // damage/explode properties
       m_fBodyParts = 10;
       m_fDamageWounded = 150.0f;
+      m_fDamageStunned = 100.0f;
 	  }
 
     if (m_GufChar==GUF_WARLORD) {
@@ -713,7 +851,7 @@ procedures:
       GetModelObject()->StretchModel(FLOAT3D(m_fSize, m_fSize, m_fSize));
       ModelChangeNotify();
       CModelObject *pmoRight = &GetModelObject()->GetAttachmentModel(GUFFY_ATTACHMENT_GUNRIGHT)->amo_moModelObject;
-      pmoRight->StretchModel(FLOAT3D(-2.0,2.0,2.0));
+      pmoRight->StretchModel(FLOAT3D(-2.5,2.5,2.5));
       m_fBlowUpAmount = 100000.0f;
       m_iScore = 7000;
 
@@ -727,14 +865,15 @@ procedures:
       m_aCloseRotateSpeed = AngleDeg(FRnd()*50 + 245.0f);
       // setup attack distances
       m_fAttackDistance = 300.0f;
-      m_fCloseDistance = 0.0f;
+      m_fCloseDistance = 8.0f;
       m_fStopDistance = 25.0f;
       m_fAttackFireTime = 5.0f;
-      m_fCloseFireTime = 5.0f;
+      m_fCloseFireTime = 2.0f;
       m_fIgnoreRange = 250.0f;
       // damage/explode properties
       m_fBodyParts = 15;
       m_fDamageWounded = 200.0f;
+      m_fDamageStunned = 200.0f;
 	  }
     
     if (m_fStepHeight==-1) {

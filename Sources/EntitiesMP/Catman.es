@@ -261,7 +261,7 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(CATMAN_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(CATMAN_COLLISION_BOX_DEATH);
   };
 
   // virtual anim functions

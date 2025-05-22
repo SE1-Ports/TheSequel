@@ -51,6 +51,9 @@ properties:
 
  15 INDEX   m_fgibTexture = GU_JADE,
 
+ 17 CEntityPointer m_penWakeTarget "Wake target" 'W',
+ 18 enum EventEType m_eetWakeType  "Wake event type" 'E' = EET_TRIGGER, // death event type
+
 components:
   0 class   CLASS_BASE          "Classes\\EnemyBase.ecl",
   2 class   CLASS_BASIC_EFFECT  "Classes\\BasicEffect.ecl",
@@ -458,7 +461,7 @@ FireLaugh(EVoid) {
     m_bInvulnerable = FALSE;
 
     // trigger your target
-    SendToTarget(m_penDeathTarget, m_eetDeathType);
+    SendToTarget(m_penWakeTarget, m_eetWakeType);
     // proceed with normal functioning
     return EReturn();
   }

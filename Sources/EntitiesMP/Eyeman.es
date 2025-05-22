@@ -218,7 +218,8 @@ functions:
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
     // eyeman can't harm eyeman
-    if (!IsOfClass(penInflictor, "Eyeman")) {
+    if (!IsOfClass(penInflictor, "Eyeman") || 
+        (((CEyeman*)penInflictor)->m_EecChar==EYC_X)) {
       CEnemyFly::ReceiveDamage(penInflictor, dmtType, fDamageAmmount, vHitPoint, vDirection);
       // if died of chainsaw
       if (dmtType==DMT_CHAINSAW && GetHealth()<=0 && m_EecChar!=EYC_B) {
@@ -441,7 +442,6 @@ functions:
     if (m_EecChar==EYC_X) {
       Explode();
     }
-	else {
     // get your size
     FLOATaabbox3D box;
     GetBoundingBox(box);
@@ -539,7 +539,6 @@ functions:
     SwitchToEditorModel();
     SetPhysicsFlags(EPF_MODEL_IMMATERIAL);
     SetCollisionFlags(ECF_IMMATERIAL);
-  }
   };
   void Explode(void) {
     if (!m_bExploded) {
@@ -549,7 +548,7 @@ functions:
       if (m_EecChar==EYC_X) {
         FLOAT3D vSource;
         GetEntityInfoPosition(this, eiEyemanBoom.vTargetCenter, vSource);
-        InflictDirectDamage(this, this, DMT_EXPLOSION, 1000.0f, vSource, 
+        InflictDirectDamage(this, this, DMT_EXPLOSION, 200.0f, vSource, 
           -en_vGravityDir);
         InflictRangeDamage(this, DMT_EXPLOSION, 20.0f, vSource, 1.0f, 6.0f);
       }

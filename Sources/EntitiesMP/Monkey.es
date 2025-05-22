@@ -133,9 +133,9 @@ functions:
       GetHeadingDirection(0, vFront);
       FLOAT fDamageDir = m_vDamage%vFront;
 	  if (fDamageDir<0) {
-          iAnim = MONKEY_ANIM_WOUNDBACKWARD;
+          iAnim = MONKEY_ANIM_WoundBackward;
         } else {
-          iAnim = MONKEY_ANIM_WOUNDFORWARD;
+          iAnim = MONKEY_ANIM_WoundForward;
         }
     StartModelAnim(iAnim, 0);
     DeactivateRunningSound();
@@ -149,9 +149,9 @@ functions:
       GetHeadingDirection(0, vFront);
       FLOAT fDamageDir = m_vDamage%vFront;
       if (fDamageDir<0) {
-        iAnim = MONKEY_ANIM_DEATHBACKWARD;
+        iAnim = MONKEY_ANIM_WoundBackward;
       } else {
-        iAnim = MONKEY_ANIM_DEATHFORWARD;
+        iAnim = MONKEY_ANIM_WoundForward;
       }
     StartModelAnim(iAnim, 0);
     DeactivateRunningSound();
@@ -159,12 +159,12 @@ functions:
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
-    if(GetModelObject()->GetAnim()==MONKEY_ANIM_DEATHBACKWARD)
+    if(GetModelObject()->GetAnim()==MONKEY_ANIM_DeathBackward)
     {
       vStretch=FLOAT3D(1,1,2)*1.0f;
       return 0.48f;
     }
-    else if(GetModelObject()->GetAnim()==MONKEY_ANIM_DEATHFORWARD)
+    else if(GetModelObject()->GetAnim()==MONKEY_ANIM_DeathForward)
     {
       vStretch=FLOAT3D(1,1,2)*0.75f;
       return 0.48f;
@@ -173,24 +173,24 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(MONKEY_COLLISION_BOX_PART_NAME );
+    ChangeCollisionBoxIndexWhenPossible(MONKEY_COLLISION_BOX_DEFAULT);
   };
 
   // virtual anim functions
   void StandingAnim(void) {
-    StartModelAnim(MONKEY_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(MONKEY_ANIM_Idle, AOF_LOOPING|AOF_NORESTART);
     DeactivateRunningSound();
   };
   void WalkingAnim(void) {
-    StartModelAnim(MONKEY_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(MONKEY_ANIM_Run, AOF_LOOPING|AOF_NORESTART);
     ActivateRunningSound();
   };
   void RunningAnim(void) {
-    StartModelAnim(MONKEY_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(MONKEY_ANIM_Run, AOF_LOOPING|AOF_NORESTART);
     ActivateRunningSound();
   };
   void RotatingAnim(void) {
-    StartModelAnim(MONKEY_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(MONKEY_ANIM_Run, AOF_LOOPING|AOF_NORESTART);
     ActivateRunningSound();
   };
 
@@ -298,7 +298,7 @@ procedures:
 
   // jump on enemy
   JumpOnEnemy(EVoid) {
-    StartModelAnim(MONKEY_ANIM_ATTACK, 0);
+    StartModelAnim(MONKEY_ANIM_Attack, 0);
     DeactivateRunningSound();
 
     // jump
@@ -312,7 +312,7 @@ procedures:
 
     // animation - IGNORE DAMAGE WOUND -
     SpawnReminder(this, 0.5f, 0);
-    m_iChargeHitAnimation = MONKEY_ANIM_ATTACK;
+    m_iChargeHitAnimation = MONKEY_ANIM_Attack;
     m_fChargeHitDamage = 15.0f;
     m_fChargeHitAngle = 0.0f;
     m_fChargeHitSpeed = 15.0f;

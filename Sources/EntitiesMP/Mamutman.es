@@ -332,7 +332,7 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(MAMUTMAN_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(MAMUTMAN_COLLISION_BOX_DEFAULT);
     en_fDensity = 500.0f;
   };
 

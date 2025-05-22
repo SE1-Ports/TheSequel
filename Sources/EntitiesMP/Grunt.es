@@ -306,7 +306,7 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(ZORGPRO_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(ZORGPRO_COLLISION_BOX_DEFAULT);
     en_fDensity = 500.0f;
   };
 

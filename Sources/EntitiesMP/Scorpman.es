@@ -59,6 +59,8 @@ properties:
   6 BOOL m_bSleeping "Sleeping" 'S' = FALSE,  // set to make scorpman sleep initally
   8 INDEX   m_fgibTexture = TEXTURE_SOLDIER,
   9 CSoundObject m_soSpinner,            // for gunning sound
+ 10 CEntityPointer m_penWakeTarget "Wake target" 'W',
+ 11 enum EventEType m_eetWakeType  "Wake event type" 'E' = EET_TRIGGER, // death event type
   
 {
   CEntity *penBullet;     // bullet
@@ -614,7 +616,7 @@ procedures:
     autowait(GetModelObject()->GetCurrentAnimLength());
 
     // trigger your target
-    SendToTarget(m_penDeathTarget, m_eetDeathType);
+    SendToTarget(m_penWakeTarget, m_eetWakeType);
     // proceed with normal functioning
     return EReturn();
   }

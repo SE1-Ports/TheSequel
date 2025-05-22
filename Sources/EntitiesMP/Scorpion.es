@@ -207,9 +207,9 @@ functions:
       GetHeadingDirection(0, vFront);
       FLOAT fDamageDir = m_vDamage%vFront;
 	  if (fDamageDir<0) {
-          iAnim = SCORPION_ANIM_WOUNDBACKWARD;
+          iAnim = SCORPION_ANIM_WoundBackward;
         } else {
-          iAnim = SCORPION_ANIM_WOUNDFORWARD;
+          iAnim = SCORPION_ANIM_WoundForward;
         }
     StartModelAnim(iAnim, 0);
     return iAnim;
@@ -220,8 +220,8 @@ functions:
     DeactivateRunningSound();
     INDEX iAnim;
     switch (IRnd()%2) {
-      case 0: iAnim = SCORPION_ANIM_DEATH1; break;
-      case 1: iAnim = SCORPION_ANIM_DEATH2; break;
+      case 0: iAnim = SCORPION_ANIM_Death1; break;
+      case 1: iAnim = SCORPION_ANIM_Death2; break;
       default: ASSERTALWAYS("Scorpion unknown death");
     }
     StartModelAnim(iAnim, 0);
@@ -229,12 +229,12 @@ functions:
   };
 
   FLOAT WaitForDust(FLOAT3D &vStretch) {
-    if(GetModelObject()->GetAnim()==SCORPION_ANIM_DEATH1)
+    if(GetModelObject()->GetAnim()==SCORPION_ANIM_Death1)
     {
       vStretch=FLOAT3D(1,1,2)*1.0f;
       return 0.48f;
     }
-    else if(GetModelObject()->GetAnim()==SCORPION_ANIM_DEATH2)
+    else if(GetModelObject()->GetAnim()==SCORPION_ANIM_Death2)
     {
       vStretch=FLOAT3D(1,1,2)*0.75f;
       return 0.48f;
@@ -243,26 +243,26 @@ functions:
   };
 
   void DeathNotify(void) {
-    ChangeCollisionBoxIndexWhenPossible(SCORPION_COLLISION_BOX_PART_NAME);
+    ChangeCollisionBoxIndexWhenPossible(SCORPION_COLLISION_BOX_DEFAULT);
     SetCollisionFlags(ECF_MODEL);
   };
 
   // virtual anim functions
   void StandingAnim(void) {
     DeactivateRunningSound();
-    StartModelAnim(SCORPION_ANIM_IDLE, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(SCORPION_ANIM_Idle, AOF_LOOPING|AOF_NORESTART);
   };
   void WalkingAnim(void) {
     ActivateRunningSound();
-    StartModelAnim(SCORPION_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(SCORPION_ANIM_Walk, AOF_LOOPING|AOF_NORESTART);
   };
   void RunningAnim(void) {
     ActivateRunningSound();
-    StartModelAnim(SCORPION_ANIM_RUN, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(SCORPION_ANIM_Run, AOF_LOOPING|AOF_NORESTART);
   };
   void RotatingAnim(void) {
     ActivateRunningSound();
-    StartModelAnim(SCORPION_ANIM_WALK, AOF_LOOPING|AOF_NORESTART);
+    StartModelAnim(SCORPION_ANIM_Walk, AOF_LOOPING|AOF_NORESTART);
   };
 
   // virtual sound functions
@@ -528,7 +528,7 @@ procedures:
     StandingAnim();
     autowait(0.2f + FRnd()*0.25f);
 
-    StartModelAnim(SCORPION_ANIM_FIRELASER, 0);
+    StartModelAnim(SCORPION_ANIM_FireLaser, 0);
     PlaySound(m_soSound, SOUND_LASER, SOF_3D);
     autowait(0.73f);
     ShootProjectile(PRT_SCORPION_LASER, FLOAT3D( 0.0f, 5.5f, -4.0f), ANGLE3D(0, 0, 0));
@@ -571,12 +571,12 @@ procedures:
           if (!IsInPlaneFrustum(m_penEnemy, CosFast(5.0f))) {
             m_fMoveSpeed = 0.0f;
             m_aRotateSpeed = 4000.0f;
-            StartModelAnim(SCORPION_ANIM_FIREMINIGUNS, AOF_LOOPING|AOF_NORESTART);
+            StartModelAnim(SCORPION_ANIM_FireMiniguns, AOF_LOOPING|AOF_NORESTART);
           // stand in place
           } else {
             m_fMoveSpeed = 0.0f;
             m_aRotateSpeed = 0.0f;
-            StartModelAnim(SCORPION_ANIM_FIREMINIGUNS, AOF_LOOPING|AOF_NORESTART);
+            StartModelAnim(SCORPION_ANIM_FireMiniguns, AOF_LOOPING|AOF_NORESTART);
           }
           // adjust direction and speed
           SetDesiredMovement(); 
@@ -595,8 +595,8 @@ procedures:
     m_fShootTime = _pTimer->CurrentTick() + m_fAttackFireTime*(1.0f);
 
     // from fire
-    StartModelAnim(SCORPION_ANIM_IDLE, 0);
-    autowait(GetModelObject()->GetAnimLength(SCORPION_ANIM_IDLE)/2);
+    StartModelAnim(SCORPION_ANIM_Idle, 0);
+    autowait(GetModelObject()->GetAnimLength(SCORPION_ANIM_Idle)/2);
 
     MaybeSwitchToAnotherPlayer();
 
@@ -609,7 +609,7 @@ procedures:
     DeactivateRunningSound();
     m_soSpinner.Stop();
     // close attack
-    StartModelAnim(SCORPION_ANIM_MELEE, 0);
+    StartModelAnim(SCORPION_ANIM_Melee, 0);
     PlaySound(m_soSound, SOUND_KICK, SOF_3D);
     autowait(0.85f);
     if (CalcDist(m_penEnemy) < m_fCloseDistance) {
