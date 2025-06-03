@@ -142,12 +142,18 @@ void DECL_DLL Particles_SummonerProjectileFly(CEntity *pen, FLOAT fSize, FLOAT f
 void DECL_DLL Particles_SummonerProjectileExplode(CEntity *pen, FLOAT fSize, FLOAT fBeginTime, FLOAT fDuration, FLOAT fTimeAdjust);
 void DECL_DLL Particles_SummonerExplode(CEntity *pen, FLOAT3D vCenter, FLOAT fArea, FLOAT fSize, FLOAT fBeginTime, FLOAT fDuration);
 void DECL_DLL Particles_ExotechLarvaLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget);
-void DECL_DLL Particles_WhiteLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
-void DECL_DLL Particles_RedLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
-void DECL_DLL Particles_BlueLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
-void DECL_DLL Particles_GreenLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
-void DECL_DLL Particles_YellowLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
-void DECL_DLL Particles_VioletLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize);
+void DECL_DLL Particles_WhiteLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower = 1.0f,
+                           FLOAT fKneeDivider = 33.3333333f);
+void DECL_DLL Particles_RedLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower = 1.0f,
+                           FLOAT fKneeDivider = 33.3333333f);
+void DECL_DLL Particles_BlueLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower = 1.0f,
+                           FLOAT fKneeDivider = 33.3333333f);
+void DECL_DLL Particles_GreenLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower = 1.0f,
+                           FLOAT fKneeDivider = 33.3333333f);
+void DECL_DLL Particles_YellowLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower = 1.0f,
+                           FLOAT fKneeDivider = 33.3333333f);
+void DECL_DLL Particles_VioletLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower = 1.0f,
+                           FLOAT fKneeDivider = 33.3333333f);
 void DECL_DLL Particles_Smoke(CEntity *pen, FLOAT3D vOffset, INDEX ctCount, FLOAT fLife, FLOAT fSpread, FLOAT fStretchAll, FLOAT fYSpeed);
 void DECL_DLL Particles_Windblast( CEntity *pen, FLOAT fStretch, FLOAT fFadeOutStartTime);
 void DECL_DLL Particles_CollectEnergy(CEntity *pen, FLOAT tmStart, FLOAT tmStop);

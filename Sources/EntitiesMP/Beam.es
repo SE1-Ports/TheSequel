@@ -75,22 +75,22 @@ functions:
       switch (m_bmType)
       {
        case BM_LASER_WHITE:   
-        Particles_WhiteLaser(this, m_vBeamSource, m_vBeamTarget, m_fSize);
+        Particles_WhiteLaser(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);
         break;
        case BM_LASER_RED:    
-        Particles_RedLaser(this, m_vBeamSource, m_vBeamTarget, m_fSize);
+        Particles_RedLaser(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);
         break;
        case BM_LASER_BLUE:    
-        Particles_BlueLaser(this, m_vBeamSource, m_vBeamTarget, m_fSize);
+        Particles_BlueLaser(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);
         break;
        case BM_LASER_YELLOW:    
-        Particles_YellowLaser(this, m_vBeamSource, m_vBeamTarget, m_fSize);
+        Particles_YellowLaser(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);
         break;
        case BM_LASER_GREEN:    
-        Particles_GreenLaser(this, m_vBeamSource, m_vBeamTarget, m_fSize);
+        Particles_GreenLaser(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);
         break;
        case BM_LASER_VIOLET:    
-        Particles_VioletLaser(this, m_vBeamSource, m_vBeamTarget, m_fSize);
+        Particles_VioletLaser(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);
         break;
        case BM_GHOSTBUSTER:    
         Particles_Ghostbuster(m_vBeamSource, m_vBeamTarget, m_fCount, m_fSize);

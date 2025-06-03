@@ -5444,20 +5444,49 @@ void Particles_ExotechLarvaLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget)
   
 }
 
-void Particles_WhiteLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+#define CT_LIGHTNINGS 8
+void Particles_WhiteLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower,
+                           FLOAT fKneeDivider/*=33.3333333f*/)
 {
   Particle_PrepareTexture(&_toLightning, PBT_ADD);
   Particle_SetTexturePart( 512, 512, 0, 0);
+  // get direction vector
+  FLOAT3D vZ = vTarget-vSource;
+  FLOAT fLen = vZ.Length();
+  vZ.Normalize();
+
+  // get two normal vectors
+  FLOAT3D vX;
+  if (Abs(vZ(2))>0.5) {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  } else {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  }
+  FLOAT3D vY  = vZ*vX;
+  const FLOAT fStep = fLen/fKneeDivider;
+
+  for(INDEX iRay = 0; iRay<ctRays; iRay++)
+  {
+    FLOAT3D v0 = vSource;
+    FLOAT fT = FLOAT(iRay)/ctRays + _pTimer->GetLerpedCurrentTick()/1.5f;
+    FLOAT fDT = fT-INDEX(fT);
+    FLOAT fFade = 1-fDT*4.0f;
+
+    if( fFade>1 || fFade<=0) continue;
+    UBYTE ubFade = NormFloatToByte(fFade*fPower);
+    COLOR colFade = RGBToColor( ubFade, ubFade, ubFade);
+    for(FLOAT fPos=fStep; fPos<fLen+fStep/2; fPos+=fStep)
+    {
+      INDEX iOffset = ULONG(fPos*1234.5678f+iRay*103)%32;
+      FLOAT3D v1 = vSource+(vZ*fPos + vX*(0.5f*afStarsPositions[iOffset][0]*fSize) +
+                                   vY*(0.5f*afStarsPositions[iOffset][1]*fSize));
+      Particle_RenderLine( v0, v1, 0.125f*fSize, colFade|0xFF);
+      v0 = v1;
+    }
+  }
   
   COLOR colColor;
   FLOAT3D vMid;
-  
-  vMid = (vSource - vTarget).Normalize();
-  vMid = vTarget + vMid * 2.5f;
-
-  colColor = C_WHITE|0xff;
-  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
-  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
   
   Particle_Flush();
 
@@ -5470,20 +5499,48 @@ void Particles_WhiteLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT 
   
 }
 
-void Particles_RedLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+void Particles_RedLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower,
+                           FLOAT fKneeDivider/*=33.3333333f*/)
 {
   Particle_PrepareTexture(&_toLarvaLaser, PBT_ADD);
   Particle_SetTexturePart( 512, 512, 0, 0);
+  // get direction vector
+  FLOAT3D vZ = vTarget-vSource;
+  FLOAT fLen = vZ.Length();
+  vZ.Normalize();
+
+  // get two normal vectors
+  FLOAT3D vX;
+  if (Abs(vZ(2))>0.5) {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  } else {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  }
+  FLOAT3D vY  = vZ*vX;
+  const FLOAT fStep = fLen/fKneeDivider;
+
+  for(INDEX iRay = 0; iRay<ctRays; iRay++)
+  {
+    FLOAT3D v0 = vSource;
+    FLOAT fT = FLOAT(iRay)/ctRays + _pTimer->GetLerpedCurrentTick()/1.5f;
+    FLOAT fDT = fT-INDEX(fT);
+    FLOAT fFade = 1-fDT*4.0f;
+
+    if( fFade>1 || fFade<=0) continue;
+    UBYTE ubFade = NormFloatToByte(fFade*fPower);
+    COLOR colFade = RGBToColor( ubFade, ubFade, ubFade);
+    for(FLOAT fPos=fStep; fPos<fLen+fStep/2; fPos+=fStep)
+    {
+      INDEX iOffset = ULONG(fPos*1234.5678f+iRay*103)%32;
+      FLOAT3D v1 = vSource+(vZ*fPos + vX*(0.5f*afStarsPositions[iOffset][0]*fSize) +
+                                   vY*(0.5f*afStarsPositions[iOffset][1]*fSize));
+      Particle_RenderLine( v0, v1, 0.125f*fSize, colFade|0xFF);
+      v0 = v1;
+    }
+  }
   
   COLOR colColor;
   FLOAT3D vMid;
-  
-  vMid = (vSource - vTarget).Normalize();
-  vMid = vTarget + vMid * 2.5f;
-
-  colColor = C_WHITE|0xff;
-  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
-  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
   
   Particle_Flush();
 
@@ -5496,20 +5553,48 @@ void Particles_RedLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fS
   
 }
 
-void Particles_BlueLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+void Particles_BlueLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower,
+                           FLOAT fKneeDivider/*=33.3333333f*/)
 {
   Particle_PrepareTexture(&_toBlueLaser, PBT_ADD);
   Particle_SetTexturePart( 512, 512, 0, 0);
+  // get direction vector
+  FLOAT3D vZ = vTarget-vSource;
+  FLOAT fLen = vZ.Length();
+  vZ.Normalize();
+
+  // get two normal vectors
+  FLOAT3D vX;
+  if (Abs(vZ(2))>0.5) {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  } else {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  }
+  FLOAT3D vY  = vZ*vX;
+  const FLOAT fStep = fLen/fKneeDivider;
+
+  for(INDEX iRay = 0; iRay<ctRays; iRay++)
+  {
+    FLOAT3D v0 = vSource;
+    FLOAT fT = FLOAT(iRay)/ctRays + _pTimer->GetLerpedCurrentTick()/1.5f;
+    FLOAT fDT = fT-INDEX(fT);
+    FLOAT fFade = 1-fDT*4.0f;
+
+    if( fFade>1 || fFade<=0) continue;
+    UBYTE ubFade = NormFloatToByte(fFade*fPower);
+    COLOR colFade = RGBToColor( ubFade, ubFade, ubFade);
+    for(FLOAT fPos=fStep; fPos<fLen+fStep/2; fPos+=fStep)
+    {
+      INDEX iOffset = ULONG(fPos*1234.5678f+iRay*103)%32;
+      FLOAT3D v1 = vSource+(vZ*fPos + vX*(0.5f*afStarsPositions[iOffset][0]*fSize) +
+                                   vY*(0.5f*afStarsPositions[iOffset][1]*fSize));
+      Particle_RenderLine( v0, v1, 0.125f*fSize, colFade|0xFF);
+      v0 = v1;
+    }
+  }
   
   COLOR colColor;
   FLOAT3D vMid;
-  
-  vMid = (vSource - vTarget).Normalize();
-  vMid = vTarget + vMid * 2.5f;
-
-  colColor = C_WHITE|0xff;
-  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
-  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
   
   Particle_Flush();
 
@@ -5522,20 +5607,48 @@ void Particles_BlueLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT f
   
 }
 
-void Particles_GreenLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+void Particles_GreenLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower,
+                           FLOAT fKneeDivider/*=33.3333333f*/)
 {
   Particle_PrepareTexture(&_toGreenLaser, PBT_ADD);
   Particle_SetTexturePart( 512, 512, 0, 0);
+  // get direction vector
+  FLOAT3D vZ = vTarget-vSource;
+  FLOAT fLen = vZ.Length();
+  vZ.Normalize();
+
+  // get two normal vectors
+  FLOAT3D vX;
+  if (Abs(vZ(2))>0.5) {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  } else {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  }
+  FLOAT3D vY  = vZ*vX;
+  const FLOAT fStep = fLen/fKneeDivider;
+
+  for(INDEX iRay = 0; iRay<ctRays; iRay++)
+  {
+    FLOAT3D v0 = vSource;
+    FLOAT fT = FLOAT(iRay)/ctRays + _pTimer->GetLerpedCurrentTick()/1.5f;
+    FLOAT fDT = fT-INDEX(fT);
+    FLOAT fFade = 1-fDT*4.0f;
+
+    if( fFade>1 || fFade<=0) continue;
+    UBYTE ubFade = NormFloatToByte(fFade*fPower);
+    COLOR colFade = RGBToColor( ubFade, ubFade, ubFade);
+    for(FLOAT fPos=fStep; fPos<fLen+fStep/2; fPos+=fStep)
+    {
+      INDEX iOffset = ULONG(fPos*1234.5678f+iRay*103)%32;
+      FLOAT3D v1 = vSource+(vZ*fPos + vX*(0.5f*afStarsPositions[iOffset][0]*fSize) +
+                                   vY*(0.5f*afStarsPositions[iOffset][1]*fSize));
+      Particle_RenderLine( v0, v1, 0.125f*fSize, colFade|0xFF);
+      v0 = v1;
+    }
+  }
   
   COLOR colColor;
   FLOAT3D vMid;
-  
-  vMid = (vSource - vTarget).Normalize();
-  vMid = vTarget + vMid * 2.5f;
-
-  colColor = C_WHITE|0xff;
-  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
-  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
   
   Particle_Flush();
 
@@ -5548,20 +5661,48 @@ void Particles_GreenLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT 
   
 }
 
-void Particles_YellowLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+void Particles_YellowLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower,
+                           FLOAT fKneeDivider/*=33.3333333f*/)
 {
   Particle_PrepareTexture(&_toYellowLaser, PBT_ADD);
   Particle_SetTexturePart( 512, 512, 0, 0);
+  // get direction vector
+  FLOAT3D vZ = vTarget-vSource;
+  FLOAT fLen = vZ.Length();
+  vZ.Normalize();
+
+  // get two normal vectors
+  FLOAT3D vX;
+  if (Abs(vZ(2))>0.5) {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  } else {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  }
+  FLOAT3D vY  = vZ*vX;
+  const FLOAT fStep = fLen/fKneeDivider;
+
+  for(INDEX iRay = 0; iRay<ctRays; iRay++)
+  {
+    FLOAT3D v0 = vSource;
+    FLOAT fT = FLOAT(iRay)/ctRays + _pTimer->GetLerpedCurrentTick()/1.5f;
+    FLOAT fDT = fT-INDEX(fT);
+    FLOAT fFade = 1-fDT*4.0f;
+
+    if( fFade>1 || fFade<=0) continue;
+    UBYTE ubFade = NormFloatToByte(fFade*fPower);
+    COLOR colFade = RGBToColor( ubFade, ubFade, ubFade);
+    for(FLOAT fPos=fStep; fPos<fLen+fStep/2; fPos+=fStep)
+    {
+      INDEX iOffset = ULONG(fPos*1234.5678f+iRay*103)%32;
+      FLOAT3D v1 = vSource+(vZ*fPos + vX*(0.5f*afStarsPositions[iOffset][0]*fSize) +
+                                   vY*(0.5f*afStarsPositions[iOffset][1]*fSize));
+      Particle_RenderLine( v0, v1, 0.125f*fSize, colFade|0xFF);
+      v0 = v1;
+    }
+  }
   
   COLOR colColor;
   FLOAT3D vMid;
-  
-  vMid = (vSource - vTarget).Normalize();
-  vMid = vTarget + vMid * 2.5f;
-
-  colColor = C_WHITE|0xff;
-  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
-  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
   
   Particle_Flush();
 
@@ -5574,20 +5715,48 @@ void Particles_YellowLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT
   
 }
 
-void Particles_VioletLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget, FLOAT fSize)
+void Particles_VioletLaser(const FLOAT3D &vSource, const FLOAT3D &vTarget, INDEX ctRays, FLOAT fSize, FLOAT fPower,
+                           FLOAT fKneeDivider/*=33.3333333f*/)
 {
   Particle_PrepareTexture(&_toVioletLaser, PBT_ADD);
   Particle_SetTexturePart( 512, 512, 0, 0);
+  // get direction vector
+  FLOAT3D vZ = vTarget-vSource;
+  FLOAT fLen = vZ.Length();
+  vZ.Normalize();
+
+  // get two normal vectors
+  FLOAT3D vX;
+  if (Abs(vZ(2))>0.5) {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  } else {
+    vX = FLOAT3D(0.0f, 0.0f, 0.0f)*vZ;
+  }
+  FLOAT3D vY  = vZ*vX;
+  const FLOAT fStep = fLen/fKneeDivider;
+
+  for(INDEX iRay = 0; iRay<ctRays; iRay++)
+  {
+    FLOAT3D v0 = vSource;
+    FLOAT fT = FLOAT(iRay)/ctRays + _pTimer->GetLerpedCurrentTick()/1.5f;
+    FLOAT fDT = fT-INDEX(fT);
+    FLOAT fFade = 1-fDT*4.0f;
+
+    if( fFade>1 || fFade<=0) continue;
+    UBYTE ubFade = NormFloatToByte(fFade*fPower);
+    COLOR colFade = RGBToColor( ubFade, ubFade, ubFade);
+    for(FLOAT fPos=fStep; fPos<fLen+fStep/2; fPos+=fStep)
+    {
+      INDEX iOffset = ULONG(fPos*1234.5678f+iRay*103)%32;
+      FLOAT3D v1 = vSource+(vZ*fPos + vX*(0.5f*afStarsPositions[iOffset][0]*fSize) +
+                                   vY*(0.5f*afStarsPositions[iOffset][1]*fSize));
+      Particle_RenderLine( v0, v1, 0.125f*fSize, colFade|0xFF);
+      v0 = v1;
+    }
+  }
   
   COLOR colColor;
   FLOAT3D vMid;
-  
-  vMid = (vSource - vTarget).Normalize();
-  vMid = vTarget + vMid * 2.5f;
-
-  colColor = C_WHITE|0xff;
-  Particle_RenderLine( vSource, vMid, 1.0f*fSize, colColor);
-  Particle_RenderLine( vMid, vTarget, 1.0f*fSize, colColor);
   
   Particle_Flush();
 

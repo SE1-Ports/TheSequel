@@ -128,7 +128,7 @@ functions:
     if( m_bRenderElectricity)
     {
       // calculate electricity ray source pos
-      Particles_LurkerBeam(m_vBeamSource, m_vBeamTarget, 24, 1.0f);
+      Particles_RedLaser(m_vBeamSource, m_vBeamTarget, 24, 2.0f);
     }
 
     CEnemyBase::RenderParticles();

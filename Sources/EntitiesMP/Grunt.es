@@ -171,7 +171,7 @@ functions:
     if( m_bRenderElectricity)
     {
       // calculate electricity ray source pos
-      Particles_GreenLaser(this, m_vBeamSource, m_vBeamTarget, 0.1f);
+      Particles_GreenLaser(m_vBeamSource, m_vBeamTarget, 12.0f, 0.5f);
     }
 
     CEnemyBase::RenderParticles();
